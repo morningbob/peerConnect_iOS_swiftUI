@@ -14,6 +14,11 @@
 		E74BCA4127F228A800B47747 /* peerConnect_swiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4027F228A800B47747 /* peerConnect_swiftUITests.swift */; };
 		E74BCA4B27F228A800B47747 /* peerConnect_swiftUIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4A27F228A800B47747 /* peerConnect_swiftUIUITests.swift */; };
 		E74BCA4D27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */; };
+		E74BCA5C27F2411D00B47747 /* PeersListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA5B27F2411D00B47747 /* PeersListView.swift */; };
+		E74BCA5E27F2435700B47747 /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA5D27F2435700B47747 /* ConnectionManager.swift */; };
+		E74BCA6227F24B2400B47747 /* PeerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA6127F24B2400B47747 /* PeerModel.swift */; };
+		E74BCA6427F2543F00B47747 /* PeerListRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA6327F2543F00B47747 /* PeerListRowView.swift */; };
+		E74BCA6627F257C500B47747 /* PeerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA6527F257C500B47747 /* PeerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +49,11 @@
 		E74BCA4627F228A800B47747 /* peerConnect_swiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peerConnect_swiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E74BCA4A27F228A800B47747 /* peerConnect_swiftUIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIUITests.swift; sourceTree = "<group>"; };
 		E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		E74BCA5B27F2411D00B47747 /* PeersListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeersListView.swift; sourceTree = "<group>"; };
+		E74BCA5D27F2435700B47747 /* ConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
+		E74BCA6127F24B2400B47747 /* PeerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerModel.swift; sourceTree = "<group>"; };
+		E74BCA6327F2543F00B47747 /* PeerListRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerListRowView.swift; sourceTree = "<group>"; };
+		E74BCA6527F257C500B47747 /* PeerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +104,9 @@
 		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				E74BCA6727F258AB00B47747 /* Peer Views */,
+				E74BCA6027F24B0400B47747 /* Models */,
+				E74BCA5F27F24AE400B47747 /* Connections */,
 				E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */,
 				E74BCA3127F228A600B47747 /* ContentView.swift */,
 				E74BCA3327F228A700B47747 /* Assets.xcassets */,
@@ -125,6 +138,32 @@
 				E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */,
 			);
 			path = peerConnect_swiftUIUITests;
+			sourceTree = "<group>";
+		};
+		E74BCA5F27F24AE400B47747 /* Connections */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA5D27F2435700B47747 /* ConnectionManager.swift */,
+			);
+			path = Connections;
+			sourceTree = "<group>";
+		};
+		E74BCA6027F24B0400B47747 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA6127F24B2400B47747 /* PeerModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E74BCA6727F258AB00B47747 /* Peer Views */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA5B27F2411D00B47747 /* PeersListView.swift */,
+				E74BCA6327F2543F00B47747 /* PeerListRowView.swift */,
+				E74BCA6527F257C500B47747 /* PeerView.swift */,
+			);
+			path = "Peer Views";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,7 +297,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				E74BCA3227F228A600B47747 /* ContentView.swift in Sources */,
+				E74BCA5E27F2435700B47747 /* ConnectionManager.swift in Sources */,
+				E74BCA5C27F2411D00B47747 /* PeersListView.swift in Sources */,
+				E74BCA6227F24B2400B47747 /* PeerModel.swift in Sources */,
 				E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */,
+				E74BCA6427F2543F00B47747 /* PeerListRowView.swift in Sources */,
+				E74BCA6627F257C500B47747 /* PeerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

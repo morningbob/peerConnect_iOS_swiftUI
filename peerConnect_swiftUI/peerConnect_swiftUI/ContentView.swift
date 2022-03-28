@@ -28,6 +28,13 @@ struct ContentView: View {
                     Spacer()
                     Button(action: start) {
                         Text("Start")
+                            .padding()
+                            .overlay(
+                                                    RoundedRectangle(cornerRadius: 20)
+                                                        .stroke(Color.blue, lineWidth: 1)
+                                                )
+                            //.foregroundColor(Color(red: 0.5294, green: 0.7686, blue: 0.5882))
+                        //
                     }
                     .padding(.all, 40)
                     Spacer()
