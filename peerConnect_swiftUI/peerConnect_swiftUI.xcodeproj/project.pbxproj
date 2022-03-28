@@ -1,0 +1,588 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */; };
+		E74BCA3227F228A600B47747 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA3127F228A600B47747 /* ContentView.swift */; };
+		E74BCA3427F228A700B47747 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E74BCA3327F228A700B47747 /* Assets.xcassets */; };
+		E74BCA3727F228A700B47747 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E74BCA3627F228A700B47747 /* Preview Assets.xcassets */; };
+		E74BCA4127F228A800B47747 /* peerConnect_swiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4027F228A800B47747 /* peerConnect_swiftUITests.swift */; };
+		E74BCA4B27F228A800B47747 /* peerConnect_swiftUIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4A27F228A800B47747 /* peerConnect_swiftUIUITests.swift */; };
+		E74BCA4D27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E74BCA3D27F228A800B47747 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E74BCA2427F228A600B47747 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E74BCA2B27F228A600B47747;
+			remoteInfo = peerConnect_swiftUI;
+		};
+		E74BCA4727F228A800B47747 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E74BCA2427F228A600B47747 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E74BCA2B27F228A600B47747;
+			remoteInfo = peerConnect_swiftUI;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		E74BCA2C27F228A600B47747 /* peerConnect_swiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peerConnect_swiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIApp.swift; sourceTree = "<group>"; };
+		E74BCA3127F228A600B47747 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E74BCA3327F228A700B47747 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E74BCA3627F228A700B47747 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E74BCA3C27F228A800B47747 /* peerConnect_swiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peerConnect_swiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E74BCA4027F228A800B47747 /* peerConnect_swiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUITests.swift; sourceTree = "<group>"; };
+		E74BCA4627F228A800B47747 /* peerConnect_swiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peerConnect_swiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E74BCA4A27F228A800B47747 /* peerConnect_swiftUIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIUITests.swift; sourceTree = "<group>"; };
+		E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E74BCA2927F228A600B47747 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA3927F228A800B47747 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA4327F228A800B47747 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E74BCA2327F228A600B47747 = {
+			isa = PBXGroup;
+			children = (
+				E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */,
+				E74BCA3F27F228A800B47747 /* peerConnect_swiftUITests */,
+				E74BCA4927F228A800B47747 /* peerConnect_swiftUIUITests */,
+				E74BCA2D27F228A600B47747 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E74BCA2D27F228A600B47747 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA2C27F228A600B47747 /* peerConnect_swiftUI.app */,
+				E74BCA3C27F228A800B47747 /* peerConnect_swiftUITests.xctest */,
+				E74BCA4627F228A800B47747 /* peerConnect_swiftUIUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */,
+				E74BCA3127F228A600B47747 /* ContentView.swift */,
+				E74BCA3327F228A700B47747 /* Assets.xcassets */,
+				E74BCA3527F228A700B47747 /* Preview Content */,
+			);
+			path = peerConnect_swiftUI;
+			sourceTree = "<group>";
+		};
+		E74BCA3527F228A700B47747 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA3627F228A700B47747 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		E74BCA3F27F228A800B47747 /* peerConnect_swiftUITests */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA4027F228A800B47747 /* peerConnect_swiftUITests.swift */,
+			);
+			path = peerConnect_swiftUITests;
+			sourceTree = "<group>";
+		};
+		E74BCA4927F228A800B47747 /* peerConnect_swiftUIUITests */ = {
+			isa = PBXGroup;
+			children = (
+				E74BCA4A27F228A800B47747 /* peerConnect_swiftUIUITests.swift */,
+				E74BCA4C27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift */,
+			);
+			path = peerConnect_swiftUIUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E74BCA2B27F228A600B47747 /* peerConnect_swiftUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E74BCA5027F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUI" */;
+			buildPhases = (
+				E74BCA2827F228A600B47747 /* Sources */,
+				E74BCA2927F228A600B47747 /* Frameworks */,
+				E74BCA2A27F228A600B47747 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = peerConnect_swiftUI;
+			productName = peerConnect_swiftUI;
+			productReference = E74BCA2C27F228A600B47747 /* peerConnect_swiftUI.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E74BCA3B27F228A800B47747 /* peerConnect_swiftUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E74BCA5327F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUITests" */;
+			buildPhases = (
+				E74BCA3827F228A800B47747 /* Sources */,
+				E74BCA3927F228A800B47747 /* Frameworks */,
+				E74BCA3A27F228A800B47747 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E74BCA3E27F228A800B47747 /* PBXTargetDependency */,
+			);
+			name = peerConnect_swiftUITests;
+			productName = peerConnect_swiftUITests;
+			productReference = E74BCA3C27F228A800B47747 /* peerConnect_swiftUITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E74BCA4527F228A800B47747 /* peerConnect_swiftUIUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E74BCA5627F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUIUITests" */;
+			buildPhases = (
+				E74BCA4227F228A800B47747 /* Sources */,
+				E74BCA4327F228A800B47747 /* Frameworks */,
+				E74BCA4427F228A800B47747 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E74BCA4827F228A800B47747 /* PBXTargetDependency */,
+			);
+			name = peerConnect_swiftUIUITests;
+			productName = peerConnect_swiftUIUITests;
+			productReference = E74BCA4627F228A800B47747 /* peerConnect_swiftUIUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E74BCA2427F228A600B47747 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1330;
+				LastUpgradeCheck = 1330;
+				TargetAttributes = {
+					E74BCA2B27F228A600B47747 = {
+						CreatedOnToolsVersion = 13.3;
+					};
+					E74BCA3B27F228A800B47747 = {
+						CreatedOnToolsVersion = 13.3;
+						TestTargetID = E74BCA2B27F228A600B47747;
+					};
+					E74BCA4527F228A800B47747 = {
+						CreatedOnToolsVersion = 13.3;
+						TestTargetID = E74BCA2B27F228A600B47747;
+					};
+				};
+			};
+			buildConfigurationList = E74BCA2727F228A600B47747 /* Build configuration list for PBXProject "peerConnect_swiftUI" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E74BCA2327F228A600B47747;
+			productRefGroup = E74BCA2D27F228A600B47747 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E74BCA2B27F228A600B47747 /* peerConnect_swiftUI */,
+				E74BCA3B27F228A800B47747 /* peerConnect_swiftUITests */,
+				E74BCA4527F228A800B47747 /* peerConnect_swiftUIUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E74BCA2A27F228A600B47747 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E74BCA3727F228A700B47747 /* Preview Assets.xcassets in Resources */,
+				E74BCA3427F228A700B47747 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA3A27F228A800B47747 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA4427F228A800B47747 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E74BCA2827F228A600B47747 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E74BCA3227F228A600B47747 /* ContentView.swift in Sources */,
+				E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA3827F228A800B47747 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E74BCA4127F228A800B47747 /* peerConnect_swiftUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74BCA4227F228A800B47747 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E74BCA4B27F228A800B47747 /* peerConnect_swiftUIUITests.swift in Sources */,
+				E74BCA4D27F228A800B47747 /* peerConnect_swiftUIUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E74BCA3E27F228A800B47747 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E74BCA2B27F228A600B47747 /* peerConnect_swiftUI */;
+			targetProxy = E74BCA3D27F228A800B47747 /* PBXContainerItemProxy */;
+		};
+		E74BCA4827F228A800B47747 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E74BCA2B27F228A600B47747 /* peerConnect_swiftUI */;
+			targetProxy = E74BCA4727F228A800B47747 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E74BCA4E27F228A800B47747 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E74BCA4F27F228A800B47747 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E74BCA5127F228A800B47747 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"peerConnect_swiftUI/Preview Content\"";
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUI";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E74BCA5227F228A800B47747 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"peerConnect_swiftUI/Preview Content\"";
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUI";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E74BCA5427F228A800B47747 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/peerConnect_swiftUI.app/peerConnect_swiftUI";
+			};
+			name = Debug;
+		};
+		E74BCA5527F228A800B47747 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/peerConnect_swiftUI.app/peerConnect_swiftUI";
+			};
+			name = Release;
+		};
+		E74BCA5727F228A800B47747 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUIUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = peerConnect_swiftUI;
+			};
+			name = Debug;
+		};
+		E74BCA5827F228A800B47747 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 66ST4CPVX8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bitpunchlab.peerConnect-swiftUIUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = peerConnect_swiftUI;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E74BCA2727F228A600B47747 /* Build configuration list for PBXProject "peerConnect_swiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E74BCA4E27F228A800B47747 /* Debug */,
+				E74BCA4F27F228A800B47747 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E74BCA5027F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E74BCA5127F228A800B47747 /* Debug */,
+				E74BCA5227F228A800B47747 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E74BCA5327F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E74BCA5427F228A800B47747 /* Debug */,
+				E74BCA5527F228A800B47747 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E74BCA5627F228A800B47747 /* Build configuration list for PBXNativeTarget "peerConnect_swiftUIUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E74BCA5727F228A800B47747 /* Debug */,
+				E74BCA5827F228A800B47747 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E74BCA2427F228A600B47747 /* Project object */;
+}
