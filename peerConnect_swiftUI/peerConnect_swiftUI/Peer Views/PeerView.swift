@@ -9,15 +9,16 @@ import SwiftUI
 
 struct PeerView: View {
     @EnvironmentObject var connectionManager: ConnectionManager
-    let peer: PeerModel
+    let peerModel: PeerModel
     
     var body: some View {
-        Text(peer.name)
+        Text(peerModel.name)
+         
     }
 }
 
 struct PeerView_Previews: PreviewProvider {
     static var previews: some View {
-        PeerView(peer: PeerModel(name: "Chaos")).environmentObject(ConnectionManager())
+        PeerView(peerModel: PeerModel(name: "Chaos")).environmentObject(ConnectionManager())
     }
 }

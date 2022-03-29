@@ -9,12 +9,12 @@ import SwiftUI
 
 struct PeerListRowView: View {
     @EnvironmentObject var connectionManager: ConnectionManager
-    let peer: PeerModel
+    let peerModel: PeerModel
     
     var body: some View {
-        NavigationLink(destination: PeerView(peer: peer).environmentObject(connectionManager)) {
+        NavigationLink(destination: PeerView(peerModel: peerModel)) {
             HStack {
-                Text(peer.name)
+                Text(peerModel.name)
             }
         }
         
@@ -23,6 +23,6 @@ struct PeerListRowView: View {
 
 struct PeerListRowView_Previews: PreviewProvider {
     static var previews: some View {
-        PeerListRowView(peer: PeerModel(name: "Kind")).environmentObject(ConnectionManager()) 
+        PeerListRowView(peerModel: PeerModel(name: "Kind")).environmentObject(ConnectionManager())
     }
 }

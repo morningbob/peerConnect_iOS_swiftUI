@@ -8,19 +8,22 @@
 import SwiftUI
 
 struct PeersListView: View {
-    @ObservedObject var connectionManager: ConnectionManager
-    @ObservedObject var peerListStore: PeerListStore
+    
+    @ObservedObject var connectionManager : ConnectionManager
+    @ObservedObject var peerListStore : PeerListStore
     
     init(peerListStore: PeerListStore = PeerListStore()) {
+    //init() {
         self.peerListStore = peerListStore
-        connectionManager = ConnectionManager { peer in
+        self.connectionManager = ConnectionManager()
+        { peer in
             peerListStore.peers.append(peer)
         }
     }
     
     var body: some View {
-        List(peerListStore.peers) { peer in
-            PeerListRowView(peer: peer).environmentObject(connectionManager)
+        List(connectionManager.peerModels) { peerModel in
+            PeerListRowView(peerModel: peerModel)
         }
     }
 }

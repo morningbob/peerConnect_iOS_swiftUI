@@ -54,6 +54,7 @@
 		E74BCA6127F24B2400B47747 /* PeerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerModel.swift; sourceTree = "<group>"; };
 		E74BCA6327F2543F00B47747 /* PeerListRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerListRowView.swift; sourceTree = "<group>"; };
 		E74BCA6527F257C500B47747 /* PeerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerView.swift; sourceTree = "<group>"; };
+		E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "peerConnect-swiftUI-Info.plist"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +105,7 @@
 		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */,
 				E74BCA6727F258AB00B47747 /* Peer Views */,
 				E74BCA6027F24B0400B47747 /* Models */,
 				E74BCA5F27F24AE400B47747 /* Connections */,
@@ -464,6 +466,9 @@
 				DEVELOPMENT_TEAM = 66ST4CPVX8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "peerConnect-swiftUI-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "needed for discovering nearby devices";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -493,6 +498,9 @@
 				DEVELOPMENT_TEAM = 66ST4CPVX8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "peerConnect-swiftUI-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "needed for discovering nearby devices";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

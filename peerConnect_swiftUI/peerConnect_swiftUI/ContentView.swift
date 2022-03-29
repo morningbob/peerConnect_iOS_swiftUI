@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var isLinkActive = false
+    
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
@@ -26,15 +28,16 @@ struct ContentView: View {
                     .navigationBarTitle("Peer Connect", displayMode: .inline)
                 HStack {
                     Spacer()
-                    Button(action: start) {
+                    NavigationLink(destination: PeersListView(), isActive: $isLinkActive) {
+                    Button(action: {
+                        self.isLinkActive = true
+                    }) {
                         Text("Start")
                             .padding()
-                            .overlay(
-                                                    RoundedRectangle(cornerRadius: 20)
-                                                        .stroke(Color.blue, lineWidth: 1)
-                                                )
+                            .overlay(RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.blue, lineWidth: 1))
                            
-                    }
+                    }}
                     .padding(.all, 40)
                     Spacer()
                 }
@@ -44,12 +47,6 @@ struct ContentView: View {
         }
         
     }
-}
-
-func start() {
-    
-        print("button clicked")
-    
 }
 
 struct ContentView_Previews: PreviewProvider {

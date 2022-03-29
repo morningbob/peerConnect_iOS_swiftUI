@@ -9,24 +9,26 @@ import Foundation
 import MultipeerConnectivity
 
 class ConnectionManager : NSObject, ObservableObject {
-    typealias MessageReceivedHandler = (PeerModel) -> Void
+    typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
+    @Published var peerModels : [PeerModel] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
-    private let messageReceivedHandler: MessageReceivedHandler?
-    private static let service = "peerConnect"
+    private let peerReceivedHandler: PeerReceivedHandler?
+    private static let service = "peer-connect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
     private var nearbyServiceBrowser: MCNearbyServiceBrowser
     
-    init(_ messageReceivedHandler: MessageReceivedHandler? = nil) {
+    init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
+    //override init() {
         session = MCSession(
             peer: myPeerId,
             securityIdentity: nil,
             encryptionPreference: .none)
         
-        self.messageReceivedHandler = messageReceivedHandler
+        self.peerReceivedHandler = peerReceivedHandler
         
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
             peer: myPeerId,
@@ -36,10 +38,13 @@ class ConnectionManager : NSObject, ObservableObject {
         
         self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ConnectionManager.service)
         super.init()
+        self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceBrowser.delegate = self
         print("start advertising")
-        self.nearbyServiceAdvertiser.stopAdvertisingPeer()
-        
+        self.nearbyServiceAdvertiser.startAdvertisingPeer()
+        print("start browsing")
+        startBrowsing()
+        print("connection manager started")
     }
     
     func startBrowsing() {
@@ -56,6 +61,11 @@ class ConnectionManager : NSObject, ObservableObject {
         let context = "hello".data(using: .utf8)
         
         nearbyServiceBrowser.invitePeer(peerID, to: session, withContext: context, timeout: TimeInterval(120))
+    }
+    
+    func createPeerModel(peer: MCPeerID) -> PeerModel {
+        
+        return PeerModel(name: peer.displayName)
     }
 }
 
@@ -96,12 +106,16 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         print("found a device")
         // make sure there is no duplicates
         if !peers.contains(peerID) {
+            let peerModel = createPeerModel(peer: peerID)
+            print("created a peerModel: \(peerID.displayName)")
+            peerModels.append(peerModel)
             peers.append(peerID)
         }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         guard let index = peers.firstIndex(of: peerID) else { return }
+        peerModels.remove(at: index)
         peers.remove(at: index)
     }
 }
