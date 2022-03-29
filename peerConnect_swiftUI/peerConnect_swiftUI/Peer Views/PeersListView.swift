@@ -13,12 +13,14 @@ struct PeersListView: View {
     @ObservedObject var peerListStore : PeerListStore
     
     init(peerListStore: PeerListStore = PeerListStore()) {
-    //init() {
         self.peerListStore = peerListStore
         self.connectionManager = ConnectionManager()
+        /*
         { peer in
             peerListStore.peers.append(peer)
+            print("peer \(peer.name) added to list store")
         }
+         */
     }
     
     var body: some View {

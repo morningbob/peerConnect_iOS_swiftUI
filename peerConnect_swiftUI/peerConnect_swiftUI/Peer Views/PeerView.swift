@@ -12,6 +12,8 @@ struct PeerView: View {
     let peerModel: PeerModel
     
     var body: some View {
+        // here we invite the peer
+        //connectionManager.inviteConnect(peerID: <#T##MCPeerID#>)
         Text(peerModel.name)
          
     }

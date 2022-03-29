@@ -15,6 +15,8 @@ struct PeerListRowView: View {
         NavigationLink(destination: PeerView(peerModel: peerModel)) {
             HStack {
                 Text(peerModel.name)
+            }.onTapGesture {
+                connectionManager.inviteConnect(peerModel: peerModel)
             }
         }
         

@@ -9,26 +9,26 @@ import Foundation
 import MultipeerConnectivity
 
 class ConnectionManager : NSObject, ObservableObject {
-    typealias PeerReceivedHandler = (PeerModel) -> Void
+    //typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
     @Published var peerModels : [PeerModel] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
-    private let peerReceivedHandler: PeerReceivedHandler?
+    //private let peerReceivedHandler: PeerReceivedHandler?
     private static let service = "peer-connect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
     private var nearbyServiceBrowser: MCNearbyServiceBrowser
     
-    init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
-    //override init() {
+    //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
+    override init() {
         session = MCSession(
             peer: myPeerId,
             securityIdentity: nil,
             encryptionPreference: .none)
         
-        self.peerReceivedHandler = peerReceivedHandler
+        //self.peerReceivedHandler = peerReceivedHandler
         
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
             peer: myPeerId,
@@ -44,7 +44,7 @@ class ConnectionManager : NSObject, ObservableObject {
         self.nearbyServiceAdvertiser.startAdvertisingPeer()
         print("start browsing")
         startBrowsing()
-        print("connection manager started")
+        //print("connection manager started")
     }
     
     func startBrowsing() {
@@ -57,14 +57,25 @@ class ConnectionManager : NSObject, ObservableObject {
         nearbyServiceBrowser.stopBrowsingForPeers()
     }
 
-    func inviteConnect(peerID: MCPeerID) {
+    func inviteConnect(peerModel: PeerModel) {
         let context = "hello".data(using: .utf8)
-        
-        nearbyServiceBrowser.invitePeer(peerID, to: session, withContext: context, timeout: TimeInterval(120))
+        // retrieve peerID from peers list
+        var peerID : MCPeerID? = nil
+        for peer in peers {
+            if (peer.displayName == peerModel.name) {
+                peerID = peer
+                break
+            }
+        }
+        if (peerID != nil) {
+            print("got peerID")
+            nearbyServiceBrowser.invitePeer(peerID!, to: session, withContext: context, timeout: TimeInterval(120))
+        } else {
+            print("couldn't get peerID")
+        }
     }
     
     func createPeerModel(peer: MCPeerID) -> PeerModel {
-        
         return PeerModel(name: peer.displayName)
     }
 }
