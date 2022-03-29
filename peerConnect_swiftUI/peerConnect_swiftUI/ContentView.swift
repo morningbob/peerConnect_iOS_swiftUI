@@ -33,8 +33,7 @@ struct ContentView: View {
                                                     RoundedRectangle(cornerRadius: 20)
                                                         .stroke(Color.blue, lineWidth: 1)
                                                 )
-                            //.foregroundColor(Color(red: 0.5294, green: 0.7686, blue: 0.5882))
-                        //
+                           
                     }
                     .padding(.all, 40)
                     Spacer()
@@ -48,11 +47,17 @@ struct ContentView: View {
 }
 
 func start() {
-    print("button clicked")
+    
+        print("button clicked")
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        Group {
+            ContentView()
+                .previewInterfaceOrientation(.portrait)
+            
+        }
     }
 }

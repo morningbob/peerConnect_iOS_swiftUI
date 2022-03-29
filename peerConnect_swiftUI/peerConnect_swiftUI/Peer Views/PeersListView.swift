@@ -19,8 +19,8 @@ struct PeersListView: View {
     }
     
     var body: some View {
-        List(ForEach(peerListStore.peers) { peer in
-            PeerListRowView(peer: peer).environmentObject(connectionManager))
+        List(peerListStore.peers) { peer in
+            PeerListRowView(peer: peer).environmentObject(connectionManager)
         }
     }
 }

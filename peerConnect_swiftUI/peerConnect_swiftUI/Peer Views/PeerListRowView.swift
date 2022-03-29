@@ -12,7 +12,7 @@ struct PeerListRowView: View {
     let peer: PeerModel
     
     var body: some View {
-        NavigationLink(title: "Peer", destination: PeerView(peer: peer).environmentObject(connectionManager)) {
+        NavigationLink(destination: PeerView(peer: peer).environmentObject(connectionManager)) {
             HStack {
                 Text(peer.name)
             }
