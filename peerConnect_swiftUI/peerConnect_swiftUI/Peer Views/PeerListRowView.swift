@@ -12,14 +12,25 @@ struct PeerListRowView: View {
     let peerModel: PeerModel
     
     var body: some View {
-        NavigationLink(destination: PeerView(peerModel: peerModel)) {
+        NavigationLink(destination:
+                        ChatView().environmentObject(connectionManager),
+                       isActive: $connectionManager.navigateToChat) {
             HStack {
                 Text(peerModel.name)
             }.onTapGesture {
                 connectionManager.inviteConnect(peerModel: peerModel)
             }
+            /*
+                        PeerView(peerModel: peerModel)) {
+            HStack {
+                Text(peerModel.name)
+            }.onTapGesture {
+                connectionManager.inviteConnect(peerModel: peerModel)
+                
+            }
         }.environmentObject(connectionManager)
-        
+        */
+        }
     }
 }
 

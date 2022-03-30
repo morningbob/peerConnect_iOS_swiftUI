@@ -17,13 +17,19 @@ class ConnectionManager : NSObject, ObservableObject {
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
     //private let peerReceivedHandler: PeerReceivedHandler?
-    private static let service = "peer-connect"
+    //private var myPeerId : MCPeerID?
+    private static let service = "peerconnect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
     private var nearbyServiceBrowser: MCNearbyServiceBrowser
     private var messageToSend : String? = nil
+    @Published var messages : [String] = []
+    @Published var messageModels : [MessageModel] = []
+    @Published var connectedPeer: MCPeerID? = nil
+    @Published var navigateToChat = false
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
+        //myPeerId = MCPeerID(displayName: UIDevice.current.name)
         session = MCSession(
             peer: myPeerId,
             securityIdentity: nil,
@@ -81,10 +87,20 @@ class ConnectionManager : NSObject, ObservableObject {
         return PeerModel(name: peer.displayName)
     }
     
-    private func sendMessage(_ message: String, to peer: MCPeerID) {
+    private func createMessageModel(message: String, peerID: MCPeerID, whoSaid: String) -> MessageModel {
+        return MessageModel(content: message, peerName: peerID.displayName, whoSaid: whoSaid)
+    }
+    
+    func sendMessage(_ message: String, to peer: MCPeerID) {
         do {
             let data = try JSONEncoder().encode(message)
             try session.send(data, toPeers: [peer], with: .reliable)
+            // add to messages
+            self.messages.append(message)
+            var messageModel = createMessageModel(message: message, peerID: peer, whoSaid: "Me")
+            self.messageModels.append(messageModel)
+            // temporary set here navigate to chat
+            self.navigateToChat = true
         } catch {
             print(error.localizedDescription)
         }
@@ -109,6 +125,8 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
         incomingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
             // inititiate the chat
             print("confirmed")
+            self.connectedPeer = peerID
+            self.navigateToChat = true
             invitationHandler(true, self.session)
         })
         
@@ -121,6 +139,8 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
         
         window.rootViewController?.present(incomingAlert, animated: true)
     }
+    
+    
 }
 
 // store list of peer devices in peers, when a peer is found
@@ -140,6 +160,7 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         guard let index = peers.firstIndex(of: peerID) else { return }
         peerModels.remove(at: index)
         peers.remove(at: index)
+        //self.connectedPeer = nil
     }
 }
 
@@ -150,6 +171,8 @@ extension ConnectionManager : MCSessionDelegate {
             print("Connected")
             guard let messageToSend = messageToSend else { return }
             sendMessage("here you go", to: peerID)
+            self.connectedPeer = peerID
+            self.navigateToChat = true
         case .notConnected:
             print("not connected: \(peerID.displayName)")
         case .connecting:
@@ -162,21 +185,20 @@ extension ConnectionManager : MCSessionDelegate {
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
         print("message received: \(message)")
         // here, we need to send the received message to the interface
-        
-        
+        self.messages.append(message)
+        var messageModel = createMessageModel(message: message, peerID: peerID, whoSaid: "You")
+        self.messageModels.append(messageModel)
     }
     
-    func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
-        <#code#>
-    }
+    
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        <#code#>
+        
     }
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        <#code#>
+        
     }
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
-        <#code#>
+        
     }
 }
 

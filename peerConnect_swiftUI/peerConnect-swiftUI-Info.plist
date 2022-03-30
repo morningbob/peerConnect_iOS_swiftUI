@@ -4,8 +4,8 @@
 <dict>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_peer-connect._tcp</string>
-		<string>_peer-connect._udp</string>
+		<string>_peerconnect._tcp</string>
+		<string>_peerconnect._udp</string>
 	</array>
 </dict>
 </plist>
