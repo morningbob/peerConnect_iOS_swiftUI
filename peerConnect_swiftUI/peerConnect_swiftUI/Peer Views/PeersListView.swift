@@ -9,12 +9,12 @@ import SwiftUI
 
 struct PeersListView: View {
     
-    @ObservedObject var connectionManager : ConnectionManager
+    @StateObject var connectionManager = ConnectionManager()
     @ObservedObject var peerListStore : PeerListStore
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
-        self.connectionManager = ConnectionManager()
+        //self.connectionManager = ConnectionManager()
         /*
         { peer in
             peerListStore.peers.append(peer)
@@ -26,7 +26,7 @@ struct PeersListView: View {
     var body: some View {
         List(connectionManager.peerModels) { peerModel in
             PeerListRowView(peerModel: peerModel)
-        }
+        }.environmentObject(connectionManager)
     }
 }
 

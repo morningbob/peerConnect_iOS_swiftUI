@@ -18,7 +18,7 @@ struct PeerListRowView: View {
             }.onTapGesture {
                 connectionManager.inviteConnect(peerModel: peerModel)
             }
-        }
+        }.environmentObject(connectionManager)
         
     }
 }

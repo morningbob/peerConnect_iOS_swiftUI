@@ -20,6 +20,7 @@ class ConnectionManager : NSObject, ObservableObject {
     private static let service = "peer-connect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
     private var nearbyServiceBrowser: MCNearbyServiceBrowser
+    private var messageToSend : String? = nil
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -44,6 +45,7 @@ class ConnectionManager : NSObject, ObservableObject {
         self.nearbyServiceAdvertiser.startAdvertisingPeer()
         print("start browsing")
         startBrowsing()
+        self.session.delegate = self
         //print("connection manager started")
     }
     
@@ -75,12 +77,21 @@ class ConnectionManager : NSObject, ObservableObject {
         }
     }
     
-    func createPeerModel(peer: MCPeerID) -> PeerModel {
+    private func createPeerModel(peer: MCPeerID) -> PeerModel {
         return PeerModel(name: peer.displayName)
+    }
+    
+    private func sendMessage(_ message: String, to peer: MCPeerID) {
+        do {
+            let data = try JSONEncoder().encode(message)
+            try session.send(data, toPeers: [peer], with: .reliable)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
 
-// to advertise user's device is available for connection
+// to receive invitation
 extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         // get these references for showing alert
@@ -91,7 +102,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
         else {
             return
         }
-        
+        print("did receive invitation")
         // display alert to user, to accept the connection or candel it.
         let incomingAlert = UIAlertController(title: "Incoming Connection", message: "Do you want to accept the connection request from \(name)", preferredStyle: .alert)
         
@@ -105,6 +116,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
         {
             _ in
             invitationHandler(false, nil)
+            print("cancelled")
         })
         
         window.rootViewController?.present(incomingAlert, animated: true)
@@ -130,6 +142,45 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         peers.remove(at: index)
     }
 }
+
+extension ConnectionManager : MCSessionDelegate {
+    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        switch state {
+        case .connected:
+            print("Connected")
+            guard let messageToSend = messageToSend else { return }
+            sendMessage("here you go", to: peerID)
+        case .notConnected:
+            print("not connected: \(peerID.displayName)")
+        case .connecting:
+            print("connecting: \(peerID.displayName)")
+        default:
+            print("unknown state")
+        }
+    }
+    func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
+        print("message received: \(message)")
+        // here, we need to send the received message to the interface
+        
+        
+    }
+    
+    func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
+        <#code#>
+    }
+    func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
+        <#code#>
+    }
+    func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
+        <#code#>
+    }
+    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
+        <#code#>
+    }
+}
+
+
 
 // I need to access window, which UIApplication.shared.windows.first was deprecated
 extension UIApplication {

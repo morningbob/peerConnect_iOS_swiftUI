@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409D1B2B27F3DF8000717710 /* ChatView.swift */; };
 		E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */; };
 		E74BCA3227F228A600B47747 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA3127F228A600B47747 /* ContentView.swift */; };
 		E74BCA3427F228A700B47747 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E74BCA3327F228A700B47747 /* Assets.xcassets */; };
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		409D1B2B27F3DF8000717710 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		E74BCA2C27F228A600B47747 /* peerConnect_swiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peerConnect_swiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIApp.swift; sourceTree = "<group>"; };
 		E74BCA3127F228A600B47747 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -82,6 +84,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		409D1B2A27F3DF5F00717710 /* Chat Views */ = {
+			isa = PBXGroup;
+			children = (
+				409D1B2B27F3DF8000717710 /* ChatView.swift */,
+			);
+			path = "Chat Views";
+			sourceTree = "<group>";
+		};
 		E74BCA2327F228A600B47747 = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +115,7 @@
 		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				409D1B2A27F3DF5F00717710 /* Chat Views */,
 				E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */,
 				E74BCA6727F258AB00B47747 /* Peer Views */,
 				E74BCA6027F24B0400B47747 /* Models */,
@@ -302,6 +313,7 @@
 				E74BCA5E27F2435700B47747 /* ConnectionManager.swift in Sources */,
 				E74BCA5C27F2411D00B47747 /* PeersListView.swift in Sources */,
 				E74BCA6227F24B2400B47747 /* PeerModel.swift in Sources */,
+				409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */,
 				E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */,
 				E74BCA6427F2543F00B47747 /* PeerListRowView.swift in Sources */,
 				E74BCA6627F257C500B47747 /* PeerView.swift in Sources */,
