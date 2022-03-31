@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State var isLinkActive = false
+    @State var isChatActive = false
     
     var body: some View {
         NavigationView {
@@ -27,19 +28,35 @@ struct ContentView: View {
                     .font(.system(size: 18))
                     .navigationBarTitle("Peer Connect", displayMode: .inline)
                 HStack {
+                    
                     Spacer()
                     NavigationLink(destination: PeersListView(), isActive: $isLinkActive) {
-                    Button(action: {
-                        self.isLinkActive = true
-                    }) {
-                        Text("Start")
-                            .padding()
-                            .overlay(RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.blue, lineWidth: 1))
-                           
-                    }}
+                   
+                        Button(action: {
+                            self.isLinkActive = true
+                        }) {
+                            Text("Start")
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                       
+                        }}
                     .padding(.all, 40)
+                     /*
                     Spacer()
+                
+                    NavigationLink(destination: ChatMenuView(), isActive: $isChatActive) {
+                        Button(action: {
+                            self.isChatActive = true
+                        }) {
+                            Text("Chat")
+                        }
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                    }
+                    Spacer()
+                      */
                 }
                 Spacer()
             }

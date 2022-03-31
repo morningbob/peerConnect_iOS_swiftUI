@@ -1,14 +1,14 @@
 //
-//  ConnectionManager.swift
+//  ChatConnectionManager.swift
 //  peerConnect_swiftUI
 //
-//  Created by Jessie Hon on 2022-03-28.
+//  Created by Jessie Hon on 2022-03-31.
 //
 
 import Foundation
 import MultipeerConnectivity
 
-class ConnectionManager : NSObject, ObservableObject {
+class ChatConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
@@ -19,15 +19,15 @@ class ConnectionManager : NSObject, ObservableObject {
     //private let peerReceivedHandler: PeerReceivedHandler?
     //private var myPeerId : MCPeerID?
     private static let service = "peerconnect"
-    private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
-    private var nearbyServiceBrowser: MCNearbyServiceBrowser
+    //private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
+    //private var nearbyServiceBrowser: MCNearbyServiceBrowser
     private var messageToSend : String? = nil
     @Published var messages : [String] = []
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var navigateToChat = false
     
-    
+    private var advertiserAssistant : MCNearbyServiceAdvertiser?
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -38,14 +38,14 @@ class ConnectionManager : NSObject, ObservableObject {
             encryptionPreference: .none)
         
         //self.peerReceivedHandler = peerReceivedHandler
-        
+        /*
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
             peer: myPeerId,
             discoveryInfo: nil,
-            serviceType: ConnectionManager.service
+            serviceType: ChatConnectionManager.service
         )
         
-        self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ConnectionManager.service)
+        self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ChatConnectionManager.service)
         super.init()
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceBrowser.delegate = self
@@ -53,11 +53,28 @@ class ConnectionManager : NSObject, ObservableObject {
         self.nearbyServiceAdvertiser.startAdvertisingPeer()
         print("start browsing")
         startBrowsing()
+         */
+        super.init()
         self.session.delegate = self
-        //print("connection manager started")
+        let browserVC = MCBrowserViewController(serviceType: ChatConnectionManager.service, session: session)
+        browserVC.delegate = self
+        guard
+            let window = UIApplication.shared.keyWindow
+            //let context = context,
+            //let data = String(data: context, encoding: .utf8)
+        else { return }
         
+        window.rootViewController?.present(browserVC, animated: true)
+        //print("connection manager started")
+        advertiserAssistant = MCNearbyServiceAdvertiser(
+              peer: myPeerId,
+              discoveryInfo: nil,
+              serviceType: ChatConnectionManager.service)
+            advertiserAssistant?.delegate = self
+            advertiserAssistant?.startAdvertisingPeer()
     }
-    
+}
+    /*
     func startBrowsing() {
         print("start discovering")
         nearbyServiceBrowser.startBrowsingForPeers()
@@ -69,7 +86,7 @@ class ConnectionManager : NSObject, ObservableObject {
     }
 
     func inviteConnect(peerModel: PeerModel) {
-        let context = myPeerId.displayName.data(using: .utf8)
+        let context = "hello".data(using: .utf8)
         // retrieve peerID from peers list
         var peerID : MCPeerID? = nil
         for peer in peers {
@@ -80,7 +97,7 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         if (peerID != nil) {
             print("got peerID")
-            nearbyServiceBrowser.invitePeer(peerID!, to: session, withContext: context, timeout: TimeInterval(120))
+            //nearbyServiceBrowser.invitePeer(peerID!, to: session, withContext: context, timeout: TimeInterval(120))
         } else {
             print("couldn't get peerID")
         }
@@ -103,20 +120,16 @@ class ConnectionManager : NSObject, ObservableObject {
             var messageModel = createMessageModel(message: message, peerID: peer, whoSaid: "Me")
             self.messageModels.append(messageModel)
             // temporary set here navigate to chat
-            //self.navigateToChat = true
+            self.navigateToChat = true
         } catch {
             print(error.localizedDescription)
         }
     }
-    
-    func endChat() {
-        // should let remote peer knows
-        session.disconnect()
-    }
 }
-
+     */
+/*
 // to receive invitation
-extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
+extension ChatConnectionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         // get these references for showing alert
         guard
@@ -133,10 +146,8 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
         incomingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
             // inititiate the chat
             print("confirmed")
-            DispatchQueue.main.async {
-                self.connectedPeer = peerID
-                self.navigateToChat = true
-            }
+            self.connectedPeer = peerID
+            self.navigateToChat = true
             invitationHandler(true, self.session)
         })
         
@@ -146,26 +157,23 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             invitationHandler(false, nil)
             print("cancelled")
         })
-        DispatchQueue.main.async {
-            window.rootViewController?.present(incomingAlert, animated: true)
-        }
+        
+        window.rootViewController?.present(incomingAlert, animated: true)
     }
     
     
 }
 
 // store list of peer devices in peers, when a peer is found
-extension ConnectionManager : MCNearbyServiceBrowserDelegate {
+extension ChatConnectionManager : MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         print("found a device")
         // make sure there is no duplicates
         if !peers.contains(peerID) {
             let peerModel = createPeerModel(peer: peerID)
             print("created a peerModel: \(peerID.displayName)")
-            DispatchQueue.main.async {
-                self.peerModels.append(peerModel)
-                self.peers.append(peerID)
-            }
+            peerModels.append(peerModel)
+            peers.append(peerID)
         }
     }
     
@@ -173,101 +181,101 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         guard let index = peers.firstIndex(of: peerID) else { return }
         peerModels.remove(at: index)
         peers.remove(at: index)
-        DispatchQueue.main.async {
-            self.connectedPeer = nil
-            self.navigateToChat = false
+        self.connectedPeer = nil
+        self.navigateToChat = false
+    }
+}
+*/
+
+extension ChatConnectionManager : MCNearbyServiceAdvertiserDelegate {
+    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        invitationHandler(true, session)
+        /*
+        guard
+            let window = UIApplication.shared.keyWindow,
+            let context = context,
+            let name = String(data: context, encoding: .utf8)
+        else {
+            return
         }
+        print("did receive invitation")
+        // display alert to user, to accept the connection or candel it.
+        let incomingAlert = UIAlertController(title: "Incoming Connection", message: "Do you want to accept the connection request from \(name)", preferredStyle: .alert)
+        
+        incomingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
+            // inititiate the chat
+            print("confirmed")
+            self.connectedPeer = peerID
+            self.navigateToChat = true
+            invitationHandler(true, self.session)
+        })
+        
+        incomingAlert.addAction(UIAlertAction(title: "No", style: .cancel)
+        {
+            _ in
+            invitationHandler(false, nil)
+            print("cancelled")
+        })
+        
+        window.rootViewController?.present(incomingAlert, animated: true)
+         */
     }
 }
 
-extension ConnectionManager : MCSessionDelegate {
+extension ChatConnectionManager : MCBrowserViewControllerDelegate {
+    func browserViewControllerDidFinish(_ browserViewController: MCBrowserViewController) {
+        browserViewController.dismiss(animated: true) {
+            self.navigateToChat = true
+        }
+    }
+    
+    func browserViewControllerWasCancelled(_ browserViewController: MCBrowserViewController) {
+        session?.disconnect()
+        browserViewController.dismiss(animated: true)
+    }
+    
+    
+}
+
+extension ChatConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        //guard let window = UIApplication.shared.keyWindow else { return }
-        //let connectingAlert = UIAlertController(title: "Connecting...", message: "Connecting to \(peerID.displayName), please wait", preferredStyle: .alert)
         switch state {
         case .connected:
-            print("Connected, from session")
+            print("Connected")
             //guard let messageToSend = messageToSend else { return }
             //sendMessage("here you go", to: peerID)
-            DispatchQueue.main.async {
-                //connectingAlert.dismiss(animated: true)
-                //print("should dismiss done")
-                self.connectedPeer = peerID
-                self.navigateToChat = true
-                print("should navigate done")
-            }
+            self.connectedPeer = peerID
+            self.navigateToChat = true
         case .notConnected:
             print("not connected: \(peerID.displayName)")
-            DispatchQueue.main.async {
-                self.connectedPeer = nil
-                self.navigateToChat = false
-            }
-            // remote peer should navigate to peerslistview
+            self.connectedPeer = nil
+            self.navigateToChat = false
         case .connecting:
             print("connecting: \(peerID.displayName)")
-            /*
-            connectingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
-                // inititiate the chat
-                print("confirmed")
-                self.connectedPeer = peerID
-                self.navigateToChat = true
-                //invitationHandler(true, self.session)
-            })
-            
-            connectingAlert.addAction(UIAlertAction(title: "No", style: .cancel)
-            {
-                _ in
-                //invitationHandler(false, nil)
-                print("cancelled")
-            })
-            */
-            //DispatchQueue.main.async {
-            //    window.rootViewController?.present(connectingAlert, animated: true)
-            //}
         default:
             print("unknown state")
         }
     }
+    
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
         print("message received: \(message)")
         // here, we need to send the received message to the interface
-        DispatchQueue.main.async {
-            self.messages.append(message)
-            var messageModel = self.createMessageModel(message: message, peerID: peerID, whoSaid: "You")
-            self.messageModels.append(messageModel)
-        }
+        self.messages.append(message)
+        //var messageModel = createMessageModel(message: message, peerID: peerID, whoSaid: "You")
+        //self.messageModels.append(messageModel)
     }
     
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
         
     }
+    
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
         
     }
+    
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
         
     }
 }
-
-
-
-// I need to access window, which UIApplication.shared.windows.first was deprecated
-extension UIApplication {
-    
-    var keyWindow: UIWindow? {
-        // Get connected scenes
-        return UIApplication.shared.connectedScenes
-            // Keep only active scenes, onscreen and visible to the user
-            .filter { $0.activationState == .foregroundActive }
-            // Keep only the first `UIWindowScene`
-            .first(where: { $0 is UIWindowScene })
-            // Get its associated windows
-            .flatMap({ $0 as? UIWindowScene })?.windows
-            // Finally, keep only the key window
-            .first(where: \.isKeyWindow)
-    }
-    
-}
-

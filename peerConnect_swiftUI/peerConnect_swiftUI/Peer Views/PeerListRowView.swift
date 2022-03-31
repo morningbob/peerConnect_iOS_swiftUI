@@ -10,6 +10,7 @@ import SwiftUI
 struct PeerListRowView: View {
     @EnvironmentObject var connectionManager: ConnectionManager
     let peerModel: PeerModel
+    @State var isChat = false
     
     var body: some View {
         NavigationLink(destination:
@@ -30,7 +31,7 @@ struct PeerListRowView: View {
             }
         }.environmentObject(connectionManager)
         */
-        }
+        }//.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }
 }
 

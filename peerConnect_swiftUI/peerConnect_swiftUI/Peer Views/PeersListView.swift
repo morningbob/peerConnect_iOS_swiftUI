@@ -24,9 +24,12 @@ struct PeersListView: View {
     }
     
     var body: some View {
-        List(connectionManager.peerModels) { peerModel in
-            PeerListRowView(peerModel: peerModel)
-        }.environmentObject(connectionManager)
+        NavigationView {
+            List(connectionManager.peerModels) { peerModel in
+                PeerListRowView(peerModel: peerModel)
+            }.environmentObject(connectionManager)
+        }
+        .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }
 }
 
