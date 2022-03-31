@@ -160,7 +160,8 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         guard let index = peers.firstIndex(of: peerID) else { return }
         peerModels.remove(at: index)
         peers.remove(at: index)
-        //self.connectedPeer = nil
+        self.connectedPeer = nil
+        self.navigateToChat = false
     }
 }
 
@@ -169,12 +170,14 @@ extension ConnectionManager : MCSessionDelegate {
         switch state {
         case .connected:
             print("Connected")
-            guard let messageToSend = messageToSend else { return }
-            sendMessage("here you go", to: peerID)
+            //guard let messageToSend = messageToSend else { return }
+            //sendMessage("here you go", to: peerID)
             self.connectedPeer = peerID
             self.navigateToChat = true
         case .notConnected:
             print("not connected: \(peerID.displayName)")
+            self.connectedPeer = nil
+            self.navigateToChat = false
         case .connecting:
             print("connecting: \(peerID.displayName)")
         default:

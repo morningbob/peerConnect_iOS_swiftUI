@@ -36,6 +36,6 @@ struct PeerListRowView: View {
 
 struct PeerListRowView_Previews: PreviewProvider {
     static var previews: some View {
-        PeerListRowView(peerModel: PeerModel(name: "Kind")).environmentObject(ConnectionManager())
+        PeerListRowView( peerModel: PeerModel(name: "Kind")).environmentObject(ConnectionManager())
     }
 }

@@ -20,8 +20,8 @@ struct ChatView: View {
             Text("Chat View")
             List(connectionManager.messageModels) {
                 messageModel in
-                Text(messageModel.whoSaid)
-                Text(messageModel.content)
+                Text(messageModel.whoSaid + ":  " + messageModel.content)
+                
             }.environmentObject(connectionManager)
                 .frame( height: 300)
             TextField("Enter Message: ", text: $messageText, onCommit: {
