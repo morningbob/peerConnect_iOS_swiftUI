@@ -11,23 +11,28 @@ struct PeersListView: View {
     
     @StateObject var connectionManager = ConnectionManager()
     @ObservedObject var peerListStore : PeerListStore
+    @State var isStartChat = false
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
-        //self.connectionManager = ConnectionManager()
-        /*
-        { peer in
-            peerListStore.peers.append(peer)
-            print("peer \(peer.name) added to list store")
-        }
-         */
     }
     
     var body: some View {
         NavigationView {
-            List(connectionManager.peerModels) { peerModel in
-                PeerListRowView(peerModel: peerModel)
-            }.environmentObject(connectionManager)
+            VStack {
+                List(connectionManager.peerModels) { peerModel in
+                    PeerListRowView(peerModel: peerModel)
+                }.environmentObject(connectionManager)
+                Spacer()
+                Button(action: { isStartChat = true }) {
+                    Text("Start Chat")
+                        .font(.system(size: 18))
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                }
+                Spacer()
+            }
         }
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }

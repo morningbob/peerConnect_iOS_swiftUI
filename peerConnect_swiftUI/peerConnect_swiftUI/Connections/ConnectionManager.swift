@@ -17,7 +17,6 @@ class ConnectionManager : NSObject, ObservableObject {
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
     //private let peerReceivedHandler: PeerReceivedHandler?
-    //private var myPeerId : MCPeerID?
     private static let service = "peerconnect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
     private var nearbyServiceBrowser: MCNearbyServiceBrowser
@@ -54,7 +53,6 @@ class ConnectionManager : NSObject, ObservableObject {
         print("start browsing")
         startBrowsing()
         self.session.delegate = self
-        //print("connection manager started")
         
     }
     
@@ -112,6 +110,14 @@ class ConnectionManager : NSObject, ObservableObject {
     func endChat() {
         // should let remote peer knows
         session.disconnect()
+    }
+    
+    func sendFile(peer: MCPeerID) {
+        //session.sendResource(at: <#T##URL#>, withName: <#T##String#>, toPeer: peer) { error in
+        //    if let error = error {
+        //      print(error.localizedDescription)
+        //}
+        //}
     }
 }
 

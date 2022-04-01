@@ -13,13 +13,7 @@ struct ChatView: View {
     @Environment(\.presentationMode) var presentation
     
     @State var messageText = ""
-    //@State var isEndChat = false //{
-        //didSet {
-        //    if (isEndChat == true) {
-        //        self.presentation.wrappedValue.dismiss()
-        //    }
-        //}
-    //}
+    @State var isSendFile = false
     
     var body: some View {
         
@@ -37,13 +31,13 @@ struct ChatView: View {
                 messageText = ""
             })
             .padding()
+            .background(Color.white)
             Spacer()
-            //NavigationLink(destination: PeersListView(), isActive: $isEndChat) {
             VStack {
                 Button(action: {
-                    //isEndChat = true
                     connectionManager.endChat()
                     print("ending chat")
+                    // pop this view
                     self.presentation.wrappedValue.dismiss()
                 }) {
                     Text("End Chat")
@@ -53,10 +47,28 @@ struct ChatView: View {
                         .stroke(Color.blue, lineWidth: 1))
                 }
                 Spacer()
+                // add navigation link here later
+                Button(action: {
+                    isSendFile = true
+                    // should present chooser for user to choose file
+                    //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
+                }) {
+                    Text("Send File")
+                        .font(.system(size: 18))
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                }
+                Spacer()
+                
             }
-            //}
+            
         }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         
+    }
+    
+    private func selectFile() {
+        //let folderPicker = NSO
     }
 }
 
