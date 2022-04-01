@@ -30,18 +30,29 @@ struct ContentView: View {
                 //HStack {
                     
                 Spacer()
-                NavigationLink(destination: PeersListView(), isActive: $isLinkActive) {
-               
-                    Button(action: {
-                        self.isLinkActive = true
-                    }) {
-                        Text("Start")
-                    .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.blue, lineWidth: 1))
+                HStack {
+                    Spacer()
+                    NavigationLink(destination: PeersListView(), isActive: $isLinkActive) {
                    
-                    }}
-                .padding(.all, 40)
+                        Button(action: {
+                            self.isLinkActive = true
+                        }) {
+                            Text("Start")
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                       
+                        }}
+                    .padding(.all, 40)
+                    Spacer()
+                }
+                Spacer()
+            }
+            .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        }
+        
+    }
+}
                      /*
                     Spacer()
                 
@@ -58,13 +69,7 @@ struct ContentView: View {
                     Spacer()
                       */
                 //}
-                Spacer()
-            }
-            .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
-        }
-        
-    }
-}
+                
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

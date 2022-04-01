@@ -22,6 +22,7 @@
 		E74BCA6627F257C500B47747 /* PeerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA6527F257C500B47747 /* PeerView.swift */; };
 		E76ACC4C27F5D583000DA511 /* ChatConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76ACC4B27F5D583000DA511 /* ChatConnectionManager.swift */; };
 		E76ACC4E27F5DB10000DA511 /* ChatMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76ACC4D27F5DB10000DA511 /* ChatMenuView.swift */; };
+		E7BD95C827F73F0600001B5C /* DocumentPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BD95C727F73F0600001B5C /* DocumentPickerViewController.swift */; };
 		E7F0604227F4AE5800C10D95 /* MessageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F0604127F4AE5800C10D95 /* MessageModel.swift */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,7 @@
 		E74BCA6527F257C500B47747 /* PeerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerView.swift; sourceTree = "<group>"; };
 		E76ACC4B27F5D583000DA511 /* ChatConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatConnectionManager.swift; sourceTree = "<group>"; };
 		E76ACC4D27F5DB10000DA511 /* ChatMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMenuView.swift; sourceTree = "<group>"; };
+		E7BD95C727F73F0600001B5C /* DocumentPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPickerViewController.swift; sourceTree = "<group>"; };
 		E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "peerConnect-swiftUI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		E7F0604127F4AE5800C10D95 /* MessageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -122,6 +124,7 @@
 		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				E7BD95C627F73EE000001B5C /* Document Picker */,
 				409D1B2A27F3DF5F00717710 /* Chat Views */,
 				E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */,
 				E74BCA6727F258AB00B47747 /* Peer Views */,
@@ -186,6 +189,14 @@
 				E74BCA6527F257C500B47747 /* PeerView.swift */,
 			);
 			path = "Peer Views";
+			sourceTree = "<group>";
+		};
+		E7BD95C627F73EE000001B5C /* Document Picker */ = {
+			isa = PBXGroup;
+			children = (
+				E7BD95C727F73F0600001B5C /* DocumentPickerViewController.swift */,
+			);
+			path = "Document Picker";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -323,6 +334,7 @@
 				E74BCA5E27F2435700B47747 /* ConnectionManager.swift in Sources */,
 				E76ACC4E27F5DB10000DA511 /* ChatMenuView.swift in Sources */,
 				E74BCA5C27F2411D00B47747 /* PeersListView.swift in Sources */,
+				E7BD95C827F73F0600001B5C /* DocumentPickerViewController.swift in Sources */,
 				E7F0604227F4AE5800C10D95 /* MessageModel.swift in Sources */,
 				E74BCA6227F24B2400B47747 /* PeerModel.swift in Sources */,
 				409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */,

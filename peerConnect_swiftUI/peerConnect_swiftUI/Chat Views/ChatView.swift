@@ -8,12 +8,21 @@
 import SwiftUI
 import MultipeerConnectivity
 
+
 struct ChatView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @Environment(\.presentationMode) var presentation
     
     @State var messageText = ""
-    @State var isSendFile = false
+    //@State private var isSendFile = false
+    @State private var showingDocumentPicker = false
+    @State var inputUrl: URL? {
+        didSet {
+            print("inputUrl didSet triggered")
+            self.getDocumentFromUrl()
+        }
+    }
+    
     
     var body: some View {
         
@@ -49,8 +58,9 @@ struct ChatView: View {
                 Spacer()
                 // add navigation link here later
                 Button(action: {
-                    isSendFile = true
-                    // should present chooser for user to choose file
+                    showingDocumentPicker = true
+                    //isSendFile = true
+                    // should
                     //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
                 }) {
                     Text("Send File")
@@ -63,12 +73,26 @@ struct ChatView: View {
                 
             }
             
-        }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        }
+            .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+            //present chooser for user to choose file
+            .sheet(isPresented: $showingDocumentPicker) {
+                DocumentPicker(urlChosed: $inputUrl)
+                //self.getDocumentFromUrl()
+            }
+            .onAppear() {
+                if (self.inputUrl != nil) {
+                    print("inputUrl is not null")
+                    getDocumentFromUrl()
+                } else {
+                    print("nothing in inputUrl")
+                }
+            }
         
     }
     
-    private func selectFile() {
-        //let folderPicker = NSO
+    private func getDocumentFromUrl() {
+        print("document: \(self.inputUrl)")
     }
 }
 
