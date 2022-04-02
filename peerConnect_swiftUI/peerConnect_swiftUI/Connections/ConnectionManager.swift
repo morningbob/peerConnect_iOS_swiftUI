@@ -7,6 +7,7 @@
 
 import Foundation
 import MultipeerConnectivity
+import SwiftUI
 
 class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
@@ -26,7 +27,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var connectedPeer: MCPeerID? = nil
     @Published var navigateToChat = false
     
-    
+    //@Binding var shouldNavigate : Bool?
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -37,6 +38,7 @@ class ConnectionManager : NSObject, ObservableObject {
             encryptionPreference: .none)
         
         //self.peerReceivedHandler = peerReceivedHandler
+        //self._shouldNavigate = shouldNavigate
         
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
             peer: myPeerId,
@@ -44,7 +46,10 @@ class ConnectionManager : NSObject, ObservableObject {
             serviceType: ConnectionManager.service
         )
         
+        //self._shouldNavigate = shouldNavigate
+        
         self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ConnectionManager.service)
+        //self.shouldNavigate = false
         super.init()
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceBrowser.delegate = self
@@ -141,7 +146,8 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             print("confirmed")
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
-                self.navigateToChat = true
+                //self.navigateToChat = true
+                //self.shouldNavigate = true
             }
             invitationHandler(true, self.session)
         })

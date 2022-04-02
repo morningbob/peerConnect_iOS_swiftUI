@@ -70,6 +70,19 @@ struct ChatView: View {
                         .stroke(Color.blue, lineWidth: 1))
                 }
                 Spacer()
+                Button(action: {
+                    getDocumentFromUrl()
+                    //isSendFile = true
+                    // should
+                    //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
+                }) {
+                    Text("get file url")
+                        .font(.system(size: 18))
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                }
+                Spacer()
                 
             }
             
@@ -88,7 +101,6 @@ struct ChatView: View {
                     print("nothing in inputUrl")
                 }
             }
-        
     }
     
     private func getDocumentFromUrl() {
