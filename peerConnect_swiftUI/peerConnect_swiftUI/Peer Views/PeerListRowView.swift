@@ -21,8 +21,9 @@ struct PeerListRowView: View {
         }.onTapGesture {
             //connectionManager.inviteConnect(peerModel: peerModel)
             // pass peer view model to List View
-            self.chosenPeer = peerModel
             print("set peer in row view")
+            //self.chosenPeer = peerModel
+            connectionManager.inviteConnect(peerModel: peerModel)
         }
         
         /*

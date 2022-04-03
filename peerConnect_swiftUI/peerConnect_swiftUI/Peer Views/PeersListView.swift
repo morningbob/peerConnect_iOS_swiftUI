@@ -28,14 +28,14 @@ struct PeersListView: View {
     }
     
     var body: some View {
-        NavigationView {
-            NavigationLink(destination: ChatView(), isActive: $isStartChat) {
+        //NavigationView {
+            NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $isStartChat) {
                 VStack {
                     List(connectionManager.peerModels) { peerModel in
-                        PeerListRowView(peerModel: peerModel, chosenPeer: $peer)
-                    }.environmentObject(connectionManager)
+                        PeerListRowView(peerModel: peerModel, chosenPeer: $peer).environmentObject(connectionManager)
+                    }
                     Spacer()
-                    Button(action: { isStartChat = true }) {
+                    Button(action: { isStartChat = false }) {
                         Text("Start Chat")
                             .font(.system(size: 18))
                             .padding()
@@ -43,11 +43,11 @@ struct PeersListView: View {
                             .stroke(Color.blue, lineWidth: 1))
                     }
                     Spacer()
-                }
+                }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                    //.environmentObject(connectionManager)
             }
-        }
-        .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
-        .environmentObject(connectionManager)
+        //}
+        
     }
 }
 
