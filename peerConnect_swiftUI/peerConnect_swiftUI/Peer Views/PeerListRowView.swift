@@ -10,9 +10,9 @@ import SwiftUI
 struct PeerListRowView: View {
     @EnvironmentObject var connectionManager: ConnectionManager
     let peerModel: PeerModel
-    //@State var isChat = false
-    //@State var toNavigate = false
+    // this binding is to pass the peer chosen to Peers List View.
     @Binding var chosenPeer: PeerModel?
+    @State private var showConnectingAlert : Bool = false
     
     var body: some View {
         
@@ -25,30 +25,9 @@ struct PeerListRowView: View {
             //self.chosenPeer = peerModel
             connectionManager.inviteConnect(peerModel: peerModel)
         }
-        
-        
-        /*
-        NavigationLink(destination:
-                        ChatView().environmentObject(connectionManager),
-                       isActive: $connectionManager.navigateToChat) {
-            HStack {
-                Text(peerModel.name)
-            }.onTapGesture {
-                //connectionManager.inviteConnect(peerModel: peerModel)
-                // pass peer view model to List View
-                self.chosenPeer = peerModel
-            }
-         */
-            /*
-                        PeerView(peerModel: peerModel)) {
-            HStack {
-                Text(peerModel.name)
-            }.onTapGesture {
-                connectionManager.inviteConnect(peerModel: peerModel)
+        .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
                 
-            }
-        }.environmentObject(connectionManager)
-        */
+                })
         //}//.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }
 }
