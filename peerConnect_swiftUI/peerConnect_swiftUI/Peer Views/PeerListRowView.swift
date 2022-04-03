@@ -26,6 +26,7 @@ struct PeerListRowView: View {
             connectionManager.inviteConnect(peerModel: peerModel)
         }
         
+        
         /*
         NavigationLink(destination:
                         ChatView().environmentObject(connectionManager),

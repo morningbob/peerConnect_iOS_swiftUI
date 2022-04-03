@@ -11,9 +11,16 @@ struct PeersListView: View {
     
     @StateObject var connectionManager = ConnectionManager()
     @ObservedObject var peerListStore : PeerListStore
-    @State var isStartChat = false
+    //@State var isStartChat = false
     //@State var startChat = false
-    @State var peer : PeerModel? {
+    //@State private var selection : String? = nil
+    //@State private var ready : Bool?
+    
+    // this is the case when the user starts a chat, peer will not be nil
+    @State var peer : PeerModel?
+    
+    
+    /*{
         didSet {
             print("peer didSet ran")
             if peer != nil {
@@ -21,21 +28,24 @@ struct PeersListView: View {
                 connectionManager.inviteConnect(peerModel: peer!)
             }
         }
+     
     }
+     */
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
+        //connectionManager.navigateToChat 
     }
-    
+    // tag: "Chat", selection: $selection)
     var body: some View {
         //NavigationView {
-            NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $isStartChat) {
+        
                 VStack {
                     List(connectionManager.peerModels) { peerModel in
                         PeerListRowView(peerModel: peerModel, chosenPeer: $peer).environmentObject(connectionManager)
                     }
                     Spacer()
-                    Button(action: { isStartChat = false }) {
+                    Button(action: {  }) {
                         Text("Start Chat")
                             .font(.system(size: 18))
                             .padding()
@@ -44,8 +54,10 @@ struct PeersListView: View {
                     }
                     Spacer()
                 }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $connectionManager.navigateToChat)  {
                     //.environmentObject(connectionManager)
-            }
+                    EmptyView()
+                }
         //}
         
     }

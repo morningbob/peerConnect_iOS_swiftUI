@@ -23,7 +23,6 @@ struct ChatView: View {
         }
     }
     
-    
     var body: some View {
         
         VStack {
@@ -47,7 +46,7 @@ struct ChatView: View {
                     connectionManager.endChat()
                     print("ending chat")
                     // pop this view
-                    self.presentation.wrappedValue.dismiss()
+                    //self.presentation.wrappedValue.dismiss()
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -84,7 +83,14 @@ struct ChatView: View {
                 }
                 Spacer()
                 
-            }
+                
+            }  // this is the observer for the navigateToChat value in connection manager,
+                // wheneven it is false, dismiss this chat view.
+            .onReceive(connectionManager.$navigateToChat, perform: { navigateToChat in
+                if (!navigateToChat) {
+                    self.presentation.wrappedValue.dismiss()
+                }
+            })
             
         }
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
