@@ -18,16 +18,27 @@ struct PeerListRowView: View {
         
         HStack {
             Text(peerModel.name)
-        }.onTapGesture {
-            //connectionManager.inviteConnect(peerModel: peerModel)
+            // this spacer is to use to cover the whole row area such that
+            // the user can tap anywhere in the row to trigger onTapGesture
+            Spacer()
+        }
+        // contentShape is to set the whole row area as can be tapped.
+        .contentShape(Rectangle())
+        .onTapGesture {
             // pass peer view model to List View
             print("set peer in row view")
-            //self.chosenPeer = peerModel
+            self.chosenPeer = peerModel
             connectionManager.inviteConnect(peerModel: peerModel)
+            self.showConnectingAlert = true
         }
         .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
                 
                 })
+        // when navigating to chat view, the alert will stay across views
+        // so we need to dismiss it manually.
+        .onDisappear() {
+            self.showConnectingAlert = false
+        }
         //}//.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }
 }

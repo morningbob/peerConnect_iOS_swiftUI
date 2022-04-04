@@ -12,17 +12,18 @@ import MultipeerConnectivity
 struct ChatView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @Environment(\.presentationMode) var presentation
-    
-    @State var messageText = ""
+    @State private var messageText = ""
     //@State private var isSendFile = false
     @State private var showingDocumentPicker = false
+    @State private var urlContent = UrlContent()
+    /*
     @State var inputUrl: URL? {
         didSet {
             print("inputUrl didSet triggered")
             self.getDocumentFromUrl()
         }
     }
-    
+    */
     var body: some View {
         
         VStack {
@@ -91,14 +92,17 @@ struct ChatView: View {
                     self.presentation.wrappedValue.dismiss()
                 }
             })
-            
+            //.onReceive(Just(inputUrl), perform: { url in
+                
+            //})
         }
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
             .sheet(isPresented: $showingDocumentPicker) {
-                DocumentPicker(urlChosed: $inputUrl)
+                DocumentPicker(urlChosed: $urlContent.url)
                 //self.getDocumentFromUrl()
             }
+        /*
             .onAppear() {
                 if (self.inputUrl != nil) {
                     print("inputUrl is not null")
@@ -107,10 +111,21 @@ struct ChatView: View {
                     print("nothing in inputUrl")
                 }
             }
+         */
     }
     
     private func getDocumentFromUrl() {
-        print("document: \(self.inputUrl)")
+        print("document: \(self.urlContent.url)")
+    }
+}
+
+struct UrlContent {
+    var url : URL? = nil {
+        didSet {
+            if url != nil {
+                print("url: \(url)")
+            }
+        }
     }
 }
 
