@@ -13,3 +13,13 @@ enum ConnectionState {
     case connecting
     case listening
 }
+
+enum AppState {
+    case normal
+    case connecting
+    case fromConnectingToNotConnected
+    case chatting
+    
+    
+    
+}
