@@ -30,7 +30,17 @@ struct PeerListRowView: View {
             self.chosenPeer = peerModel
             connectionManager.inviteConnect(peerModel: peerModel)
             self.showConnectingAlert = true
-        }
+        }/*
+        .alert("Connecting to ", isPresented: Binding(
+            get: {
+                print("binding executed connecting true")
+                
+                return connectionManager.connectionState == ConnectionState.connecting },
+            set: { _,_ in if (connectionManager.connectionState == ConnectionState.connecting) {
+                print("connecting true")
+                //$0 = true
+            }} ), actions: {})
+          */
         .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
                 
                 })

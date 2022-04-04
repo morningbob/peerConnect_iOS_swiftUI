@@ -12,6 +12,8 @@ import SwiftUI
 class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
+    
+    
     @Published var peers: [MCPeerID] = []
     @Published var peerModels : [PeerModel] = []
     
@@ -26,6 +28,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var navigateToChat = false
+    @Published var connectionState = ConnectionState.listening
     
     //@Binding var shouldNavigate : Bool?
     
@@ -58,6 +61,8 @@ class ConnectionManager : NSObject, ObservableObject {
         print("start browsing")
         startBrowsing()
         self.session.delegate = self
+        
+        
         
     }
     
@@ -198,12 +203,14 @@ extension ConnectionManager : MCSessionDelegate {
         //let connectingAlert = UIAlertController(title: "Connecting...", message: "Connecting to \(peerID.displayName), please wait", preferredStyle: .alert)
         switch state {
         case .connected:
+            
             print("Connected, from session")
             //guard let messageToSend = messageToSend else { return }
             //sendMessage("here you go", to: peerID)
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
                 //print("should dismiss done")
+                self.connectionState = ConnectionState.connected
                 self.connectedPeer = peerID
                 self.navigateToChat = true
                 print("should navigate done")
@@ -211,12 +218,17 @@ extension ConnectionManager : MCSessionDelegate {
         case .notConnected:
             print("not connected: \(peerID.displayName)")
             DispatchQueue.main.async {
+                // not successfully connected, eg peer decline the invitation
+                self.connectionState = ConnectionState.notConnected
                 self.connectedPeer = nil
                 self.navigateToChat = false
             }
             // remote peer should navigate to peerslistview
         case .connecting:
             print("connecting: \(peerID.displayName)")
+            DispatchQueue.main.async {
+                self.connectionState = ConnectionState.connecting
+            }
             /*
             connectingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
                 // inititiate the chat

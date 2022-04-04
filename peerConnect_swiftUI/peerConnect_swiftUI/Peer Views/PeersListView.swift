@@ -13,20 +13,48 @@ struct PeersListView: View {
     @ObservedObject var peerListStore : PeerListStore
     
     @State var peer : PeerModel?
+    @State private var shouldNavigateToChat = false
+    @State private var infoText = "Please choose a peer."
+    @State private var showUnsuccessfulConnection = false
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
-        
     }
 
     var body: some View {
         
+        let navigateBinding = Binding<Bool> (
+            get: {
+                print("binding executed")
+                return connectionManager.connectionState == ConnectionState.connected },
+            
+            set: {_ in
+                if connectionManager.connectionState == ConnectionState.connected {
+                    self.shouldNavigateToChat = true
+                    print("binding set true")
+                } else {
+                    self.shouldNavigateToChat = false
+                    print("binding set false")
+                }
+            })
+        /*
+        let connectionInfoBinding = Binding<String> (
+            get: { self.infoText },
+            set: { _ in
+                if (connectionManager.connectionState == ConnectionState.connecting) {
+                    self.infoText = "Connecting to ..."
+                } else {
+                    self.infoText = "Please choose a peer."
+                }
+            }
+        )
+        */
         VStack {
             List(connectionManager.peerModels) { peerModel in
                 PeerListRowView(peerModel: peerModel, chosenPeer: $peer).environmentObject(connectionManager)
             }
             Spacer()
-            Text("Connecting...")
+            Text(infoText)
                 .padding()
             Spacer()
             Button(action: {  }) {
@@ -40,12 +68,48 @@ struct PeersListView: View {
         }
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         .navigationTitle("Peers")
-        //.onReceive(connec, perform: <#T##(Publisher.Output) -> Void#>)
+        .alert(isPresented: $showUnsuccessfulConnection) {
+            Alert(title: Text("Connection"), message: Text("Connection to peer is not successful.  Either connection is bad or peer rejected the invitation"), dismissButton: .default(Text("Okay")))
+            
+        }
+            
+        
+        /*
+        .onTapGesture {
+            if (peer != nil) {
+                self.infoText = "Connecting to..."
+            } else {
+                self.infoText = "Please choose a peer."
+            }
+        }
+        */
+        .onReceive(connectionManager.$connectionState, perform: { state in
+            if (state == ConnectionState.notConnected) {
+                print("not connected state triggered")
+                // display alert for unsuccessful connection
+                //self.showUnsuccessfulConnection = true
+                self.infoText = "Could not connect to peer.  Please choose a peer."
+                
+            } else if (state == ConnectionState.connected){
+                print("connected state received")
+            }
+        })
+        
+            /*
+            if (state == ConnectionState.connecting) {
+                self.infoText = "Connecting to..."
+            } else {
+                self.infoText = "Please choose a peer."
+            }
+             */
+        
+         
         // I put the navigation link here instead of in the VStack,
         // to avoid it to be activated by clicking on it.  It's a SwiftUI bug.
-        NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $connectionManager.navigateToChat)  {
+        NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: navigateBinding) {
             EmptyView()
         }
+        
     }
     
 }
