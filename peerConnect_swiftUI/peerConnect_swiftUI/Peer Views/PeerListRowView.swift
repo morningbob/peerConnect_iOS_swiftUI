@@ -48,9 +48,16 @@ struct PeerListRowView: View {
                 })
         // when navigating to chat view, the alert will stay across views
         // so we need to dismiss it manually.
+        // this is duplicated in order to make cure the alert is dismissed on time
         .onDisappear() {
             self.showConnectingAlert = false
         }
+        // dismiss the connecting alert if peer rejected connection
+        .onReceive(connectionManager.$appState, perform: { state in
+            if (state == AppState.fromConnectedToDisconnected || state == AppState.fromConnectingToNotConnected) {
+                self.showConnectingAlert = false
+            }
+        })
         //}//.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
     }
 }

@@ -28,6 +28,12 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var navigateToChat = false
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal
+    // this variable is to record if the app goes from connecting or connected state to notConnected state
+    // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
+    //   there is technical difficulties.
+    // if it is 0, it goes from connecting state to notConnected state, so it is the peer refused the
+    //   invitation.
+    private var fromConnectedOrConnecting = 0
     
     //@Binding var shouldNavigate : Bool?
     
@@ -60,9 +66,6 @@ class ConnectionManager : NSObject, ObservableObject {
         print("start browsing")
         startBrowsing()
         self.session.delegate = self
-        
-        
-        
     }
     
     func startBrowsing() {
@@ -200,22 +203,39 @@ extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         //guard let window = UIApplication.shared.keyWindow else { return }
         //let connectingAlert = UIAlertController(title: "Connecting...", message: "Connecting to \(peerID.displayName), please wait", preferredStyle: .alert)
+        print("state variable: \(state)")
+        //var fromConnectedOrConnecting = 0
         switch state {
         case .connected:
             
             print("Connected, from session")
             //guard let messageToSend = messageToSend else { return }
             //sendMessage("here you go", to: peerID)
+            fromConnectedOrConnecting = 1
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
                 //print("should dismiss done")
                 self.connectionState = ConnectionState.connected
+                self.appState = AppState.connected
                 self.connectedPeer = peerID
                 self.navigateToChat = true
                 print("should navigate done")
             }
         case .notConnected:
             print("not connected: \(peerID.displayName)")
+            print("fromConnectedOrConnecting : \(fromConnectedOrConnecting)")
+            switch fromConnectedOrConnecting {
+            case 1:
+                print("not connected state: from connected 1")
+                appState = AppState.fromConnectedToDisconnected
+            case 0:
+                print("not connected state: from connecting 0")
+                appState = AppState.fromConnectingToNotConnected
+            default:
+                print("not connected state: 0")
+            }
+            // reset 
+            self.fromConnectedOrConnecting = 0
             DispatchQueue.main.async {
                 // not successfully connected, eg peer decline the invitation
                 self.connectionState = ConnectionState.notConnected
@@ -225,7 +245,9 @@ extension ConnectionManager : MCSessionDelegate {
             // remote peer should navigate to peerslistview
         case .connecting:
             print("connecting: \(peerID.displayName)")
+            fromConnectedOrConnecting = 2
             DispatchQueue.main.async {
+                self.appState = AppState.connecting
                 self.connectionState = ConnectionState.connecting
             }
             /*

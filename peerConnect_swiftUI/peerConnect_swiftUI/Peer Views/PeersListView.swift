@@ -16,7 +16,6 @@ struct PeersListView: View {
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
     @State private var showUnsuccessfulConnection = false
-    //@State var appState = AppState.normal
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
@@ -27,7 +26,7 @@ struct PeersListView: View {
         let navigateBinding = Binding<Bool> (
             get: {
                 print("binding executed")
-                return connectionManager.connectionState == ConnectionState.connected },
+                return connectionManager.appState == AppState.connected },
             
             set: {_ in
                 if connectionManager.connectionState == ConnectionState.connected {
@@ -84,15 +83,21 @@ struct PeersListView: View {
             }
         }
         */
-        .onReceive(connectionManager.$connectionState, perform: { state in
-            if (state == ConnectionState.notConnected) {
-                print("not connected state triggered")
-                // display alert for unsuccessful connection
-                //self.showUnsuccessfulConnection = true
+        // show the connection status to user
+        .onReceive(connectionManager.$appState, perform: { state in
+            
+            switch state {
+            case AppState.fromConnectingToNotConnected:
                 self.infoText = "Could not connect to peer.  Please choose a peer."
-                
-            } else if (state == ConnectionState.connected){
-                print("connected state received")
+            case AppState.fromConnectedToDisconnected:
+                self.infoText = "Bad connection or peer disconnected."
+            case AppState.connecting:
+                self.infoText = "Connecting to peer"
+            case AppState.connected:
+                print("from onReceive, connected")
+                self.infoText = "Connected to peer"
+            default:
+                print("unknown error")
             }
         })
         
