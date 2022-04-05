@@ -17,9 +17,10 @@ enum ConnectionState {
 enum AppState {
     case normal
     case connecting
-    case fromConnectingToNotConnected
+    case fromConnectingToNotConnected  // peer rejected
     case chatting
-    
+    case fromConnectedToDisconnected   // user ends chat
+    case startChat
     
     
 }

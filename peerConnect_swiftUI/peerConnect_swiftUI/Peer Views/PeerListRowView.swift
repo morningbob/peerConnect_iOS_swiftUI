@@ -13,6 +13,7 @@ struct PeerListRowView: View {
     // this binding is to pass the peer chosen to Peers List View.
     @Binding var chosenPeer: PeerModel?
     @State private var showConnectingAlert : Bool = false
+    //@State var appState 
     
     var body: some View {
         
@@ -30,6 +31,7 @@ struct PeerListRowView: View {
             self.chosenPeer = peerModel
             connectionManager.inviteConnect(peerModel: peerModel)
             self.showConnectingAlert = true
+            
         }/*
         .alert("Connecting to ", isPresented: Binding(
             get: {

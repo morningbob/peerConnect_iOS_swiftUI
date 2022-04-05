@@ -16,6 +16,7 @@ struct PeersListView: View {
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
     @State private var showUnsuccessfulConnection = false
+    //@State var appState = AppState.normal
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore

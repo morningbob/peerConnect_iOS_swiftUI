@@ -12,8 +12,6 @@ import SwiftUI
 class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
-    
-    
     @Published var peers: [MCPeerID] = []
     @Published var peerModels : [PeerModel] = []
     
@@ -29,6 +27,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var connectedPeer: MCPeerID? = nil
     @Published var navigateToChat = false
     @Published var connectionState = ConnectionState.listening
+    @Published var appState = AppState.normal
     
     //@Binding var shouldNavigate : Bool?
     
