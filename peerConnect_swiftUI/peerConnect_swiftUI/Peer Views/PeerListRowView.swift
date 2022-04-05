@@ -6,30 +6,43 @@
 //
 
 import SwiftUI
-
+/*
 struct PeerListRowView: View {
     @EnvironmentObject var connectionManager: ConnectionManager
-    let peerModel: PeerModel
+    //let peerModel: PeerModel
+    //let peerCheckListItem: PeerCheckListItem
+    //var peerCheckListItems: [PeerCheckListItem]
     // this binding is to pass the peer chosen to Peers List View.
     @Binding var chosenPeer: PeerModel?
     @State private var showConnectingAlert : Bool = false
-    //@State var appState 
+    //@State var appState
+    @State var selectedPeer = false
+    
     
     var body: some View {
         
         HStack {
-            Text(peerModel.name)
+            //Toggle(peerModel.name, isOn: $selectedPeer).toggleStyle(.button)
+            //Toggle(peerCheckListItem.peerModel.name, isOn: peerCheckListItem.$isChecked).toggleStyle(SwitchToggleStyle(tint: .yellow))
+            //Text(peerModel.name)
+            //Image(systemName: checked ? "checkmark.square.fill" : "sqaure")
             // this spacer is to use to cover the whole row area such that
             // the user can tap anywhere in the row to trigger onTapGesture
+            //Text(peerCheckListItem.peerModel.name)
             Spacer()
+            //Text(peerCheckListItem.isChecked ? "✅" : "🔲")
         }
         // contentShape is to set the whole row area as can be tapped.
         .contentShape(Rectangle())
         .onTapGesture {
+            if let checkedIndex =
+                self.peerCheckListItems.firstIndex(where: { $0.id == peerCheckListItem.id }) {
+                self.peerCheckListItems[checkedIndex].isChecked.toggle()
+            }
             // pass peer view model to List View
             print("set peer in row view")
-            self.chosenPeer = peerModel
-            connectionManager.inviteConnect(peerModel: peerModel)
+            self.chosenPeer = peerCheckListItem.peerModel
+            connectionManager.inviteConnect(peerModel: self.chosenPeer!)
             self.showConnectingAlert = true
             
         }/*
@@ -59,8 +72,11 @@ struct PeerListRowView: View {
             }
         })
         //}//.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+         
     }
 }
+
+
 
 struct PeerListRowView_Previews: PreviewProvider {
     //@State var chosen: PeerModel?
@@ -87,3 +103,4 @@ struct StatefulPreviewWrapper<Value, Content: View>: View {
         self.content = content
     }
 }
+ */

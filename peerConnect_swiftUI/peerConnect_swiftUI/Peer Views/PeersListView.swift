@@ -15,7 +15,9 @@ struct PeersListView: View {
     @State var peer : PeerModel?
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
-    @State private var showUnsuccessfulConnection = false
+    //@State private var showUnsuccessfulConnection = false
+    @State private var peerCheckListItems : [PeerCheckListItem] = []
+    @State private var showConnectingAlert : Bool = false
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
@@ -37,21 +39,41 @@ struct PeersListView: View {
                     print("binding set false")
                 }
             })
-        /*
-        let connectionInfoBinding = Binding<String> (
-            get: { self.infoText },
-            set: { _ in
-                if (connectionManager.connectionState == ConnectionState.connecting) {
-                    self.infoText = "Connecting to ..."
-                } else {
-                    self.infoText = "Please choose a peer."
-                }
-            }
-        )
-        */
+       
         VStack {
-            List(connectionManager.peerModels) { peerModel in
-                PeerListRowView(peerModel: peerModel, chosenPeer: $peer).environmentObject(connectionManager)
+            List(peerCheckListItems) { peerItem in
+                //PeerListRowView(peerCheckListItem: peerItem, peerCheckListItems: self.peerCheckListItems, chosenPeer: $peer).environmentObject(connectionManager)
+                PeerRowView(peerItem: peerItem)
+                // contentShape is to set the whole row area as can be tapped.
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if let checkedIndex =
+                        self.peerCheckListItems.firstIndex(where: { $0.id == peerItem.id }) {
+                        self.peerCheckListItems[checkedIndex].isChecked.toggle()
+                    }
+                    // pass peer view model to List View
+                    print("set peer in row view")
+                    //self.chosenPeer = peerItem.peerModel
+                    connectionManager.inviteConnect(peerModel: peerItem.peerModel)
+                    self.showConnectingAlert = true
+                    
+                }
+                .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
+                        
+                        })
+                // when navigating to chat view, the alert will stay across views
+                // so we need to dismiss it manually.
+                // this is duplicated in order to make cure the alert is dismissed on time
+                .onDisappear() {
+                    self.showConnectingAlert = false
+                }
+                // dismiss the connecting alert if peer rejected connection
+                .onReceive(connectionManager.$appState, perform: { state in
+                    if (state == AppState.fromConnectedToDisconnected || state == AppState.fromConnectingToNotConnected) {
+                        self.showConnectingAlert = false
+                    }
+                })
+                
             }
             Spacer()
             Text(infoText)
@@ -68,22 +90,13 @@ struct PeersListView: View {
         }
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         .navigationTitle("Peers")
+        /*
         .alert(isPresented: $showUnsuccessfulConnection) {
             Alert(title: Text("Connection"), message: Text("Connection to peer is not successful.  Either connection is bad or peer rejected the invitation"), dismissButton: .default(Text("Okay")))
             
         }
+         */
             
-        
-        /*
-        .onTapGesture {
-            if (peer != nil) {
-                self.infoText = "Connecting to..."
-            } else {
-                self.infoText = "Please choose a peer."
-            }
-        }
-        */
-        // show the connection status to user
         .onReceive(connectionManager.$appState, perform: { state in
             
             switch state {
@@ -100,24 +113,64 @@ struct PeersListView: View {
                 print("unknown error")
             }
         })
-        
-            /*
-            if (state == ConnectionState.connecting) {
-                self.infoText = "Connecting to..."
-            } else {
-                self.infoText = "Please choose a peer."
-            }
-             */
-        
+        .onReceive(connectionManager.$peerModels, perform: { peerModels in
+            self.peerCheckListItems = createCheckListItems(peerModels: peerModels)
+            
+        })
          
         // I put the navigation link here instead of in the VStack,
         // to avoid it to be activated by clicking on it.  It's a SwiftUI bug.
         NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: navigateBinding) {
             EmptyView()
         }
-        
+    }
+}
+
+private func createCheckListItems(peerModels: [PeerModel]) -> [PeerCheckListItem] {
+    var peerList : [PeerCheckListItem] = []
+    for peer in peerModels {
+        let peerItem = PeerCheckListItem(id: peer.id, peerModel: peer)
+        peerList.append(peerItem)
+    }
+    return peerList
+}
+
+private func selectedPeers(peerItems: [PeerCheckListItem]) -> [PeerModel] {
+    var selectedPeers : [PeerModel] = []
+    for peer in peerItems {
+        if peer.isChecked {
+            selectedPeers.append(peer.peerModel)
+        }
+    }
+    return selectedPeers
+}
+
+struct PeerRowView : View {
+    
+    var peerItem : PeerCheckListItem
+    
+    init(peerItem: PeerCheckListItem) {
+        self.peerItem = peerItem
     }
     
+    var body: some View {
+    
+        HStack {
+            // this spacer is to use to cover the whole row area such that
+            // the user can tap anywhere in the row to trigger onTapGesture
+            Text(peerItem.peerModel.name)
+            Spacer()
+            Text(peerItem.isChecked ? "✅" : "🔲")
+        }
+    }
+}
+
+struct PeerCheckListItem : Identifiable  {
+    //var id: ObjectIdentifier
+    
+    var id : UUID
+    var peerModel : PeerModel
+    var isChecked : Bool = false
 }
 
 struct PeersListView_Previews: PreviewProvider {
