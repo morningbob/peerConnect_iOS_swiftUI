@@ -14,7 +14,7 @@ enum ConnectionState {
     case listening
 }
 
-enum AppState {
+enum AppState : Codable {
     case normal
     case connecting
     case fromConnectingToNotConnected  // peer rejected
@@ -24,3 +24,4 @@ enum AppState {
     case connected
     
 }
+

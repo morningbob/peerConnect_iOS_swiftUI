@@ -16,6 +16,7 @@ struct ChatView: View {
     //@State private var isSendFile = false
     @State private var showingDocumentPicker = false
     @State private var urlContent = UrlContent()
+    
     /*
     @State var inputUrl: URL? {
         didSet {
@@ -35,8 +36,8 @@ struct ChatView: View {
             }.environmentObject(connectionManager)
                 .frame( height: 300)
             TextField("Enter Message: ", text: $messageText, onCommit: {
-                      guard !messageText.isEmpty else { return }
-                connectionManager.sendMessage(messageText, to: connectionManager.connectedPeer!)
+                guard !messageText.isEmpty && (self.connectionManager.connectedPeerInfo != nil) else { return }
+                connectionManager.sendMessage(messageText, peerInfoList: [self.connectionManager.connectedPeerInfo!], whoSaid: "Me")
                 messageText = ""
             })
             .padding()
@@ -46,6 +47,8 @@ struct ChatView: View {
                 Button(action: {
                     connectionManager.endChat()
                     print("ending chat")
+                    // reset isHost, no longer to be the host
+                    connectionManager.isHost = false
                     // pop this view
                     //self.presentation.wrappedValue.dismiss()
                 }) {
@@ -87,8 +90,8 @@ struct ChatView: View {
                 
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
-            .onReceive(connectionManager.$navigateToChat, perform: { navigateToChat in
-                if (!navigateToChat) {
+            .onReceive(connectionManager.$appState, perform: { appState in
+                if (appState == AppState.fromConnectedToDisconnected || appState == AppState.fromConnectingToNotConnected) {
                     self.presentation.wrappedValue.dismiss()
                 }
             })

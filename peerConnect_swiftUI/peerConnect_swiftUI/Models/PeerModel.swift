@@ -16,10 +16,7 @@ class PeerListStore: ObservableObject {
 struct PeerModel: Codable, Identifiable, Equatable {
     var id = UUID()
     let name : String
+    //var state : AppState
     //let peerID : MCPeerID
     
-    init(name: String, peerID: MCPeerID) {
-        self.name = name
-        //self.peerID = peerID
-    }
 }

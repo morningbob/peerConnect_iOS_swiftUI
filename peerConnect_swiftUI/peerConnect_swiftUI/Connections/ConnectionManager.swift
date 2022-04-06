@@ -15,7 +15,8 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var peers: [MCPeerID] = []
     @Published var peerModels : [PeerModel] = []
     //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
-    @Published var peersDict : [Dictionary<MCPeerID, PeerModel>] = []
+    @Published var peersInfo : Dictionary<String, PeerInfo> = [:]
+    @Published var selectedPeers : [PeerInfo] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
@@ -28,9 +29,11 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messages : [String] = []
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
+    @Published var connectedPeerInfo: PeerInfo?
     @Published var navigateToChat = false
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal
+    var isHost = false
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
     //   there is technical difficulties.
@@ -49,7 +52,6 @@ class ConnectionManager : NSObject, ObservableObject {
             encryptionPreference: .none)
         
         //self.peerReceivedHandler = peerReceivedHandler
-        //self._shouldNavigate = shouldNavigate
         
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
             peer: myPeerId,
@@ -57,10 +59,7 @@ class ConnectionManager : NSObject, ObservableObject {
             serviceType: ConnectionManager.service
         )
         
-        //self._shouldNavigate = shouldNavigate
-        
         self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ConnectionManager.service)
-        //self.shouldNavigate = false
         super.init()
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceBrowser.delegate = self
@@ -81,50 +80,94 @@ class ConnectionManager : NSObject, ObservableObject {
         nearbyServiceBrowser.stopBrowsingForPeers()
     }
 
-    func inviteConnect(peerModel: PeerModel) {
+    func inviteConnect(peerInfo: PeerInfo) {
         let context = myPeerId.displayName.data(using: .utf8)
         // retrieve peerID from peers list
+        /*
         var peerID : MCPeerID? = nil
         for peer in peers {
-            if (peer.displayName == peerModel.name) {
+            if (peer.displayName == peerInfo.peerID.displayName) {
                 peerID = peer
                 break
             }
         }
-        if (peerID != nil) {
-            print("got peerID")
-            nearbyServiceBrowser.invitePeer(peerID!, to: session, withContext: context, timeout: TimeInterval(120))
-        } else {
-            print("couldn't get peerID")
-        }
+         */
+        //if (peerID != nil) {
+        //    print("got peerID")
+        nearbyServiceBrowser.invitePeer(peerInfo.peerID, to: session, withContext: context, timeout: TimeInterval(120))
+        
     }
     
     private func createPeerModel(peer: MCPeerID) -> PeerModel {
         return PeerModel(name: peer.displayName)
     }
     
-    private func createMessageModel(message: String, peerID: MCPeerID, whoSaid: String) -> MessageModel {
-        return MessageModel(content: message, peerName: peerID.displayName, whoSaid: whoSaid)
+    private func createPeerInfo(peer: MCPeerID) -> PeerInfo {
+        return PeerInfo(peer: peer)
     }
     
-    func sendMessage(_ message: String, to peer: MCPeerID) {
+    private func createMessageModel(message: String, whoSaid: String) -> MessageModel {
+        let peerNames = getPeerNameString()
+        return MessageModel(content: message, peerName: peerNames, whoSaid: whoSaid)
+    }
+    
+    func sendMessage(_ message: String, peerInfoList: [PeerInfo], whoSaid: String) {
+        // here we decide if the user is the server or the client by looking at isHost
+        // if he is the server, we use the peers list from peers list view
+        // if he is the client, we use the connected peer from invitation
+        var peersToSend : [PeerInfo] = []
+        if !isHost {
+            guard let connectedPeerInfo = connectedPeerInfo else {
+                return
+            }
+            peersToSend = [connectedPeerInfo]
+        } else {
+            peersToSend = peerInfoList
+        }
+            
         do {
             let data = try JSONEncoder().encode(message)
-            try session.send(data, toPeers: [peer], with: .reliable)
+            let peers = getPeerIDs(peerInfoList: peersToSend)
+            try session.send(data, toPeers: peers, with: .reliable)
             // add to messages
             self.messages.append(message)
-            var messageModel = createMessageModel(message: message, peerID: peer, whoSaid: "Me")
+            var messageModel = createMessageModel(message: message, whoSaid: whoSaid)
             self.messageModels.append(messageModel)
             // temporary set here navigate to chat
             //self.navigateToChat = true
         } catch {
             print(error.localizedDescription)
         }
+        
+    }
+    
+    func sendMessageToPeers(message: String) {
+        for peer in self.selectedPeers {
+            //sendMessage(message)
+        }
     }
     
     func endChat() {
         // should let remote peer knows
         session.disconnect()
+    }
+    
+    private func getPeerNameString() -> [String] {
+        var peerNames : [String] = []
+        for peer in self.selectedPeers {
+            peerNames.append(peer.peerID.displayName)
+        }
+        return peerNames
+    }
+    
+    private func getPeerIDs(peerInfoList: [PeerInfo]) -> [MCPeerID] {
+        var peers : [MCPeerID] = []
+        print(peerInfoList)
+        for peer in peerInfoList {
+            peers.append(peer.peerID)
+            print("getPeerID: \(peer.peerID)")
+        }
+        return peers
     }
     
     func sendFile(peer: MCPeerID) {
@@ -135,7 +178,7 @@ class ConnectionManager : NSObject, ObservableObject {
         //}
     }
     
-    func connectPeers(models: [PeerModel]) {
+    func connectPeers(peersInfo: [PeerInfo]) {
         /*
         var peerIDList : [MCPeerID] = []
         for peerModel in models {
@@ -143,8 +186,8 @@ class ConnectionManager : NSObject, ObservableObject {
             peerIDList.append(peers[index])
         }
         */
-        for peer in models {
-            self.inviteConnect(peerModel: peer)
+        for peer in peersInfo {
+            self.inviteConnect(peerInfo: peer)
         }
     }
 }
@@ -169,6 +212,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             print("confirmed")
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
+                self.connectedPeerInfo = PeerInfo(peer: peerID)
             }
             invitationHandler(true, self.session)
         })
@@ -193,7 +237,10 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         if !peers.contains(peerID) {
             let peerModel = createPeerModel(peer: peerID)
             print("created a peerModel: \(peerID.displayName)")
+            //let peerInfo = createPeerInfo(peer: peerID)
             DispatchQueue.main.async {
+                //peersDict[peerID.displayName] = [peerModel, peerID]
+                self.peersInfo[peerID.displayName] = self.createPeerInfo(peer: peerID)
                 self.peerModels.append(peerModel)
                 self.peers.append(peerID)
             }
@@ -201,13 +248,26 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        guard let index = peers.firstIndex(of: peerID) else { return }
-        peerModels.remove(at: index)
-        peers.remove(at: index)
-        DispatchQueue.main.async {
-            self.connectedPeer = nil
-            self.navigateToChat = false
+        //let peer = peersInfo[peerID.displayName]
+        peersInfo.removeValue(forKey: peerID.displayName)
+        /*
+        var index = 0
+        for j in 0...peersInfo.count {
+            if (peersInfo[j].peerID == peerID) {
+                index = j
+                return
+            }
         }
+         */
+        
+        //guard let index = peersInfo.peerID.firstIndex(of: peerID) else { return }
+        //self.peersInfo.remove(at: index)
+        //peerModels.remove(at: index)
+        //peers.remove(at: index)
+        //DispatchQueue.main.async {
+            //self.connectedPeer = nil
+            //self.navigateToChat = false
+        //}
     }
 }
 
@@ -226,10 +286,11 @@ extension ConnectionManager : MCSessionDelegate {
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
                 //print("should dismiss done")
+                self.peersInfo[peerID.displayName]?.state = AppState.connected
                 self.connectionState = ConnectionState.connected
                 self.appState = AppState.connected
                 self.connectedPeer = peerID
-                self.navigateToChat = true
+                //self.navigateToChat = true
                 print("should navigate done")
             }
         case .notConnected:
@@ -240,11 +301,13 @@ extension ConnectionManager : MCSessionDelegate {
                 print("not connected state: from connected 1")
                 DispatchQueue.main.async {
                     self.appState = AppState.fromConnectedToDisconnected
+                    self.peersInfo[peerID.displayName]?.state = AppState.fromConnectedToDisconnected
                 }
             case 0:
                 print("not connected state: from connecting 0")
                 DispatchQueue.main.async {
                     self.appState = AppState.fromConnectingToNotConnected
+                    self.peersInfo[peerID.displayName]?.state = AppState.fromConnectingToNotConnected
                 }
             default:
                 print("not connected state: 0")
@@ -253,15 +316,17 @@ extension ConnectionManager : MCSessionDelegate {
             self.fromConnectedOrConnecting = 0
             DispatchQueue.main.async {
                 // not successfully connected, eg peer decline the invitation
+                
                 self.connectionState = ConnectionState.notConnected
                 self.connectedPeer = nil
-                self.navigateToChat = false
+                //self.navigateToChat = false
             }
             // remote peer should navigate to peerslistview
         case .connecting:
             print("connecting: \(peerID.displayName)")
             fromConnectedOrConnecting = 2
             DispatchQueue.main.async {
+                self.peersInfo[peerID.displayName]?.state = AppState.connecting
                 self.appState = AppState.connecting
                 self.connectionState = ConnectionState.connecting
             }
@@ -273,10 +338,19 @@ extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
         print("message received: \(message)")
+        // here we got messages from peers.  Peers can't send to other peers directly,
+        // so, the host of the chat will send for them, and send here
+        var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
+        for peer in self.selectedPeers {
+            if peer.peerID != peerID {
+                restOfPeers.append(peer)
+            }
+        }
+        self.sendMessage(message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
         // here, we need to send the received message to the interface
         DispatchQueue.main.async {
             self.messages.append(message)
-            var messageModel = self.createMessageModel(message: message, peerID: peerID, whoSaid: "You")
+            var messageModel = self.createMessageModel(message: message, whoSaid: peerID.displayName)
             self.messageModels.append(messageModel)
         }
     }

@@ -18,6 +18,7 @@ struct PeersListView: View {
     //@State private var showUnsuccessfulConnection = false
     @State private var peerCheckListItems : [PeerCheckListItem] = []
     @State private var showConnectingAlert : Bool = false
+    @State private var selectedPeers : [PeerInfo] = []
     
     init(peerListStore: PeerListStore = PeerListStore()) {
         self.peerListStore = peerListStore
@@ -54,8 +55,8 @@ struct PeersListView: View {
                     // pass peer view model to List View
                     print("set peer in row view")
                     //self.chosenPeer = peerItem.peerModel
-                    connectionManager.inviteConnect(peerModel: peerItem.peerModel)
-                    self.showConnectingAlert = true
+                    //connectionManager.connectPeers(peersInfo: <#T##[PeerInfo]#>)
+                    //self.showConnectingAlert = true
                     
                 }
                 .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
@@ -84,7 +85,22 @@ struct PeersListView: View {
             // peers one by one, when they are all connected, the app will
             // navigate to chat view.  Maybe the app will report those peers that
             // could not be connected.
-            Button(action: {  }) {
+            Button(action: {
+                // here we get all peers that is checked
+                for item in peerCheckListItems {
+                    if item.isChecked {
+                        self.selectedPeers.append(item.peerInfo)
+                    }
+                }
+                connectionManager.selectedPeers = self.selectedPeers
+                connectionManager.connectPeers(peersInfo: self.selectedPeers)
+                // this is to distinguish if the app should send messages to peers in the list,
+                // or the connected peer as a client, in the other words, distinguish which
+                // side (server or client) to run send message
+                connectionManager.isHost = true
+                
+            })
+            {
                 Text("Start Chat")
                     .font(.system(size: 18))
                     .padding()
@@ -93,6 +109,7 @@ struct PeersListView: View {
             }
             Spacer()
         }
+        .environmentObject(connectionManager)
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         .navigationTitle("Peers")
         /*
@@ -118,8 +135,8 @@ struct PeersListView: View {
                 print("unknown error")
             }
         })
-        .onReceive(connectionManager.$peerModels, perform: { peerModels in
-            self.peerCheckListItems = createCheckListItems(peerModels: peerModels)
+        .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+            self.peerCheckListItems = createCheckListItems(peersInfo: peersInfo)
             
         })
          
@@ -131,20 +148,20 @@ struct PeersListView: View {
     }
 }
 
-private func createCheckListItems(peerModels: [PeerModel]) -> [PeerCheckListItem] {
+private func createCheckListItems(peersInfo: Dictionary<String, PeerInfo>) -> [PeerCheckListItem] {
     var peerList : [PeerCheckListItem] = []
-    for peer in peerModels {
-        let peerItem = PeerCheckListItem(id: peer.id, peerModel: peer)
+    for (key, value) in peersInfo {
+        let peerItem = PeerCheckListItem(id: value.id, peerInfo: value)
         peerList.append(peerItem)
     }
     return peerList
 }
 
-private func selectedPeers(peerItems: [PeerCheckListItem]) -> [PeerModel] {
-    var selectedPeers : [PeerModel] = []
+private func selectedPeers(peerItems: [PeerCheckListItem]) -> [PeerInfo] {
+    var selectedPeers : [PeerInfo] = []
     for peer in peerItems {
         if peer.isChecked {
-            selectedPeers.append(peer.peerModel)
+            selectedPeers.append(peer.peerInfo)
         }
     }
     return selectedPeers
@@ -163,7 +180,7 @@ struct PeerRowView : View {
         HStack {
             // this spacer is to use to cover the whole row area such that
             // the user can tap anywhere in the row to trigger onTapGesture
-            Text(peerItem.peerModel.name)
+            Text(peerItem.peerInfo.peerID.displayName)
             Spacer()
             Text(peerItem.isChecked ? "✅" : "🔲")
         }
@@ -171,10 +188,9 @@ struct PeerRowView : View {
 }
 
 struct PeerCheckListItem : Identifiable  {
-    //var id: ObjectIdentifier
     
     var id : UUID
-    var peerModel : PeerModel
+    var peerInfo : PeerInfo
     var isChecked : Bool = false
 }
 

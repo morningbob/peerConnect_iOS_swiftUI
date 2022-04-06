@@ -11,7 +11,7 @@ struct MessageModel : Codable, Identifiable {
     
     var id = UUID()
     let content : String
-    let peerName : String
+    let peerName : [String]
     let whoSaid : String
     var time = Date()
 }
