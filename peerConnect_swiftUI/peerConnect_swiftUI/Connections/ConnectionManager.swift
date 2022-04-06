@@ -14,9 +14,12 @@ class ConnectionManager : NSObject, ObservableObject {
     
     @Published var peers: [MCPeerID] = []
     @Published var peerModels : [PeerModel] = []
+    //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
+    @Published var peersDict : [Dictionary<MCPeerID, PeerModel>] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
+    
     //private let peerReceivedHandler: PeerReceivedHandler?
     private static let service = "peerconnect"
     private var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser
@@ -131,6 +134,19 @@ class ConnectionManager : NSObject, ObservableObject {
         //}
         //}
     }
+    
+    func connectPeers(models: [PeerModel]) {
+        /*
+        var peerIDList : [MCPeerID] = []
+        for peerModel in models {
+            let index = models.firstIndex(of: peerModel)!
+            peerIDList.append(peers[index])
+        }
+        */
+        for peer in models {
+            self.inviteConnect(peerModel: peer)
+        }
+    }
 }
 
 // to receive invitation
@@ -153,8 +169,6 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             print("confirmed")
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
-                //self.navigateToChat = true
-                //self.shouldNavigate = true
             }
             invitationHandler(true, self.session)
         })
@@ -169,8 +183,6 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             window.rootViewController?.present(incomingAlert, animated: true)
         }
     }
-    
-    
 }
 
 // store list of peer devices in peers, when a peer is found
@@ -201,8 +213,7 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
 
 extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        //guard let window = UIApplication.shared.keyWindow else { return }
-        //let connectingAlert = UIAlertController(title: "Connecting...", message: "Connecting to \(peerID.displayName), please wait", preferredStyle: .alert)
+
         print("state variable: \(state)")
         //var fromConnectedOrConnecting = 0
         switch state {
@@ -227,10 +238,14 @@ extension ConnectionManager : MCSessionDelegate {
             switch fromConnectedOrConnecting {
             case 1:
                 print("not connected state: from connected 1")
-                appState = AppState.fromConnectedToDisconnected
+                DispatchQueue.main.async {
+                    self.appState = AppState.fromConnectedToDisconnected
+                }
             case 0:
                 print("not connected state: from connecting 0")
-                appState = AppState.fromConnectingToNotConnected
+                DispatchQueue.main.async {
+                    self.appState = AppState.fromConnectingToNotConnected
+                }
             default:
                 print("not connected state: 0")
             }
@@ -250,25 +265,7 @@ extension ConnectionManager : MCSessionDelegate {
                 self.appState = AppState.connecting
                 self.connectionState = ConnectionState.connecting
             }
-            /*
-            connectingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
-                // inititiate the chat
-                print("confirmed")
-                self.connectedPeer = peerID
-                self.navigateToChat = true
-                //invitationHandler(true, self.session)
-            })
             
-            connectingAlert.addAction(UIAlertAction(title: "No", style: .cancel)
-            {
-                _ in
-                //invitationHandler(false, nil)
-                print("cancelled")
-            })
-            */
-            //DispatchQueue.main.async {
-            //    window.rootViewController?.present(connectingAlert, animated: true)
-            //}
         default:
             print("unknown state")
         }

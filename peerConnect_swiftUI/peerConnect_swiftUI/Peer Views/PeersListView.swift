@@ -79,6 +79,11 @@ struct PeersListView: View {
             Text(infoText)
                 .padding()
             Spacer()
+            
+            // when the button is clicked, connection manager connects all
+            // peers one by one, when they are all connected, the app will
+            // navigate to chat view.  Maybe the app will report those peers that
+            // could not be connected.
             Button(action: {  }) {
                 Text("Start Chat")
                     .font(.system(size: 18))

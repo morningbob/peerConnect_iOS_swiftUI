@@ -6,17 +6,20 @@
 //
 
 import Foundation
+import MultipeerConnectivity
 
 class PeerListStore: ObservableObject {
     @Published var peers: [PeerModel] = []
     
 }
 
-struct PeerModel: Codable, Identifiable {
+struct PeerModel: Codable, Identifiable, Equatable {
     var id = UUID()
-    let name: String
+    let name : String
+    //let peerID : MCPeerID
     
-    init(name: String) {
+    init(name: String, peerID: MCPeerID) {
         self.name = name
+        //self.peerID = peerID
     }
 }
