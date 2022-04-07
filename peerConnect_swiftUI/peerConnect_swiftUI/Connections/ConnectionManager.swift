@@ -34,6 +34,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal
     var isHost = false
+    private let key = "7431rk"
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
     //   there is technical difficulties.
@@ -82,25 +83,9 @@ class ConnectionManager : NSObject, ObservableObject {
 
     func inviteConnect(peerInfo: PeerInfo) {
         let context = myPeerId.displayName.data(using: .utf8)
-        // retrieve peerID from peers list
-        /*
-        var peerID : MCPeerID? = nil
-        for peer in peers {
-            if (peer.displayName == peerInfo.peerID.displayName) {
-                peerID = peer
-                break
-            }
-        }
-         */
-        //if (peerID != nil) {
-        //    print("got peerID")
         nearbyServiceBrowser.invitePeer(peerInfo.peerID, to: session, withContext: context, timeout: TimeInterval(120))
         
     }
-    
-    //private func createPeerModel(peer: MCPeerID) -> PeerModel {
-    //    return PeerModel(name: peer.displayName)
-    //}
     
     private func createPeerInfo(peer: MCPeerID) -> PeerInfo {
         return PeerInfo(peer: peer)
@@ -111,46 +96,88 @@ class ConnectionManager : NSObject, ObservableObject {
         return MessageModel(content: message, peerName: peerNames, whoSaid: whoSaid)
     }
     
-    func sendMessage(_ message: String, peerInfoList: [PeerInfo], whoSaid: String) {
+    func sendMessage(_ message: String, peerInfoList: [PeerInfo], whoSaid: String) -> Bool {
+        var success = false
+            
+        do {
+            let data = try JSONEncoder().encode(message)
+            let peers = getPeerIDs(peerInfoList: peerInfoList)
+            try session.send(data, toPeers: peers, with: .reliable)
+            print("send message success")
+            success = true
+        } catch {
+            print(error.localizedDescription)
+            print("send message failed")
+            success = false
+        }
+        return success
+        
+    }
+    
+    func sendMessageToPeers(message: String, whoSaid: String) {
         // here we decide if the user is the server or the client by looking at isHost
         // if he is the server, we use the peers list from peers list view
         // if he is the client, we use the connected peer from invitation
+        //rint("sendMessage triggered, \(message) \(peerInfoList.count)")
         var peersToSend : [PeerInfo] = []
         if !isHost {
-            guard let connectedPeerInfo = connectedPeerInfo else {
+            guard let connectedPeerInfo = self.connectedPeerInfo else {
                 return
             }
             print("isHost is false, client side, connected peer")
             peersToSend = [connectedPeerInfo]
         } else {
-            peersToSend = peerInfoList
+            peersToSend = self.selectedPeers
             print("isHost is true, server side, peer list, count \(peersToSend.count)")
         }
         
         if peersToSend.isEmpty {
             return
         }
-            
-        do {
-            let data = try JSONEncoder().encode(message)
-            let peers = getPeerIDs(peerInfoList: peersToSend)
-            try session.send(data, toPeers: peers, with: .reliable)
-            // add to messages
+        
+        if (sendMessage(message, peerInfoList: peersToSend, whoSaid: whoSaid)) {
             self.messages.append(message)
             var messageModel = createMessageModel(message: message, whoSaid: whoSaid)
             self.messageModels.append(messageModel)
-            // temporary set here navigate to chat
-            //self.navigateToChat = true
-        } catch {
-            print(error.localizedDescription)
+        }
+    }
+    
+    // this send message method is for server side to redirect messages from other peers to
+    // the rest of the peers
+    func redirectMessageToPeers(message: String, peerInfoList: [PeerInfo], whoSaid: String) {
+        // here we need to let the rest of the peers know who said the message
+        // here we append the message by a key and the who said
+        
+        let newMessage = message + self.key + whoSaid
+        if (sendMessage(newMessage, peerInfoList: peerInfoList, whoSaid: whoSaid)) {
+            print("sent redirect message")
         }
         
     }
     
-    func sendMessageToPeers(message: String) {
-        for peer in self.selectedPeers {
-            //sendMessage(message)
+    private func decodeWhoSaid(message: String) -> Array<String> {
+        var indexOfName = 0
+        var indexOfMessageEnd = 0
+        var resultArray = Array<String>()
+        let ranges = message.ranges(of: self.key)
+        ranges.forEach {
+            print("decoding who said")
+            print($0.upperBound.utf16Offset(in: message))
+            indexOfName = $0.upperBound.utf16Offset(in: message)
+            indexOfMessageEnd = $0.lowerBound.utf16Offset(in: message)
         }
+        let startOfName = message.index(message.startIndex, offsetBy: indexOfName) //.index(message.startIndex)
+        let endOfName = message.endIndex
+        let rangeOfName = startOfName..<endOfName
+        let name = message[rangeOfName]
+        resultArray.append(String(name))
+        let endOfMessage = message.index(message.startIndex, offsetBy: indexOfMessageEnd)
+        let decodedMessageRange = message.startIndex..<endOfMessage
+        let decodedMessage = message[decodedMessageRange]
+        resultArray.append(String(decodedMessage))
+        print("decode name result: \(name)")
+        print("decode message result: \(message)")
+        return resultArray
     }
     
     func endChat() {
@@ -196,6 +223,7 @@ class ConnectionManager : NSObject, ObservableObject {
             self.inviteConnect(peerInfo: peer)
         }
     }
+    
 }
 
 // to receive invitation
@@ -344,21 +372,38 @@ extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
         print("message received: \(message)")
+        // here we also check if the message is a redirect message,
+        // we check the key, and get the who said string behind it
+        var whoSaid = ""
+        var filteredMessage = ""
+        var resultArray = Array<String>()
+        if (message.contains(self.key)) {
+            resultArray = self.decodeWhoSaid(message: message)
+            whoSaid = resultArray[0]
+            filteredMessage = resultArray[1]
+        } else {
+            whoSaid = peerID.displayName
+            filteredMessage = message
+        }
+        
         // here we got messages from peers.  Peers can't send to other peers directly,
         // so, the host of the chat will send for them, and send here
         if isHost {
             var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
             for peer in self.selectedPeers {
                 if peer.peerID.displayName != peerID.displayName {
+                    print("isHost is true")
+                    print("included in restOfPeers \(peer.peerID.displayName)")
                     restOfPeers.append(peer)
                 }
             }
-            self.sendMessage(message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
+            self.redirectMessageToPeers(message: message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
         }
         // here, we need to send the received message to the interface
         DispatchQueue.main.async {
             self.messages.append(message)
-            var messageModel = self.createMessageModel(message: message, whoSaid: peerID.displayName)
+            var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
+            print("always run added to message list \(message)")
             self.messageModels.append(messageModel)
         }
     }
@@ -394,4 +439,28 @@ extension UIApplication {
     }
     
 }
+
+extension StringProtocol {
+    func ranges(of targetString: Self, options: String.CompareOptions = [], locale: Locale? = nil) -> [Range<String.Index>] {
+
+        let result: [Range<String.Index>] = self.indices.compactMap { startIndex in
+            let targetStringEndIndex = index(startIndex, offsetBy: targetString.count, limitedBy: endIndex) ?? endIndex
+            return range(of: targetString, options: options, range: startIndex..<targetStringEndIndex, locale: locale)
+        }
+        return result
+    }
+}
+
+/*
+func indexOf(source: String, substring: String) -> Int? {
+    let maxIndex = source.count - substring.count
+    for index in 0...maxIndex {
+        let rangeSubstring = source.startIndex. .advancedBy(index)..<source.startIndex.advancedBy(index + substring.characters.count)
+        if source.substringWithRange(rangeSubstring) == substring {
+            return index
+        }
+    }
+    return nil
+}
+ */
 

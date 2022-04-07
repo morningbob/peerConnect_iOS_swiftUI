@@ -37,7 +37,8 @@ struct ChatView: View {
                 .frame( height: 300)
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 //guard !messageText.isEmpty && (self.connectionManager.connectedPeerInfo != nil) else { return }
-                connectionManager.sendMessage(messageText, peerInfoList: self.connectionManager.selectedPeers, whoSaid: "Me")
+                print("chat view, send message once ")
+                connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
                 messageText = ""
             })
             .padding()
