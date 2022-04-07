@@ -10,9 +10,9 @@ import SwiftUI
 struct PeersListView: View {
     
     @StateObject var connectionManager = ConnectionManager()
-    @ObservedObject var peerListStore : PeerListStore
+    //@ObservedObject var peerListStore : PeerListStore
     
-    @State var peer : PeerModel?
+    //@State var peer : PeerModel?
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
     //@State private var showUnsuccessfulConnection = false
@@ -20,10 +20,6 @@ struct PeersListView: View {
     @State private var showConnectingAlert : Bool = false
     @State private var selectedPeers : [PeerInfo] = []
     
-    init(peerListStore: PeerListStore = PeerListStore()) {
-        self.peerListStore = peerListStore
-    }
-
     var body: some View {
         
         let navigateBinding = Binding<Bool> (
@@ -196,6 +192,6 @@ struct PeerCheckListItem : Identifiable  {
 
 struct PeersListView_Previews: PreviewProvider {
     static var previews: some View {
-        PeersListView(peerListStore: PeerListStore())
+        PeersListView()
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 import MultipeerConnectivity
-
+/*
 class PeerListStore: ObservableObject {
     @Published var peers: [PeerModel] = []
     
@@ -20,3 +20,4 @@ struct PeerModel: Codable, Identifiable, Equatable {
     //let peerID : MCPeerID
     
 }
+ */

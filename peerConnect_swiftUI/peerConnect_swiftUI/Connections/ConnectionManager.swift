@@ -13,7 +13,7 @@ class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
-    @Published var peerModels : [PeerModel] = []
+    //@Published var peerModels : [PeerModel] = []
     //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
     @Published var peersInfo : Dictionary<String, PeerInfo> = [:]
     @Published var selectedPeers : [PeerInfo] = []
@@ -98,9 +98,9 @@ class ConnectionManager : NSObject, ObservableObject {
         
     }
     
-    private func createPeerModel(peer: MCPeerID) -> PeerModel {
-        return PeerModel(name: peer.displayName)
-    }
+    //private func createPeerModel(peer: MCPeerID) -> PeerModel {
+    //    return PeerModel(name: peer.displayName)
+    //}
     
     private func createPeerInfo(peer: MCPeerID) -> PeerInfo {
         return PeerInfo(peer: peer)
@@ -120,9 +120,15 @@ class ConnectionManager : NSObject, ObservableObject {
             guard let connectedPeerInfo = connectedPeerInfo else {
                 return
             }
+            print("isHost is false, client side, connected peer")
             peersToSend = [connectedPeerInfo]
         } else {
             peersToSend = peerInfoList
+            print("isHost is true, server side, peer list, count \(peersToSend.count)")
+        }
+        
+        if peersToSend.isEmpty {
+            return
         }
             
         do {
@@ -235,13 +241,13 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         print("found a device")
         // make sure there is no duplicates
         if !peers.contains(peerID) {
-            let peerModel = createPeerModel(peer: peerID)
-            print("created a peerModel: \(peerID.displayName)")
+            //let peerModel = createPeerModel(peer: peerID)
+            //print("created a peerModel: \(peerID.displayName)")
             //let peerInfo = createPeerInfo(peer: peerID)
             DispatchQueue.main.async {
                 //peersDict[peerID.displayName] = [peerModel, peerID]
                 self.peersInfo[peerID.displayName] = self.createPeerInfo(peer: peerID)
-                self.peerModels.append(peerModel)
+                //self.peerModels.append(peerModel)
                 self.peers.append(peerID)
             }
         }
@@ -340,13 +346,15 @@ extension ConnectionManager : MCSessionDelegate {
         print("message received: \(message)")
         // here we got messages from peers.  Peers can't send to other peers directly,
         // so, the host of the chat will send for them, and send here
-        var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
-        for peer in self.selectedPeers {
-            if peer.peerID != peerID {
-                restOfPeers.append(peer)
+        if isHost {
+            var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
+            for peer in self.selectedPeers {
+                if peer.peerID.displayName != peerID.displayName {
+                    restOfPeers.append(peer)
+                }
             }
+            self.sendMessage(message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
         }
-        self.sendMessage(message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
         // here, we need to send the received message to the interface
         DispatchQueue.main.async {
             self.messages.append(message)
