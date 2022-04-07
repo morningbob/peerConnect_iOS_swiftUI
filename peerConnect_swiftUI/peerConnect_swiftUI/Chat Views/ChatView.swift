@@ -16,15 +16,8 @@ struct ChatView: View {
     //@State private var isSendFile = false
     @State private var showingDocumentPicker = false
     @State private var urlContent = UrlContent()
+    @State private var peerStatus = ""
     
-    /*
-    @State var inputUrl: URL? {
-        didSet {
-            print("inputUrl didSet triggered")
-            self.getDocumentFromUrl()
-        }
-    }
-    */
     var body: some View {
         
         VStack {
@@ -44,7 +37,10 @@ struct ChatView: View {
             .padding()
             .background(Color.white)
             Spacer()
-            VStack {
+            Text(peerStatus)
+                .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+            Spacer()
+            HStack {
                 Button(action: {
                     connectionManager.endChat()
                     print("ending chat")
@@ -120,6 +116,25 @@ struct ChatView: View {
     
     private func getDocumentFromUrl() {
         print("document: \(self.urlContent.url)")
+    }
+    
+    private func getPeerStatus() -> String {
+        var namesConnected = "Connected: "
+        var namesDisconnected = "Disconnected: "
+        var namesRejected = "Rejected Connection: "
+        for peer in self.connectionManager.selectedPeers {
+            if (peer.state == AppState.connected) {
+                namesConnected += peer.peerID.displayName + " "
+            }
+            if (peer.state == AppState.fromConnectedToDisconnected) {
+                namesDisconnected += peer.peerID.displayName + " "
+            }
+            if (peer.state == AppState.fromConnectingToNotConnected) {
+                namesRejected += peer.peerID.displayName + " "
+            }
+        }
+        let returnText = namesConnected
+        return ""
     }
 }
 

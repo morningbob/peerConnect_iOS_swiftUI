@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 enum ConnectionState {
     case connected
@@ -21,6 +22,15 @@ enum AppState : Codable {
     case fromConnectedToDisconnected   // user ends chat
     case chatting
     case startChat
+    case connected
+    
+}
+
+enum PeerState : Codable {
+    case picked
+    case connecting
+    case fromConnectingToNotConnected
+    case fromConnectedToDisconnected
     case connected
     
 }

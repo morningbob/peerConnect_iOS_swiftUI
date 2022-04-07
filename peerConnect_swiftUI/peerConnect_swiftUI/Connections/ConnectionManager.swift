@@ -13,7 +13,6 @@ class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
-    //@Published var peerModels : [PeerModel] = []
     //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
     @Published var peersInfo : Dictionary<String, PeerInfo> = [:]
     @Published var selectedPeers : [PeerInfo] = []
@@ -212,18 +211,11 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func connectPeers(peersInfo: [PeerInfo]) {
-        /*
-        var peerIDList : [MCPeerID] = []
-        for peerModel in models {
-            let index = models.firstIndex(of: peerModel)!
-            peerIDList.append(peers[index])
-        }
-        */
+        
         for peer in peersInfo {
             self.inviteConnect(peerInfo: peer)
         }
     }
-    
 }
 
 // to receive invitation
@@ -269,9 +261,7 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         print("found a device")
         // make sure there is no duplicates
         if !peers.contains(peerID) {
-            //let peerModel = createPeerModel(peer: peerID)
-            //print("created a peerModel: \(peerID.displayName)")
-            //let peerInfo = createPeerInfo(peer: peerID)
+            
             DispatchQueue.main.async {
                 //peersDict[peerID.displayName] = [peerModel, peerID]
                 self.peersInfo[peerID.displayName] = self.createPeerInfo(peer: peerID)
@@ -284,24 +274,6 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         //let peer = peersInfo[peerID.displayName]
         peersInfo.removeValue(forKey: peerID.displayName)
-        /*
-        var index = 0
-        for j in 0...peersInfo.count {
-            if (peersInfo[j].peerID == peerID) {
-                index = j
-                return
-            }
-        }
-         */
-        
-        //guard let index = peersInfo.peerID.firstIndex(of: peerID) else { return }
-        //self.peersInfo.remove(at: index)
-        //peerModels.remove(at: index)
-        //peers.remove(at: index)
-        //DispatchQueue.main.async {
-            //self.connectedPeer = nil
-            //self.navigateToChat = false
-        //}
     }
 }
 
