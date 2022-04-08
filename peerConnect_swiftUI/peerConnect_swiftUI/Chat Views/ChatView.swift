@@ -37,10 +37,14 @@ struct ChatView: View {
             .padding()
             .background(Color.white)
             Spacer()
-            Text(peerStatus)
+            Text(self.peerStatus)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                .onReceive(self.connectionManager.$selectedPeers, perform: { selectedPeers in
+                    self.peerStatus = getPeerStatus()
+                })
             Spacer()
             HStack {
+                Spacer()
                 Button(action: {
                     connectionManager.endChat()
                     print("ending chat")
@@ -92,9 +96,7 @@ struct ChatView: View {
                     self.presentation.wrappedValue.dismiss()
                 }
             })
-            //.onReceive(Just(inputUrl), perform: { url in
-                
-            //})
+            
         }
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
@@ -133,8 +135,8 @@ struct ChatView: View {
                 namesRejected += peer.peerID.displayName + " "
             }
         }
-        let returnText = namesConnected
-        return ""
+        let returnText = "\(namesConnected) \n \(namesDisconnected) \n \(namesRejected)"
+        return returnText
     }
 }
 

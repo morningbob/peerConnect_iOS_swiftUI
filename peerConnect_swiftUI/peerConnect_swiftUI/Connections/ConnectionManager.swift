@@ -29,7 +29,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
-    @Published var navigateToChat = false
+    //@Published var navigateToChat = false
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal
     var isHost = false
@@ -260,8 +260,7 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         print("found a device")
         // make sure there is no duplicates
-        if !peers.contains(peerID) {
-            
+        if !peers.contains(peerID) && peerID != myPeerId {
             DispatchQueue.main.async {
                 //peersDict[peerID.displayName] = [peerModel, peerID]
                 self.peersInfo[peerID.displayName] = self.createPeerInfo(peer: peerID)
@@ -423,16 +422,5 @@ extension StringProtocol {
     }
 }
 
-/*
-func indexOf(source: String, substring: String) -> Int? {
-    let maxIndex = source.count - substring.count
-    for index in 0...maxIndex {
-        let rangeSubstring = source.startIndex. .advancedBy(index)..<source.startIndex.advancedBy(index + substring.characters.count)
-        if source.substringWithRange(rangeSubstring) == substring {
-            return index
-        }
-    }
-    return nil
-}
- */
+
 

@@ -10,9 +10,6 @@ import SwiftUI
 struct PeersListView: View {
     
     @StateObject var connectionManager = ConnectionManager()
-    //@ObservedObject var peerListStore : PeerListStore
-    
-    //@State var peer : PeerModel?
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
     //@State private var showUnsuccessfulConnection = false
@@ -39,7 +36,6 @@ struct PeersListView: View {
        
         VStack {
             List(peerCheckListItems) { peerItem in
-                //PeerListRowView(peerCheckListItem: peerItem, peerCheckListItems: self.peerCheckListItems, chosenPeer: $peer).environmentObject(connectionManager)
                 PeerRowView(peerItem: peerItem)
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
@@ -50,9 +46,6 @@ struct PeersListView: View {
                     }
                     // pass peer view model to List View
                     print("set peer in row view")
-                    //self.chosenPeer = peerItem.peerModel
-                    //connectionManager.connectPeers(peersInfo: <#T##[PeerInfo]#>)
-                    //self.showConnectingAlert = true
                     
                 }
                 .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
