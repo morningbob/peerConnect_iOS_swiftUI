@@ -14,8 +14,8 @@ class ConnectionManager : NSObject, ObservableObject {
     
     @Published var peers: [MCPeerID] = []
     //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
-    @Published var peersInfo : Dictionary<String, PeerInfo> = [:]
-    @Published var selectedPeers : [PeerInfo] = []
+    @Published var peersInfo : [PeerInfo] = []
+    @Published var electedPeers : [PeerInfo] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
@@ -118,16 +118,20 @@ class ConnectionManager : NSObject, ObservableObject {
         // if he is the server, we use the peers list from peers list view
         // if he is the client, we use the connected peer from invitation
         //rint("sendMessage triggered, \(message) \(peerInfoList.count)")
-        var peersToSend : [PeerInfo] = []
+        var peersToSend : [MCPeerID] = []
+        
+        // extract the MCPeerID from peersInfo, to send
+        
+        
         if !isHost {
             guard let connectedPeerInfo = self.connectedPeerInfo else {
                 return
             }
-            print("isHost is false, client side, connected peer")
+            //print("isHost is false, client side, connected peer")
             peersToSend = [connectedPeerInfo]
         } else {
             peersToSend = self.selectedPeers
-            print("isHost is true, server side, peer list, count \(peersToSend.count)")
+            //print("isHost is true, server side, peer list, count \(peersToSend.count)")
         }
         
         if peersToSend.isEmpty {
@@ -149,7 +153,7 @@ class ConnectionManager : NSObject, ObservableObject {
         
         let newMessage = message + self.key + whoSaid
         if (sendMessage(newMessage, peerInfoList: peerInfoList, whoSaid: whoSaid)) {
-            print("sent redirect message")
+            //print("sent redirect message")
         }
         
     }
@@ -160,8 +164,8 @@ class ConnectionManager : NSObject, ObservableObject {
         var resultArray = Array<String>()
         let ranges = message.ranges(of: self.key)
         ranges.forEach {
-            print("decoding who said")
-            print($0.upperBound.utf16Offset(in: message))
+            //print("decoding who said")
+            //print($0.upperBound.utf16Offset(in: message))
             indexOfName = $0.upperBound.utf16Offset(in: message)
             indexOfMessageEnd = $0.lowerBound.utf16Offset(in: message)
         }
@@ -174,8 +178,8 @@ class ConnectionManager : NSObject, ObservableObject {
         let decodedMessageRange = message.startIndex..<endOfMessage
         let decodedMessage = message[decodedMessageRange]
         resultArray.append(String(decodedMessage))
-        print("decode name result: \(name)")
-        print("decode message result: \(message)")
+        //print("decode name result: \(name)")
+        //print("decode message result: \(message)")
         return resultArray
     }
     
@@ -216,6 +220,10 @@ class ConnectionManager : NSObject, ObservableObject {
             self.inviteConnect(peerInfo: peer)
         }
     }
+    
+    //func findPeerInfo(peerID: MCPeerID) {
+    //    self.peersInfo[peerID]
+    //}
 }
 
 // to receive invitation
@@ -239,6 +247,8 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
                 self.connectedPeerInfo = PeerInfo(peer: peerID)
+                
+                
             }
             invitationHandler(true, self.session)
         })
@@ -262,57 +272,65 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         // make sure there is no duplicates
         if !peers.contains(peerID) && peerID != myPeerId {
             DispatchQueue.main.async {
-                //peersDict[peerID.displayName] = [peerModel, peerID]
-                self.peersInfo[peerID.displayName] = self.createPeerInfo(peer: peerID)
-                //self.peerModels.append(peerModel)
+                //let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID })
+                // create new peerInfo
+                self.peersInfo.append(self.createPeerInfo(peer: peerID))
                 self.peers.append(peerID)
             }
         }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        //let peer = peersInfo[peerID.displayName]
-        peersInfo.removeValue(forKey: peerID.displayName)
+        guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
+            return
+        }
+        peersInfo.remove(at: peerIndex)
     }
 }
 
 extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
 
-        print("state variable: \(state)")
-        //var fromConnectedOrConnecting = 0
+        //print("state variable: \(state)")
+       
         switch state {
         case .connected:
-            
             print("Connected, from session")
             //guard let messageToSend = messageToSend else { return }
-            //sendMessage("here you go", to: peerID)
             fromConnectedOrConnecting = 1
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
                 //print("should dismiss done")
-                self.peersInfo[peerID.displayName]?.state = AppState.connected
+                guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
+                    return
+                }
+                self.peersInfo[peerIndex].state = PeerState.connected
                 self.connectionState = ConnectionState.connected
                 self.appState = AppState.connected
                 self.connectedPeer = peerID
-                //self.navigateToChat = true
-                print("should navigate done")
+                //print("should navigate done")
             }
         case .notConnected:
-            print("not connected: \(peerID.displayName)")
-            print("fromConnectedOrConnecting : \(fromConnectedOrConnecting)")
+            //print("not connected: \(peerID.displayName)")
+            //print("fromConnectedOrConnecting : \(fromConnectedOrConnecting)")
             switch fromConnectedOrConnecting {
             case 1:
                 print("not connected state: from connected 1")
                 DispatchQueue.main.async {
                     self.appState = AppState.fromConnectedToDisconnected
-                    self.peersInfo[peerID.displayName]?.state = AppState.fromConnectedToDisconnected
+                    guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
+                        return
+                    }
+                    self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
                 }
             case 0:
                 print("not connected state: from connecting 0")
                 DispatchQueue.main.async {
                     self.appState = AppState.fromConnectingToNotConnected
-                    self.peersInfo[peerID.displayName]?.state = AppState.fromConnectingToNotConnected
+                    guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
+                        return
+                    }
+                    self.peersInfo[peerIndex].state = PeerState.fromConnectingToNotConnected
                 }
             default:
                 print("not connected state: 0")
@@ -331,7 +349,10 @@ extension ConnectionManager : MCSessionDelegate {
             print("connecting: \(peerID.displayName)")
             fromConnectedOrConnecting = 2
             DispatchQueue.main.async {
-                self.peersInfo[peerID.displayName]?.state = AppState.connecting
+                guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
+                    return
+                }
+                self.peersInfo[peerIndex].state = PeerState.connecting
                 self.appState = AppState.connecting
                 self.connectionState = ConnectionState.connecting
             }
@@ -363,8 +384,8 @@ extension ConnectionManager : MCSessionDelegate {
             var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
             for peer in self.selectedPeers {
                 if peer.peerID.displayName != peerID.displayName {
-                    print("isHost is true")
-                    print("included in restOfPeers \(peer.peerID.displayName)")
+                    //print("isHost is true")
+                    //print("included in restOfPeers \(peer.peerID.displayName)")
                     restOfPeers.append(peer)
                 }
             }
@@ -374,7 +395,7 @@ extension ConnectionManager : MCSessionDelegate {
         DispatchQueue.main.async {
             self.messages.append(message)
             var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
-            print("always run added to message list \(message)")
+            //print("always run added to message list \(message)")
             self.messageModels.append(messageModel)
         }
     }

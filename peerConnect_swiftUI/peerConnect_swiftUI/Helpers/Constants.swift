@@ -27,6 +27,7 @@ enum AppState : Codable {
 }
 
 enum PeerState : Codable {
+    case discovered
     case picked
     case connecting
     case fromConnectingToNotConnected

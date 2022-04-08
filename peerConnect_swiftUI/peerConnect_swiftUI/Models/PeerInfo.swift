@@ -8,16 +8,17 @@
 import Foundation
 import MultipeerConnectivity
 
-class PeerInfo {
+class PeerInfo : Identifiable {
     //let name : String
     let id = UUID()
     let peerID : MCPeerID
-    var state : AppState
+    var state : PeerState
+    var isChecked = false
     
     init(peer: MCPeerID) {
         //self.name = peer.displayName
         self.peerID = peer
-        self.state = AppState.normal
+        self.state = PeerState.discovered
     }
     
 }
