@@ -11,7 +11,7 @@ struct SelectedPeersView: View {
     
     @EnvironmentObject var connectionManager : ConnectionManager
     @EnvironmentObject var appStateModel : AppStateModel
-    @State private var peerStatusList : [PeerStatus] = []
+    //@State private var peerStatusList : [PeerStatus] = []
     @State private var shouldNavigateToChat = false
     
     var body: some View {
@@ -32,9 +32,13 @@ struct SelectedPeersView: View {
             })
         
         VStack {
-            
-            List(self.peerStatusList) { peer in
-                Text(peer.name + " ")
+            // here we input the peersInfo which are selected
+            List({
+                guard let selectedPeers = self.connectionManager.peersInfo.firstIndex(where: { $0.isChecked }) else {
+                    return
+                }
+                //selectedPeers = selectedPeers
+            }) { peerInfo in
             }
         }
         /*
@@ -49,12 +53,13 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed
             print("peersInfo changed")
+            
             // so we update the peer states here
-            for peerStatus in self.peerStatusList {
+            //for peerStatus in self.peerStatusList {
                 // the default state, I set to disconnected.  So, the app state will ignore this peer,
                 //peerStatus.state = peersInfo[peerStatus.name]?.state ?? AppState.fromConnectingToNotConnected
-                print("peer \(peerStatus.name) new state: \(peerStatus.state)")
-            }
+            //    print("peer \(peerStatus.name) new state: \(peerStatus.state)")
+            
         })
         //.onReceive(self.peerStatusList, perform: <#T##(Publisher.Output) -> Void#>)
         .navigationTitle("Peers Status")
@@ -72,17 +77,50 @@ struct SelectedPeersView_Previews: PreviewProvider {
     }
 }
 
-class PeerStatus : Identifiable, ObservableObject {
+struct PeerStatusView : View {
     
-    //var state : AppState
-    // we need to observe the state from connection manager
-    // that is the state in connectionManager.peersInfo[], not in selectedPeers
-    @Published var state = AppState.normal
-    var status : String = ""
-    let name : String
+    @ObservedObject var peerInfo : PeerInfo //{
+        //didSet {
+        //    print("peerInfo changed, didSet triggered")
+        //    getNewStatus()
+        //}
+    //}
+    //@State var status : String = ""
+        
     
-    init(name: String) {
-        self.name = name
+    
+    init(peerInfo: PeerInfo) {
+        self.peerInfo = peerInfo
     }
     
+    var body: some View {
+        HStack {
+            //Text("good")
+            //Text(peerInfo.peerID.displayName + "    "))
+            Text(peerInfo.peerID.displayName + ":  " + getNewStatus())
+            Text(peerInfo.state == PeerState.connected ? "✅" : "🔲")
+        }
+        //.onReceive(self.$peerInfo, perform: { peerInfo in
+        //    getNewStatus()
+        //})
+    }
+    
+    private func getNewStatus() -> String {
+        var status = ""
+        switch (peerInfo.state) {
+        case PeerState.connecting:
+            status = "Connecting..."
+        case PeerState.fromConnectingToNotConnected:
+            status = "Peer refused connection."
+        case PeerState.fromConnectedToDisconnected:
+            status = "Peer disconnected."
+        case PeerState.connected:
+            status = "Peer connected."
+        default:
+            status = "Connecting..."
+        }
+        return status
+    }
 }
+
+

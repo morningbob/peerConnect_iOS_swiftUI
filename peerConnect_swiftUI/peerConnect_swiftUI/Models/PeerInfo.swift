@@ -8,12 +8,12 @@
 import Foundation
 import MultipeerConnectivity
 
-class PeerInfo : Identifiable {
+class PeerInfo : Identifiable, ObservableObject {
     //let name : String
     let id = UUID()
     let peerID : MCPeerID
     var state : PeerState
-    var isChecked = false
+    @Published var isChecked = false
     
     init(peer: MCPeerID) {
         //self.name = peer.displayName

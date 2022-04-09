@@ -17,6 +17,7 @@ struct PeersListView: View {
     @State private var peerCheckListItems : [PeerCheckListItem] = []
     @State private var showConnectingAlert : Bool = false
     @State private var selectedPeers : [PeerInfo] = []
+    @State private var refreshView = false
     
     var body: some View {
         
@@ -45,26 +46,12 @@ struct PeersListView: View {
                         //self.peerCheckListItems.firstIndex(where: { $0.id == peerItem.id }) {
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
                             self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
-                        print("toggled")
-                        print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
-                        /*
-                            // is isChecked is true, add to selected list, if false, remove it
-                            if (self.peerCheckListItems[checkedIndex].isChecked) {
-                                let peer = self.peerCheckListItems[checkedIndex].peerInfo
-                                self.selectedPeers.append(peer)
-                                //print("added peer selected: \(peerItem.peerInfo.peerID.displayName)")
-                            } else {
-                                // remove the peer if the checkbox is unchecked.
-                                if let peerIndex = self.selectedPeers.firstIndex(where: { $0.id == peerItem.id }) {
-                                    //print("removed peer selected: \(peerItem.peerInfo.peerID.displayName)")
-                                    self.selectedPeers.remove(at: peerIndex)
-                                }
-                                //self.selectedPeers.remo
-                            }
-                         */
+                            //peerInfo.isChecked.toggle()
+                            //self.connectionManager.peersInfo[checkedIndex] = peerInfo
+                            print("toggled")
+                            print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
                         
                     }
-                    
                 }
                 .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
                         
@@ -93,7 +80,7 @@ struct PeersListView: View {
             // navigate to chat view.  Maybe the app will report those peers that
             // could not be connected.
             Button(action: {
-                connectionManager.connectPeers(peersInfo: self.selectedPeers)
+                connectionManager.connectPeers()
                 // this is to distinguish if the app should send messages to peers in the list,
                 // or the connected peer as a client, in the other words, distinguish which
                 // side (server or client) to run send message
@@ -110,6 +97,7 @@ struct PeersListView: View {
             Spacer()
         }
         .environmentObject(connectionManager)
+        .environmentObject(appStateModel)
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         .navigationTitle("Peers")
         /*
@@ -135,19 +123,36 @@ struct PeersListView: View {
                 print("unknown error")
             }
         })
-        //.onReceive(connectionManager.$peersInfo, perform: { peersInfo in
-        //    self.peerCheckListItems = createCheckListItems(peersInfo: peersInfo)
-            // initialize app state
-            
-        //})
-        //.onReceive(connectionManager.$selectedPeers) { selectedPeers in
-        //    self.appStateModel.peersInfo = selectedPeers
-        //}
+        .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+            print("onReceive, peerInfo changed")
+        })
          
         // I put the navigation link here instead of in the VStack,
         // to avoid it to be activated by clicking on it.  It's a SwiftUI bug.
         NavigationLink(destination: SelectedPeersView().environmentObject(connectionManager), isActive: navigateBinding) {
             EmptyView()
+        }
+    }
+    
+}
+
+struct PeerRowView : View {
+    
+    @ObservedObject var peerInfo : PeerInfo
+    
+    init(peerInfo: PeerInfo) {
+        self.peerInfo = peerInfo
+    }
+    
+    var body: some View {
+    
+        HStack {
+            // this spacer is to use to cover the whole row area such that
+            // the user can tap anywhere in the row to trigger onTapGesture
+            Text(peerInfo.peerID.displayName)
+            Spacer()
+            Text(peerInfo.isChecked ? "✅" : "🔲")
+            //Text("isCheck \(String(peerInfo.isChecked))")
         }
     }
 }
@@ -171,25 +176,7 @@ private func selectedPeers(peerItems: [PeerCheckListItem]) -> [PeerInfo] {
     return selectedPeers
 }
 
-struct PeerRowView : View {
-    
-    var peerInfo : PeerInfo
-    
-    init(peerInfo: PeerInfo) {
-        self.peerInfo = peerInfo
-    }
-    
-    var body: some View {
-    
-        HStack {
-            // this spacer is to use to cover the whole row area such that
-            // the user can tap anywhere in the row to trigger onTapGesture
-            Text(peerInfo.peerID.displayName)
-            Spacer()
-            Text(peerInfo.isChecked ? "✅" : "🔲")
-        }
-    }
-}
+
 
 struct PeerCheckListItem : Identifiable  {
     

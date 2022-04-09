@@ -6,17 +6,11 @@
 //
 
 import Foundation
+import SwiftUI
 
 class AppStateModel : ObservableObject {
     
-    var peerStatusList : [PeerStatus] = [] {
-        didSet {
-            print("peerStatus in AppStateModel didSet")
-            getPeerStates()
-            getAppState()
-        }
-    }
-    //var peerStatusList : [PeerStatus] = []
+    @EnvironmentObject var connectionManager: ConnectionManager
     @Published var appState : AppState = AppState.normal
     
     private func getPeerStates() {
@@ -29,13 +23,13 @@ class AppStateModel : ObservableObject {
         // so, when the app state is ready to chat, we can navigate to chat view
         var readyToChat = true
         //print("num of peerStates: \(peerStates.count)")
-        for peerStatus in peerStatusList {
+        //for peerStatus in peerStatusList {
             //print("model: peer state: \(state)")
             //if (state == AppState.connecting || state == AppState.normal) {
             //    readyToChat = false
             //    return
             //}
-        }
+        //}
         if (readyToChat) {
             self.appState = AppState.startChat
             print("model: appState startChat")

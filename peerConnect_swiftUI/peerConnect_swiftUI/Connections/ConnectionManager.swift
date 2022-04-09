@@ -78,9 +78,9 @@ class ConnectionManager : NSObject, ObservableObject {
         nearbyServiceBrowser.stopBrowsingForPeers()
     }
 
-    func inviteConnect(peerInfo: PeerInfo) {
+    func inviteConnect(peerID: MCPeerID) {
         let context = myPeerId.displayName.data(using: .utf8)
-        nearbyServiceBrowser.invitePeer(peerInfo.peerID, to: session, withContext: context, timeout: TimeInterval(120))
+        nearbyServiceBrowser.invitePeer(peerID, to: session, withContext: context, timeout: TimeInterval(120))
         
     }
     
@@ -189,6 +189,8 @@ class ConnectionManager : NSObject, ObservableObject {
         session.disconnect()
     }
     
+    // this name strings is stored in the peers field in the message model
+    // is used for database queries later
     private func getPeerNameString() -> [String] {
         var peerNames : [String] = []
         for peer in self.peersInfo {
@@ -218,11 +220,17 @@ class ConnectionManager : NSObject, ObservableObject {
         //}
     }
     
-    func connectPeers(peersInfo: [PeerInfo]) {
-        
-        for peer in peersInfo {
-            self.inviteConnect(peerInfo: peer)
+    func connectPeers() {
+        //var peersToInvite : [MCPeerID] = []
+        for peer in self.peersInfo {
+            if (peer.isChecked) {
+                //peersToInvite.append(peer.peerID)
+                self.inviteConnect(peerID: peer.peerID)
+            }
         }
+        //for peer in peersToInvite {
+        //    self.inviteConnect(peerInfo: peer)
+        //}
     }
     
     //func findPeerInfo(peerID: MCPeerID) {
