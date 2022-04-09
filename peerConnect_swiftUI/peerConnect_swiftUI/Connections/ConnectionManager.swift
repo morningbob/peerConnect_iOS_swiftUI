@@ -41,8 +41,6 @@ class ConnectionManager : NSObject, ObservableObject {
     //   invitation.
     private var fromConnectedOrConnecting = 0
     
-    //@Binding var shouldNavigate : Bool?
-    
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
         //myPeerId = MCPeerID(displayName: UIDevice.current.name)
@@ -95,13 +93,13 @@ class ConnectionManager : NSObject, ObservableObject {
         return MessageModel(content: message, peerName: peerNames, whoSaid: whoSaid)
     }
     
-    func sendMessage(_ message: String, peerInfoList: [PeerInfo], whoSaid: String) -> Bool {
+    func sendMessage(_ message: String, peersToSend: [MCPeerID], whoSaid: String) -> Bool {
         var success = false
             
         do {
             let data = try JSONEncoder().encode(message)
-            let peers = getPeerIDs(peerInfoList: peerInfoList)
-            try session.send(data, toPeers: peers, with: .reliable)
+            //let peers = getPeerIDs(peerInfoList: peerInfoList)
+            try session.send(data, toPeers: peersToSend, with: .reliable)
             print("send message success")
             success = true
         } catch {
@@ -121,24 +119,28 @@ class ConnectionManager : NSObject, ObservableObject {
         var peersToSend : [MCPeerID] = []
         
         // extract the MCPeerID from peersInfo, to send
-        
+        for peer in peersInfo {
+            if (peer.isChecked) {
+                peersToSend.append(peer.peerID)
+            }
+        }
         
         if !isHost {
-            guard let connectedPeerInfo = self.connectedPeerInfo else {
+            //guard let connectedPeerInfo = self.connectedPeerInfo else {
+            //return
+            //}
+            //print("isHost is false, client side, connected peer")
+            guard let connectedPeer = self.connectedPeer else {
                 return
             }
-            //print("isHost is false, client side, connected peer")
-            peersToSend = [connectedPeerInfo]
-        } else {
-            peersToSend = self.selectedPeers
-            //print("isHost is true, server side, peer list, count \(peersToSend.count)")
+            peersToSend = [connectedPeer]
         }
         
         if peersToSend.isEmpty {
             return
         }
         
-        if (sendMessage(message, peerInfoList: peersToSend, whoSaid: whoSaid)) {
+        if (sendMessage(message, peersToSend: peersToSend, whoSaid: whoSaid)) {
             self.messages.append(message)
             var messageModel = createMessageModel(message: message, whoSaid: whoSaid)
             self.messageModels.append(messageModel)
@@ -147,15 +149,14 @@ class ConnectionManager : NSObject, ObservableObject {
     
     // this send message method is for server side to redirect messages from other peers to
     // the rest of the peers
-    func redirectMessageToPeers(message: String, peerInfoList: [PeerInfo], whoSaid: String) {
+    func redirectMessageToPeers(message: String, peersToSend: [MCPeerID], whoSaid: String) {
         // here we need to let the rest of the peers know who said the message
         // here we append the message by a key and the who said
         
         let newMessage = message + self.key + whoSaid
-        if (sendMessage(newMessage, peerInfoList: peerInfoList, whoSaid: whoSaid)) {
+        if (sendMessage(newMessage, peersToSend: peersToSend, whoSaid: whoSaid)) {
             //print("sent redirect message")
         }
-        
     }
     
     private func decodeWhoSaid(message: String) -> Array<String> {
@@ -190,12 +191,15 @@ class ConnectionManager : NSObject, ObservableObject {
     
     private func getPeerNameString() -> [String] {
         var peerNames : [String] = []
-        for peer in self.selectedPeers {
-            peerNames.append(peer.peerID.displayName)
+        for peer in self.peersInfo {
+            if (peer.isChecked) {
+                peerNames.append(peer.peerID.displayName)
+            }
         }
         return peerNames
     }
-    
+     
+    /*
     private func getPeerIDs(peerInfoList: [PeerInfo]) -> [MCPeerID] {
         var peers : [MCPeerID] = []
         print(peerInfoList)
@@ -205,7 +209,7 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         return peers
     }
-    
+    */
     func sendFile(peer: MCPeerID) {
         //session.sendResource(at: <#T##URL#>, withName: <#T##String#>, toPeer: peer) { error in
         //    if let error = error {
@@ -381,15 +385,23 @@ extension ConnectionManager : MCSessionDelegate {
         // here we got messages from peers.  Peers can't send to other peers directly,
         // so, the host of the chat will send for them, and send here
         if isHost {
-            var restOfPeers : [PeerInfo] = [] // don't need to send to the peer who send the message to the host
-            for peer in self.selectedPeers {
-                if peer.peerID.displayName != peerID.displayName {
-                    //print("isHost is true")
-                    //print("included in restOfPeers \(peer.peerID.displayName)")
-                    restOfPeers.append(peer)
+            var restOfPeers : [MCPeerID] = [] // don't need to send to the peer who send the message to the host
+            //var peersToSend : [MCPeerID] = []
+            
+            // extract the MCPeerID from peersInfo, to send
+            for peer in peersInfo {
+                if (peer.isChecked && peer.peerID != peerID) {
+                    restOfPeers.append(peer.peerID)
                 }
             }
-            self.redirectMessageToPeers(message: message, peerInfoList: restOfPeers, whoSaid: peerID.displayName)
+            //for peer in self.selectedPeers {
+            //    if peer.peerID.displayName != peerID.displayName {
+                    //print("isHost is true")
+                    //print("included in restOfPeers \(peer.peerID.displayName)")
+            //        restOfPeers.append(peer)
+            //    }
+            //}
+            self.redirectMessageToPeers(message: message, peersToSend: restOfPeers, whoSaid: peerID.displayName)
         }
         // here, we need to send the received message to the interface
         DispatchQueue.main.async {

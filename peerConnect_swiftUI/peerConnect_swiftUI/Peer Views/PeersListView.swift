@@ -45,6 +45,8 @@ struct PeersListView: View {
                         //self.peerCheckListItems.firstIndex(where: { $0.id == peerItem.id }) {
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
                             self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
+                        print("toggled")
+                        print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
                         /*
                             // is isChecked is true, add to selected list, if false, remove it
                             if (self.peerCheckListItems[checkedIndex].isChecked) {

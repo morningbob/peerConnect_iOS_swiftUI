@@ -37,6 +37,7 @@ struct SelectedPeersView: View {
                 Text(peer.name + " ")
             }
         }
+        /*
         .onReceive(self.connectionManager.$selectedPeers, perform: { selectedPeers in
             // create the Peer Status objects
             for peer in selectedPeers {
@@ -44,6 +45,7 @@ struct SelectedPeersView: View {
                 peerStatusList.append(peerStatus)
             }
         })
+         */
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed
             print("peersInfo changed")

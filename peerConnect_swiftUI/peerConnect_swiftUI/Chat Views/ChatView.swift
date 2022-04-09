@@ -39,9 +39,9 @@ struct ChatView: View {
             Spacer()
             Text(self.peerStatus)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
-                .onReceive(self.connectionManager.$selectedPeers, perform: { selectedPeers in
-                    self.peerStatus = getPeerStatus()
-                })
+                //.onReceive(self.connectionManager.$selectedPeers, perform: { selectedPeers in
+                //    self.peerStatus = getPeerStatus()
+                //})
             Spacer()
             HStack {
                 Spacer()
@@ -119,12 +119,12 @@ struct ChatView: View {
     private func getDocumentFromUrl() {
         print("document: \(self.urlContent.url)")
     }
-    
+    /*
     private func getPeerStatus() -> String {
         var namesConnected = "Connected: "
         var namesDisconnected = "Disconnected: "
         var namesRejected = "Rejected Connection: "
-        for peer in self.connectionManager.selectedPeers {
+        for peer in self.connectionManager.peersInfo {
             if (peer.state == AppState.connected) {
                 namesConnected += peer.peerID.displayName + " "
             }
@@ -138,6 +138,7 @@ struct ChatView: View {
         let returnText = "\(namesConnected) \n \(namesDisconnected) \n \(namesRejected)"
         return returnText
     }
+     */
 }
 
 struct UrlContent {
