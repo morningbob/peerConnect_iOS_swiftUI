@@ -13,9 +13,7 @@ class ConnectionManager : NSObject, ObservableObject {
     //typealias PeerReceivedHandler = (PeerModel) -> Void
     
     @Published var peers: [MCPeerID] = []
-    //@Published var peersConnectionStates : [Dictionary<MCPeerID, AppState>] = []
     @Published var peersInfo : [PeerInfo] = []
-    @Published var electedPeers : [PeerInfo] = []
     
     private var session: MCSession!
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
@@ -29,7 +27,6 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
-    //@Published var navigateToChat = false
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal
     var isHost = false
@@ -40,6 +37,7 @@ class ConnectionManager : NSObject, ObservableObject {
     // if it is 0, it goes from connecting state to notConnected state, so it is the peer refused the
     //   invitation.
     private var fromConnectedOrConnecting = 0
+    var endChatState = false
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -201,17 +199,6 @@ class ConnectionManager : NSObject, ObservableObject {
         return peerNames
     }
      
-    /*
-    private func getPeerIDs(peerInfoList: [PeerInfo]) -> [MCPeerID] {
-        var peers : [MCPeerID] = []
-        print(peerInfoList)
-        for peer in peerInfoList {
-            peers.append(peer.peerID)
-            print("getPeerID: \(peer.peerID)")
-        }
-        return peers
-    }
-    */
     func sendFile(peer: MCPeerID) {
         //session.sendResource(at: <#T##URL#>, withName: <#T##String#>, toPeer: peer) { error in
         //    if let error = error {
@@ -221,21 +208,73 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func connectPeers() {
-        //var peersToInvite : [MCPeerID] = []
         for peer in self.peersInfo {
             if (peer.isChecked) {
-                //peersToInvite.append(peer.peerID)
                 self.inviteConnect(peerID: peer.peerID)
             }
         }
-        //for peer in peersToInvite {
-        //    self.inviteConnect(peerInfo: peer)
-        //}
+       
     }
-    
-    //func findPeerInfo(peerID: MCPeerID) {
-    //    self.peersInfo[peerID]
-    //}
+    // this method is only for server side to monitor connection progress
+    // this method will be triggered by selectedPeersView,
+    // it needs to access if all peers are connected yet
+    // we'll count the connected peers here and change the app state
+    func getAppState() {
+        // if all peers responds, either connected, or not connected states received
+        // app state is start chat, else app state is connecting
+        // so, when the app state is ready to chat, we can navigate to chat view
+        
+        // here I set readyToChat as 0, 1, or 2, not true or false, I want to distinguish
+        // the case of no selected peer too.
+        var readyToChat = 0
+        
+        var allDisconnected = true
+        for peer in self.peersInfo {
+            if //(peer.isChecked && (peer.state == PeerState.connected || peer.state == PeerState.fromConnectedToDisconnected || peer.state == PeerState.fromConnectingToNotConnected)) {
+                (peer.isChecked && (peer.state == PeerState.connecting)) {
+                    allDisconnected = false
+                    readyToChat = 1   // someone is still connecting
+                break
+            } else if (peer.isChecked && peer.state == PeerState.connected) {
+                allDisconnected = false
+            }
+            readyToChat = 2     // there is no one set ready to 1
+        }
+        
+        if (readyToChat == 2 && !allDisconnected) {
+            DispatchQueue.main.async {
+                self.appState = AppState.connected
+            }
+            print("model: appState startChat")
+            
+        } else if (self.endChatState) {
+            DispatchQueue.main.async {
+                self.appState = AppState.endChat
+            }
+            print("model: appState end chat")
+        } else if (readyToChat == 1) {
+            DispatchQueue.main.async {
+                self.appState = AppState.connecting
+            }
+            print("model: appState connecting")
+            // so, no peer is connecting or connected
+        } else if (allDisconnected && readyToChat == 2) {
+            DispatchQueue.main.async {
+                self.appState = AppState.normal
+            }
+            print("model: appState all disconnected, normal state")
+        
+        } else {
+            DispatchQueue.main.async {
+                self.appState = AppState.normal
+            }
+            print("there is no selected peer.")
+            // not going to change app state
+        }
+        // if all peers is in disconnected states, the app state should be normal,
+        // that is, not in connecting or connected state
+        
+    }
 }
 
 // to receive invitation
@@ -259,8 +298,6 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
                 self.connectedPeerInfo = PeerInfo(peer: peerID)
-                
-                
             }
             invitationHandler(true, self.session)
         })
@@ -302,8 +339,6 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
 
 extension ConnectionManager : MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-
-        //print("state variable: \(state)")
        
         switch state {
         case .connected:
@@ -318,10 +353,11 @@ extension ConnectionManager : MCSessionDelegate {
                 }
                 self.peersInfo[peerIndex].state = PeerState.connected
                 self.connectionState = ConnectionState.connected
-                self.appState = AppState.connected
                 self.connectedPeer = peerID
+                self.getAppState()
                 //print("should navigate done")
             }
+            
         case .notConnected:
             //print("not connected: \(peerID.displayName)")
             //print("fromConnectedOrConnecting : \(fromConnectedOrConnecting)")
@@ -329,20 +365,22 @@ extension ConnectionManager : MCSessionDelegate {
             case 1:
                 print("not connected state: from connected 1")
                 DispatchQueue.main.async {
-                    self.appState = AppState.fromConnectedToDisconnected
+                    //self.appState = AppState.fromConnectedToDisconnected
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
+                    self.getAppState()
                 }
             case 0:
                 print("not connected state: from connecting 0")
                 DispatchQueue.main.async {
-                    self.appState = AppState.fromConnectingToNotConnected
+                    //self.appState = AppState.fromConnectingToNotConnected
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectingToNotConnected
+                    self.getAppState()
                 }
             default:
                 print("not connected state: 0")
@@ -351,10 +389,8 @@ extension ConnectionManager : MCSessionDelegate {
             self.fromConnectedOrConnecting = 0
             DispatchQueue.main.async {
                 // not successfully connected, eg peer decline the invitation
-                
                 self.connectionState = ConnectionState.notConnected
                 self.connectedPeer = nil
-                //self.navigateToChat = false
             }
             // remote peer should navigate to peerslistview
         case .connecting:
@@ -365,13 +401,17 @@ extension ConnectionManager : MCSessionDelegate {
                     return
                 }
                 self.peersInfo[peerIndex].state = PeerState.connecting
-                self.appState = AppState.connecting
+                //self.appState = AppState.connecting
                 self.connectionState = ConnectionState.connecting
+                self.getAppState()
             }
             
         default:
             print("unknown state")
         }
+        // we update the app state after states assignments above
+        // we should update the app state as a whole whenever peers' connection state changed.
+        //self.getAppState()
     }
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
@@ -394,7 +434,6 @@ extension ConnectionManager : MCSessionDelegate {
         // so, the host of the chat will send for them, and send here
         if isHost {
             var restOfPeers : [MCPeerID] = [] // don't need to send to the peer who send the message to the host
-            //var peersToSend : [MCPeerID] = []
             
             // extract the MCPeerID from peersInfo, to send
             for peer in peersInfo {
@@ -402,13 +441,6 @@ extension ConnectionManager : MCSessionDelegate {
                     restOfPeers.append(peer.peerID)
                 }
             }
-            //for peer in self.selectedPeers {
-            //    if peer.peerID.displayName != peerID.displayName {
-                    //print("isHost is true")
-                    //print("included in restOfPeers \(peer.peerID.displayName)")
-            //        restOfPeers.append(peer)
-            //    }
-            //}
             self.redirectMessageToPeers(message: message, peersToSend: restOfPeers, whoSaid: peerID.displayName)
         }
         // here, we need to send the received message to the interface

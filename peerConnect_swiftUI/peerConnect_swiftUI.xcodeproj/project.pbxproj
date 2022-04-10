@@ -121,7 +121,6 @@
 		E74BCA2E27F228A600B47747 /* peerConnect_swiftUI */ = {
 			isa = PBXGroup;
 			children = (
-				E76F6DF328023742005B534E /* View Models */,
 				E75EA78127FB3E3D0018A812 /* Helpers */,
 				E7BD95C627F73EE000001B5C /* Document Picker */,
 				409D1B2A27F3DF5F00717710 /* Chat Views */,
@@ -195,13 +194,6 @@
 				E75EA78227FB3E4E0018A812 /* Constants.swift */,
 			);
 			path = Helpers;
-			sourceTree = "<group>";
-		};
-		E76F6DF328023742005B534E /* View Models */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "View Models";
 			sourceTree = "<group>";
 		};
 		E7BD95C627F73EE000001B5C /* Document Picker */ = {

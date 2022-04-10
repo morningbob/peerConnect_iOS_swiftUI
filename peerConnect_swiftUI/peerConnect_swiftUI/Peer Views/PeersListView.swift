@@ -11,6 +11,7 @@ struct PeersListView: View {
     
     @StateObject var connectionManager = ConnectionManager()
     @StateObject var appStateModel = AppStateModel()
+    @State private var shouldNavigateToPeerStatus = false
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer."
     //@State private var showUnsuccessfulConnection = false
@@ -28,10 +29,10 @@ struct PeersListView: View {
             
             set: {_ in
                 if connectionManager.connectionState == ConnectionState.connected {
-                    self.shouldNavigateToChat = true
+                    self.shouldNavigateToPeerStatus = true
                     //print("binding set true")
                 } else {
-                    self.shouldNavigateToChat = false
+                    self.shouldNavigateToPeerStatus = false
                     //print("binding set false")
                 }
             })
@@ -45,7 +46,7 @@ struct PeersListView: View {
                     if let checkedIndex =
                         //self.peerCheckListItems.firstIndex(where: { $0.id == peerItem.id }) {
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
-                            self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
+                        self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
                             //peerInfo.isChecked.toggle()
                             //self.connectionManager.peersInfo[checkedIndex] = peerInfo
                             print("toggled")
@@ -85,7 +86,7 @@ struct PeersListView: View {
                 // or the connected peer as a client, in the other words, distinguish which
                 // side (server or client) to run send message
                 connectionManager.isHost = true
-                
+                self.shouldNavigateToPeerStatus = true
             })
             {
                 Text("Start Chat")
@@ -124,14 +125,48 @@ struct PeersListView: View {
             }
         })
         .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
-            print("onReceive, peerInfo changed")
+            print("Peer list view, peerInfo changed")
+            //connectionManager.getAppState()
+            var i = 0
+            for peer in peersInfo {
+                if (peer.isChecked) {
+                    print("checked \(peer.peerID.displayName)")
+                    i += 1
+                }
+            }
+            print("total peers: \(String(i))")
+        })
+        /*
+        .onReceive(connectionManager.$appState, perform: { state in
+            if (state == AppState.connected) {
+                print("appState change detected")
+                self.shouldNavigateToChat = true
+            }
+        })
+         */
+        .onReceive(connectionManager.$connectedPeer, perform: { connectedPeer in
+            if (connectedPeer != nil && !connectionManager.isHost) {
+                // we watch the connectedPeer to see if the connection from the server is successful,
+                // this is for the client side to navigate to chat view
+                guard let index = self.connectionManager.peersInfo.firstIndex(where: { $0.peerID == connectedPeer }) else {
+                    return
+                }
+                // this is for the getAppState method in connection manager, to show correct app state
+                // to navigate
+                self.connectionManager.peersInfo[index].isChecked = true
+                self.shouldNavigateToChat = true
+            }
         })
          
         // I put the navigation link here instead of in the VStack,
         // to avoid it to be activated by clicking on it.  It's a SwiftUI bug.
-        NavigationLink(destination: SelectedPeersView().environmentObject(connectionManager), isActive: navigateBinding) {
+        NavigationLink(destination: SelectedPeersView().environmentObject(connectionManager).environmentObject(appStateModel), isActive: self.$shouldNavigateToPeerStatus) {
+            EmptyView()
+        }.isDetailLink(false)
+        NavigationLink(destination: ChatView().environmentObject(connectionManager).environmentObject(appStateModel), isActive: $shouldNavigateToChat) {
             EmptyView()
         }
+        
     }
     
 }

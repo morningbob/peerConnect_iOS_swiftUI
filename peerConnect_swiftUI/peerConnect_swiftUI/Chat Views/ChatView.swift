@@ -39,9 +39,7 @@ struct ChatView: View {
             Spacer()
             Text(self.peerStatus)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
-                //.onReceive(self.connectionManager.$selectedPeers, perform: { selectedPeers in
-                //    self.peerStatus = getPeerStatus()
-                //})
+            
             Spacer()
             HStack {
                 Spacer()
@@ -50,8 +48,9 @@ struct ChatView: View {
                     print("ending chat")
                     // reset isHost, no longer to be the host
                     connectionManager.isHost = false
+                    connectionManager.endChatState = true
                     // pop this view
-                    //self.presentation.wrappedValue.dismiss()
+                    
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -92,9 +91,12 @@ struct ChatView: View {
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
             .onReceive(connectionManager.$appState, perform: { appState in
-                if (appState == AppState.fromConnectedToDisconnected || appState == AppState.fromConnectingToNotConnected) {
+                if (appState == AppState.normal || appState == AppState.endChat) {
                     self.presentation.wrappedValue.dismiss()
                 }
+            })
+            .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+                connectionManager.getAppState()
             })
             
         }
@@ -115,30 +117,11 @@ struct ChatView: View {
             }
          */
     }
+
     
     private func getDocumentFromUrl() {
         print("document: \(self.urlContent.url)")
     }
-    /*
-    private func getPeerStatus() -> String {
-        var namesConnected = "Connected: "
-        var namesDisconnected = "Disconnected: "
-        var namesRejected = "Rejected Connection: "
-        for peer in self.connectionManager.peersInfo {
-            if (peer.state == AppState.connected) {
-                namesConnected += peer.peerID.displayName + " "
-            }
-            if (peer.state == AppState.fromConnectedToDisconnected) {
-                namesDisconnected += peer.peerID.displayName + " "
-            }
-            if (peer.state == AppState.fromConnectingToNotConnected) {
-                namesRejected += peer.peerID.displayName + " "
-            }
-        }
-        let returnText = "\(namesConnected) \n \(namesDisconnected) \n \(namesRejected)"
-        return returnText
-    }
-     */
 }
 
 struct UrlContent {
