@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MultipeerConnectivity
-
+//import NavigationViewKit
 
 struct ChatView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
@@ -17,6 +17,7 @@ struct ChatView: View {
     @State private var showingDocumentPicker = false
     @State private var urlContent = UrlContent()
     @State private var peerStatus = ""
+    //@Environment(\.navigationManager) var nvmanager
     
     var body: some View {
         

@@ -13,6 +13,7 @@ struct SelectedPeersView: View {
     @EnvironmentObject var appStateModel : AppStateModel
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
+    //@Binding var end: Bool
     
     var body: some View {
         

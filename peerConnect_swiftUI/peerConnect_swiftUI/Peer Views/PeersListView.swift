@@ -17,7 +17,7 @@ struct PeersListView: View {
     //@State private var showUnsuccessfulConnection = false
     @State private var peerCheckListItems : [PeerCheckListItem] = []
     @State private var showConnectingAlert : Bool = false
-    @State private var selectedPeers : [PeerInfo] = []
+    //@State private var selectedPeers : [PeerInfo] = []
     @State private var refreshView = false
     
     var body: some View {

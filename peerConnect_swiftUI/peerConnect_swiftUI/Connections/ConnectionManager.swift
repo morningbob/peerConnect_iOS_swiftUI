@@ -28,7 +28,14 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
     @Published var connectionState = ConnectionState.listening
-    @Published var appState = AppState.normal
+    @Published var appState = AppState.normal {
+        didSet {
+            if (appState == AppState.endChat) {
+                print("endChat detected, reset starts")
+                self.resetSelectedPeers()
+            }
+        }
+    }
     var isHost = false
     private let key = "7431rk"
     // this variable is to record if the app goes from connecting or connected state to notConnected state
@@ -185,6 +192,15 @@ class ConnectionManager : NSObject, ObservableObject {
     func endChat() {
         // should let remote peer knows
         session.disconnect()
+    }
+    
+    private func resetSelectedPeers() {
+        for peer in self.peersInfo {
+            if (peer.isChecked) {
+                peer.isChecked.toggle()
+                print("isChecked toggled")
+            }
+        }
     }
     
     // this name strings is stored in the peers field in the message model
