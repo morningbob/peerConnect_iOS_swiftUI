@@ -32,7 +32,7 @@ class ConnectionManager : NSObject, ObservableObject {
         didSet {
             if (appState == AppState.endChat) {
                 print("endChat detected, reset starts")
-                self.resetSelectedPeers()
+                self.resetSelectedPeersAndNormalState()
             }
         }
     }
@@ -48,7 +48,6 @@ class ConnectionManager : NSObject, ObservableObject {
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
-        //myPeerId = MCPeerID(displayName: UIDevice.current.name)
         session = MCSession(
             peer: myPeerId,
             securityIdentity: nil,
@@ -194,13 +193,14 @@ class ConnectionManager : NSObject, ObservableObject {
         session.disconnect()
     }
     
-    private func resetSelectedPeers() {
+    private func resetSelectedPeersAndNormalState() {
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 peer.isChecked.toggle()
                 print("isChecked toggled")
             }
         }
+        self.endChatState = false
     }
     
     // this name strings is stored in the peers field in the message model
@@ -386,6 +386,9 @@ extension ConnectionManager : MCSessionDelegate {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
+                    if !self.isHost {
+                        self.endChatState = true
+                    }
                     self.getAppState()
                 }
             case 0:

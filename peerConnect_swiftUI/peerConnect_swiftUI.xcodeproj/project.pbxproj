@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409D1B2B27F3DF8000717710 /* ChatView.swift */; };
-		409ED47927FFBB2D0004F3C3 /* AppStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409ED47827FFBB2D0004F3C3 /* AppStateModel.swift */; };
 		E72B072027FDDA99002B956E /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E72B071F27FDDA99002B956E /* PeerInfo.swift */; };
 		E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */; };
 		E74BCA3227F228A600B47747 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA3127F228A600B47747 /* ContentView.swift */; };
@@ -44,7 +43,6 @@
 
 /* Begin PBXFileReference section */
 		409D1B2B27F3DF8000717710 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
-		409ED47827FFBB2D0004F3C3 /* AppStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateModel.swift; sourceTree = "<group>"; };
 		E72B071F27FDDA99002B956E /* PeerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfo.swift; sourceTree = "<group>"; };
 		E74BCA2C27F228A600B47747 /* peerConnect_swiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peerConnect_swiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E74BCA2F27F228A600B47747 /* peerConnect_swiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = peerConnect_swiftUIApp.swift; sourceTree = "<group>"; };
@@ -174,7 +172,6 @@
 			children = (
 				E7F0604127F4AE5800C10D95 /* MessageModel.swift */,
 				E72B071F27FDDA99002B956E /* PeerInfo.swift */,
-				409ED47827FFBB2D0004F3C3 /* AppStateModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -344,7 +341,6 @@
 				E75EA78327FB3E4E0018A812 /* Constants.swift in Sources */,
 				409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */,
 				E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */,
-				409ED47927FFBB2D0004F3C3 /* AppStateModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

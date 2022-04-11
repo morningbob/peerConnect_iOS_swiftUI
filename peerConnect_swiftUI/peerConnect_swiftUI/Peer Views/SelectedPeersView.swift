@@ -10,27 +10,10 @@ import SwiftUI
 struct SelectedPeersView: View {
     
     @EnvironmentObject var connectionManager : ConnectionManager
-    @EnvironmentObject var appStateModel : AppStateModel
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
-    //@Binding var end: Bool
     
     var body: some View {
-        
-        let navigateBinding = Binding<Bool> (
-            get: {
-                //print("binding executed")
-                return self.connectionManager.appState == AppState.connected },
-            
-            set: {_ in
-                if self.connectionManager.appState == AppState.connected {
-                    self.shouldNavigateToChat = true
-                    //print("binding set true")
-                } else {
-                    self.shouldNavigateToChat = false
-                    //print("binding set false")
-                }
-            })
         
         VStack {
             // here we input the peersInfo which are selected
@@ -51,12 +34,12 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
-            } else if (state == AppState.endChat) {
-                self.presentation.wrappedValue.dismiss()
-            }
+            } //else if (state == AppState.endChat) {
+              //  self.presentation.wrappedValue.dismiss()
+            //}
         })
         .navigationTitle("Peers Status")
-        NavigationLink(destination: ChatView().environmentObject(connectionManager).environmentObject(appStateModel), isActive: $shouldNavigateToChat) {
+        NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $shouldNavigateToChat) {
             EmptyView()
         }
         
@@ -105,4 +88,20 @@ struct PeerStatusView : View {
     }
 }
 
+/*
+ let navigateBinding = Binding<Bool> (
+     get: {
+         //print("binding executed")
+         return self.connectionManager.appState == AppState.connected },
+     
+     set: {_ in
+         if self.connectionManager.appState == AppState.connected {
+             self.shouldNavigateToChat = true
+             //print("binding set true")
+         } else {
+             self.shouldNavigateToChat = false
+             //print("binding set false")
+         }
+     })
+ */
 

@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var isLinkActive = false
-    //@State var isChatActive = false
+    @State var startApp = false
     
     var body: some View {
         NavigationView {
@@ -27,15 +26,14 @@ struct ContentView: View {
                     
                     .font(.system(size: 18))
                     .navigationBarTitle("Peer Connect", displayMode: .inline)
-                //HStack {
                     
                 Spacer()
                 HStack {
                     Spacer()
-                    NavigationLink(destination: PeersListView(), isActive: $isLinkActive) {
+                    NavigationLink(destination: PeersListView(), isActive: $startApp) {
                    
                         Button(action: {
-                            self.isLinkActive = true
+                            self.startApp = true
                         }) {
                             Text("Start")
                         .padding()
