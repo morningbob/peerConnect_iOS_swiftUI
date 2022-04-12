@@ -12,7 +12,7 @@ class PeerInfo : Identifiable, ObservableObject {
     //let name : String
     let id = UUID()
     let peerID : MCPeerID
-    var state : PeerState
+    @Published var state : PeerState
     @Published var isChecked = false
     
     init(peer: MCPeerID) {

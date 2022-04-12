@@ -37,7 +37,10 @@ class ConnectionManager : NSObject, ObservableObject {
         }
     }
     var isHost = false
-    private let key = "7431rk"
+    // the following keys are for the clients to identify messages sent from the host,
+    // for status info.
+    private let peerNameKey = "7431rk"
+    private let groupNameKey = "3984kg"
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
     //   there is technical difficulties.
@@ -157,7 +160,7 @@ class ConnectionManager : NSObject, ObservableObject {
         // here we need to let the rest of the peers know who said the message
         // here we append the message by a key and the who said
         
-        let newMessage = message + self.key + whoSaid
+        let newMessage = message + self.peerNameKey + whoSaid
         if (sendMessage(newMessage, peersToSend: peersToSend, whoSaid: whoSaid)) {
             //print("sent redirect message")
         }
@@ -167,7 +170,7 @@ class ConnectionManager : NSObject, ObservableObject {
         var indexOfName = 0
         var indexOfMessageEnd = 0
         var resultArray = Array<String>()
-        let ranges = message.ranges(of: self.key)
+        let ranges = message.ranges(of: self.peerNameKey)
         ranges.forEach {
             //print("decoding who said")
             //print($0.upperBound.utf16Offset(in: message))
@@ -186,6 +189,39 @@ class ConnectionManager : NSObject, ObservableObject {
         //print("decode name result: \(name)")
         //print("decode message result: \(message)")
         return resultArray
+    }
+    
+    private func decodeGroupName(info: String) {
+        // first name starts from index 6, since the key has 6 characters
+        // extract first name from 6, look for 747 seperator and start from that index
+        // cut the string from index 6
+        // first pattern match , from 0 to index
+        //var memberString = info.substring(from: info.startIndex, offsetBy: 6)
+        //var memberString = info[6..>]
+        let start = info.index(info.startIndex, offsetBy: 6)
+        let memberString = String(info[start...])
+        print("memberString \(memberString)")
+        retrieveNames(memberString: memberString)
+        
+    }
+    
+    private func retrieveNames(memberString: String) -> String {
+        // if string == "" or nil, return ""
+        if (memberString == "" || memberString == nil) {
+            return ""
+        }
+        let endingNameInd = memberString.index(of: "747")
+        print("memInd \(endingNameInd)")
+        // if string != "" or nil, retrieveNames(newMemberString)
+        if endingNameInd != nil {
+            let name = memberString[memberString.startIndex..<endingNameInd!]
+            print("name \(name)")
+            let begin = memberString.index(endingNameInd!, offsetBy: 3)
+            let restMemberString = memberString[begin..<memberString.endIndex]
+            print("rest of string \(String(restMemberString))")
+            return retrieveNames(memberString: String(restMemberString))
+        }
+        return ""
     }
     
     func endChat() {
@@ -297,9 +333,21 @@ class ConnectionManager : NSObject, ObservableObject {
             print("there is no selected peer.")
             // not going to change app state
         }
-        // if all peers is in disconnected states, the app state should be normal,
-        // that is, not in connecting or connected state
-        
+    }
+    
+    func getGroupInfo(peerID: MCPeerID) -> String {
+        var groupNames = getPeerNameString()
+        let peer = groupNames.firstIndex(where: { $0 == peerID.displayName })
+        // remove the name of the targeted peer (the client)
+        if peer != nil {
+            groupNames.remove(at: peer!)
+        }
+        var groupString = groupNameKey
+        // 747 is used to separate group names
+        for peer in groupNames {
+            groupString += "\(peer)747"
+        }
+        return groupString
     }
 }
 
@@ -324,6 +372,10 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
                 self.connectedPeerInfo = PeerInfo(peer: peerID)
+                //self.connectedPeerInfo?.state = PeerState.connected
+                // for the client, show peer status as connected to the host
+                //self.peersInfo.append(self.connectedPeerInfo!)
+                
             }
             invitationHandler(true, self.session)
         })
@@ -377,11 +429,21 @@ extension ConnectionManager : MCSessionDelegate {
                 guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                     return
                 }
-                self.peersInfo[peerIndex].state = PeerState.connected
-                self.connectionState = ConnectionState.connected
+                print("didChange, got peerIndex, changed state to connected, peer: \(peerID.displayName)")
+                // here, we trigger a change in peerInfo, so peer status changes can be detected.
+                var peerInfo = self.peersInfo[peerIndex]
+                peerInfo.state = PeerState.connected
+                self.peersInfo[peerIndex] = peerInfo
+                //self.peersInfo[peerIndex].state = PeerState.connected
+                //self.connectionState = ConnectionState.connected
                 self.connectedPeer = peerID
                 self.getAppState()
                 //print("should navigate done")
+                
+                // here when the state is connected, the host will send members info to all clients
+                if (self.isHost) {
+                    self.sendMessage(self.getGroupInfo(peerID: peerID), peersToSend: [peerID], whoSaid: "Me")
+                }
             }
             
         case .notConnected:
@@ -450,10 +512,12 @@ extension ConnectionManager : MCSessionDelegate {
         var whoSaid = ""
         var filteredMessage = ""
         var resultArray = Array<String>()
-        if (message.contains(self.key)) {
+        if (message.contains(self.peerNameKey)) {
             resultArray = self.decodeWhoSaid(message: message)
             whoSaid = resultArray[0]
             filteredMessage = resultArray[1]
+        } else if (message.contains(self.groupNameKey)) {
+            self.decodeGroupName(info: message)
         } else {
             whoSaid = peerID.displayName
             filteredMessage = message
@@ -521,6 +585,15 @@ extension StringProtocol {
             return range(of: targetString, options: options, range: startIndex..<targetStringEndIndex, locale: locale)
         }
         return result
+    }
+    func index<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> Index? {
+        range(of: string, options: options)?.lowerBound
+    }
+    func endIndex<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> Index? {
+        range(of: string, options: options)?.upperBound
+    }
+    func indices<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> [Index] {
+        ranges(of: string as! Self, options: options).map(\.lowerBound)
     }
 }
 

@@ -61,36 +61,41 @@ struct PeersListView: View {
             // peers one by one, when they are all connected, the app will
             // navigate to chat view.  Maybe the app will report those peers that
             // could not be connected.
-            Button(action: {
-                connectionManager.connectPeers()
-                // this is to distinguish if the app should send messages to peers in the list,
-                // or the connected peer as a client, in the other words, distinguish which
-                // side (server or client) to run send message
-                connectionManager.isHost = true
-                self.shouldNavigateToPeerStatus = true
-            })
-            {
-                Text("Connect")
-                    .font(.system(size: 18))
-                    .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.blue, lineWidth: 1))
+            HStack {
+                Spacer()
+                Button(action: {
+                    connectionManager.connectPeers()
+                    // this is to distinguish if the app should send messages to peers in the list,
+                    // or the connected peer as a client, in the other words, distinguish which
+                    // side (server or client) to run send message
+                    connectionManager.isHost = true
+                    self.shouldNavigateToPeerStatus = true
+                })
+                {
+                    Text("Connect")
+                        .font(.system(size: 18))
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                }
+                Spacer()
+                Button(action: {
+                    // sometimes, the app can't navigate to chat view,
+                    // here user can navigate manually
+                    
+                    self.shouldNavigateToChat = true
+                })
+                {
+                    Text("Chat View")
+                        .font(.system(size: 18))
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.blue, lineWidth: 1))
+                }
+                Spacer()
             }
             Spacer()
-            Button(action: {
-                // sometimes, the app can't navigate to chat view,
-                // here user can navigate manually
-                
-                self.shouldNavigateToChat = true
-            })
-            {
-                Text("Chat View")
-                    .font(.system(size: 18))
-                    .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.blue, lineWidth: 1))
-            }
-            Spacer()
+            
         }
         .environmentObject(connectionManager)
         .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))

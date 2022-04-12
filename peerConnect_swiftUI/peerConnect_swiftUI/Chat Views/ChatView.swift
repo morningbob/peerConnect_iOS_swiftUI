@@ -37,8 +37,9 @@ struct ChatView: View {
             .padding()
             .background(Color.white)
             Spacer()
-            Text(self.peerStatus)
+            PeerStatus(connectionManager: self.connectionManager)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                //.frame(alignment: .leading)
             
             Spacer()
             HStack {
@@ -120,30 +121,58 @@ struct ChatView: View {
          */
     }
     
-    private func getPeerStatus() -> [String] {
-        var connectedPeers = self.connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
-        var disconnectedPeers = self.connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
-        var connectedText = ""
-        for peer in connectedPeers {
-            connectedText += peer + " "
-        }
-        var disconnectedText = ""
-        for peer in disconnectedPeers {
-            disconnectedText += peer + " "
-        }
-        return [connectedText, disconnectedText]
-    }
+    
     
     struct PeerStatus : View {
         
+        @ObservedObject var connectionManager : ConnectionManager
+        
+        @State var connectedPeersText : String = "none"
+        @State var disconnectedPeersText : String = "none"
+        @State var groupMembersText : String = "none"
+        
         var body: some View {
-            VStack {
-                HStack {
-                    Text("Connected:  " )
+            VStack(alignment: .leading, spacing: 3) {
+                //HStack {
+                    Text("Connected:  \(self.connectedPeersText)" )
+                    .padding(25)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                    Text("Disconnected: \(self.disconnectedPeersText)")
+                    .padding(25)
+                    //.frame(alignment: .leading)
+                    Spacer()
                     //Text()
                     
-                }
+                //}
+            }.onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+                print("getPeerStatus triggered")
+                getPeerStatus()
+            })
+            
+        }
+            
+        
+        private func getPeerStatus()  {
+            var connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+            var disconnectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
+            var connectedText = ""
+            for peer in connectedPeers {
+                connectedText += peer + "   "
             }
+            if connectedText == "" {
+                connectedText = "none"
+            }
+            var disconnectedText = ""
+            for peer in disconnectedPeers {
+                disconnectedText += peer + "   "
+            }
+            if disconnectedText == "" {
+                disconnectedText = "none"
+            }
+            self.connectedPeersText = connectedText
+            self.disconnectedPeersText = disconnectedText
+            //return [connectedText, disconnectedText]
         }
         
     }
