@@ -30,7 +30,6 @@ struct ChatView: View {
             }.environmentObject(connectionManager)
                 .frame( height: 300)
             TextField("Enter Message: ", text: $messageText, onCommit: {
-                //guard !messageText.isEmpty && (self.connectionManager.connectedPeerInfo != nil) else { return }
                 print("chat view, send message once ")
                 connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
                 messageText = ""
@@ -97,6 +96,8 @@ struct ChatView: View {
                 }
             })
             .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+                // here we can also update the peers status below the chat field.
+                // update peer status view
                 connectionManager.getAppState()
             })
             
@@ -117,6 +118,34 @@ struct ChatView: View {
                 }
             }
          */
+    }
+    
+    private func getPeerStatus() -> [String] {
+        var connectedPeers = self.connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+        var disconnectedPeers = self.connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
+        var connectedText = ""
+        for peer in connectedPeers {
+            connectedText += peer + " "
+        }
+        var disconnectedText = ""
+        for peer in disconnectedPeers {
+            disconnectedText += peer + " "
+        }
+        return [connectedText, disconnectedText]
+    }
+    
+    struct PeerStatus : View {
+        
+        var body: some View {
+            VStack {
+                HStack {
+                    Text("Connected:  " )
+                    //Text()
+                    
+                }
+            }
+        }
+        
     }
 
     

@@ -205,10 +205,20 @@ class ConnectionManager : NSObject, ObservableObject {
     
     // this name strings is stored in the peers field in the message model
     // is used for database queries later
-    private func getPeerNameString() -> [String] {
+    func getPeerNameString() -> [String] {
         var peerNames : [String] = []
         for peer in self.peersInfo {
             if (peer.isChecked) {
+                peerNames.append(peer.peerID.displayName)
+            }
+        }
+        return peerNames
+    }
+    
+    func getPeerNameStringForState(peerState: PeerState) -> [String] {
+        var peerNames : [String] = []
+        for peer in self.peersInfo {
+            if (peer.isChecked && peer.state == peerState) {
                 peerNames.append(peer.peerID.displayName)
             }
         }
