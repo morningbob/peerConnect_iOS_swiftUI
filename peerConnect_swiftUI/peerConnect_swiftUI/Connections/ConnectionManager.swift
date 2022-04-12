@@ -41,6 +41,7 @@ class ConnectionManager : NSObject, ObservableObject {
     // for status info.
     private let peerNameKey = "7431rk"
     private let groupNameKey = "3984kg"
+    @Published private var groupMemberNames : [String] = []
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
     //   there is technical difficulties.
@@ -201,7 +202,7 @@ class ConnectionManager : NSObject, ObservableObject {
         let start = info.index(info.startIndex, offsetBy: 6)
         let memberString = String(info[start...])
         print("memberString \(memberString)")
-        retrieveNames(memberString: memberString)
+        self.retrieveNames(memberString: memberString)
         
     }
     
@@ -216,6 +217,7 @@ class ConnectionManager : NSObject, ObservableObject {
         if endingNameInd != nil {
             let name = memberString[memberString.startIndex..<endingNameInd!]
             print("name \(name)")
+            self.groupMemberNames.append(String(name))
             let begin = memberString.index(endingNameInd!, offsetBy: 3)
             let restMemberString = memberString[begin..<memberString.endIndex]
             print("rest of string \(String(restMemberString))")
