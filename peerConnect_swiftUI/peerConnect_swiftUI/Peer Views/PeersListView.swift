@@ -19,9 +19,13 @@ struct PeersListView: View {
     
     var body: some View {
         
+        ScrollViewReader { proxy in
+        
         VStack {
-            List(self.connectionManager.peersInfo) { peerInfo in
-                PeerRowView(peerInfo: peerInfo)
+            
+            List(self.connectionManager.peersInfo, id: \.id) { peerInfo in
+                //ForEach(
+                PeerRowView(peerInfo: peerInfo).id(peerInfo.id)
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -134,6 +138,12 @@ struct PeersListView: View {
                 }
             }
             print("total peers: \(String(i))")
+            
+            guard !peersInfo.isEmpty else { return }
+
+            withAnimation(Animation.easeInOut) {
+                proxy.scrollTo(peersInfo.last!.id)
+            }
         })
         /*
         .onReceive(connectionManager.$appState, perform: { state in
@@ -182,7 +192,7 @@ struct PeersListView: View {
              }
             }
          */
-        
+        }
     }
     
 }
