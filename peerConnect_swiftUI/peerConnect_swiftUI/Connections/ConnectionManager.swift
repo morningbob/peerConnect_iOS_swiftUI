@@ -41,7 +41,7 @@ class ConnectionManager : NSObject, ObservableObject {
     // for status info.
     private let peerNameKey = "7431rk"
     private let groupNameKey = "3984kg"
-    @Published private var groupMemberNames : [String] = []
+    @Published var groupMemberNames : [String] = []
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
     //   there is technical difficulties.
@@ -193,12 +193,8 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     private func decodeGroupName(info: String) {
-        // first name starts from index 6, since the key has 6 characters
-        // extract first name from 6, look for 747 seperator and start from that index
-        // cut the string from index 6
-        // first pattern match , from 0 to index
-        //var memberString = info.substring(from: info.startIndex, offsetBy: 6)
-        //var memberString = info[6..>]
+        // add user's name to the group first
+        self.groupMemberNames.append(myPeerId.displayName)
         let start = info.index(info.startIndex, offsetBy: 6)
         let memberString = String(info[start...])
         print("memberString \(memberString)")
@@ -542,6 +538,7 @@ extension ConnectionManager : MCSessionDelegate {
         DispatchQueue.main.async {
             self.messages.append(message)
             var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
+            print("message \(filteredMessage) recorded")
             //print("always run added to message list \(message)")
             self.messageModels.append(messageModel)
         }

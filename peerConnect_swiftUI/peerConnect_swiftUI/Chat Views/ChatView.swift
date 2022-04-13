@@ -102,6 +102,7 @@ struct ChatView: View {
                 connectionManager.getAppState()
             })
             
+            
         }
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
@@ -138,15 +139,22 @@ struct ChatView: View {
                     .padding(25)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     Spacer()
-                    Text("Disconnected: \(self.disconnectedPeersText)")
+                    Text("Disconnected:  \(self.disconnectedPeersText)")
                     .padding(25)
-                    //.frame(alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                    Text("Group members:  \(self.groupMembersText)")
+                    .padding(25)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     Spacer()
                     //Text()
                     
                 //}
             }.onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 print("getPeerStatus triggered")
+                getPeerStatus()
+            })
+            .onReceive(connectionManager.$groupMemberNames, perform: { names in
                 getPeerStatus()
             })
             
@@ -170,9 +178,17 @@ struct ChatView: View {
             if disconnectedText == "" {
                 disconnectedText = "none"
             }
+            // assgin to state variables once only for the whole text
+            // to avoid too many refresh.
             self.connectedPeersText = connectedText
             self.disconnectedPeersText = disconnectedText
-            //return [connectedText, disconnectedText]
+            
+            var groupMembers = connectionManager.groupMemberNames
+            var groupText = ""
+            for member in groupMembers {
+                groupText += member + "   "
+            }
+            self.groupMembersText = groupText
         }
         
     }
