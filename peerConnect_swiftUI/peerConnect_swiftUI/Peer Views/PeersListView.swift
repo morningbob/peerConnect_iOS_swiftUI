@@ -65,6 +65,7 @@ struct PeersListView: View {
                 Spacer()
                 Button(action: {
                     connectionManager.connectPeers()
+                    print("connectPeers is triggered")
                     // this is to distinguish if the app should send messages to peers in the list,
                     // or the connected peer as a client, in the other words, distinguish which
                     // side (server or client) to run send message

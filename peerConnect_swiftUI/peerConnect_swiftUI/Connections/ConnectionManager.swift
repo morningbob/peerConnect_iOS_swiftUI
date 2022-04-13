@@ -127,12 +127,13 @@ class ConnectionManager : NSObject, ObservableObject {
         var peersToSend : [MCPeerID] = []
         
         // extract the MCPeerID from peersInfo, to send
-        for peer in peersInfo {
+        for peer in self.peersInfo {
             if (peer.isChecked) {
+                print("send message to peers, peer \(peer.peerID.displayName)")
                 peersToSend.append(peer.peerID)
             }
         }
-        
+        /*
         if !isHost {
             //guard let connectedPeerInfo = self.connectedPeerInfo else {
             //return
@@ -143,8 +144,10 @@ class ConnectionManager : NSObject, ObservableObject {
             }
             peersToSend = [connectedPeer]
         }
+         */
         
         if peersToSend.isEmpty {
+            print("send message to peers, no peer to send, return")
             return
         }
         
@@ -213,7 +216,9 @@ class ConnectionManager : NSObject, ObservableObject {
         if endingNameInd != nil {
             let name = memberString[memberString.startIndex..<endingNameInd!]
             print("name \(name)")
-            self.groupMemberNames.append(String(name))
+            DispatchQueue.main.async {
+                self.groupMemberNames.append(String(name))
+            }
             let begin = memberString.index(endingNameInd!, offsetBy: 3)
             let restMemberString = memberString[begin..<memberString.endIndex]
             print("rest of string \(String(restMemberString))")
@@ -270,10 +275,44 @@ class ConnectionManager : NSObject, ObservableObject {
     func connectPeers() {
         for peer in self.peersInfo {
             if (peer.isChecked) {
+                print("connect peers is triggered \(peer.peerID.displayName)")
                 self.inviteConnect(peerID: peer.peerID)
             }
         }
        
+    }
+    
+    private func connectToOtherGroupMembers() {
+        var peersToConnect : [MCPeerID] = []
+        // clear previous connections and start new connection
+        
+        for i in 0...(self.peersInfo.count - 1) {
+            print("peersInfo count \(self.peersInfo.count), i \(i)")
+            var peer = self.peersInfo[i]
+            print("peer name \(peer.peerID.displayName)")
+            peer.isChecked = false
+            self.peersInfo[i] = peer
+        }
+        // create new peerinfo and make sure it is unique
+        for peer in self.groupMemberNames {
+            // find the peer in the peerInfo list, I assume that the user can
+            // see the peer.
+            let peerInfoIndex = self.peersInfo.firstIndex(where: { $0.peerID.displayName == peer })
+            if (peerInfoIndex != nil) {
+                print("connect to other members, found a peer in peer list, \(peerInfoIndex)")
+                var peerInfo = self.peersInfo[peerInfoIndex!]
+                if (peerInfo != nil) {
+                    peerInfo.isChecked = true
+                    print("checked one peer \(peerInfo.peerID.displayName)")
+                    self.peersInfo[peerInfoIndex!] = peerInfo
+                    peersToConnect.append(peerInfo.peerID)
+                }
+            }
+            // if the user can't see the peer, we'll have the host to redirect
+            // the message.
+        }
+        print("connect to other group memebers num: \(peersToConnect.count)")
+        //self.connectPeers()
     }
     // this method is only for server side to monitor connection progress
     // this method will be triggered by selectedPeersView,
@@ -335,6 +374,8 @@ class ConnectionManager : NSObject, ObservableObject {
     
     func getGroupInfo(peerID: MCPeerID) -> String {
         var groupNames = getPeerNameString()
+        // add the host name too.
+        groupNames.append(myPeerId.displayName)
         let peer = groupNames.firstIndex(where: { $0 == peerID.displayName })
         // remove the name of the targeted peer (the client)
         if peer != nil {
@@ -346,6 +387,32 @@ class ConnectionManager : NSObject, ObservableObject {
             groupString += "\(peer)747"
         }
         return groupString
+    }
+    
+    private func keepConnectionWithPeers() {
+        for peer in self.peersInfo {
+            //if (peer.state
+        }
+    }
+    
+    private func checkDuplicatedMessage(message: String, whoSaid: String) -> Bool {
+        // here we compare the new message with the messages in the messages strings
+        var duplicated = false
+        // we check both name and message
+        for (index, messageModel) in messageModels.enumerated().reversed() {
+            print("index \(index) message \(messageModel.content)")
+            if (messageModels.count > 3) {
+                if (index < (messageModels.count - 2)) {
+                    print("break out of loop when checked 3 messages")
+                    break
+                }
+            }
+            if (message == messageModel.content && whoSaid == messageModel.whoSaid) {
+                // duplicated
+                duplicated = true
+            }
+        }
+        return duplicated
     }
 }
 
@@ -420,6 +487,7 @@ extension ConnectionManager : MCSessionDelegate {
         case .connected:
             print("Connected, from session")
             //guard let messageToSend = messageToSend else { return }
+            print("connected with \(peerID) now")
             fromConnectedOrConnecting = 1
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
@@ -441,7 +509,13 @@ extension ConnectionManager : MCSessionDelegate {
                 // here when the state is connected, the host will send members info to all clients
                 if (self.isHost) {
                     self.sendMessage(self.getGroupInfo(peerID: peerID), peersToSend: [peerID], whoSaid: "Me")
+                    // add to group members variable to display in host's chat view
+                    self.decodeGroupName(info: self.getGroupInfo(peerID: self.myPeerId))
+                } else {
+                    // here we connect to all the peers in the group
+                    self.connectToOtherGroupMembers()
                 }
+                
             }
             
         case .notConnected:
@@ -503,8 +577,9 @@ extension ConnectionManager : MCSessionDelegate {
         //self.getAppState()
     }
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        print("did receive message, triggered  message: \(data)")
         guard let message = try? JSONDecoder().decode(String.self, from: data) else { return }
-        print("message received: \(message)")
+        print("message received: \(message) from peer: \(peerID.displayName)" )
         // here we also check if the message is a redirect message,
         // we check the key, and get the who said string behind it
         var whoSaid = ""
@@ -514,11 +589,15 @@ extension ConnectionManager : MCSessionDelegate {
             resultArray = self.decodeWhoSaid(message: message)
             whoSaid = resultArray[0]
             filteredMessage = resultArray[1]
+            print("got message from peers, need to redirect it \(filteredMessage)")
+            
+        // here we check if the message is from host, for group members
         } else if (message.contains(self.groupNameKey)) {
             self.decodeGroupName(info: message)
         } else {
             whoSaid = peerID.displayName
             filteredMessage = message
+            print("normal message \(message)")
         }
         
         // here we got messages from peers.  Peers can't send to other peers directly,
@@ -532,15 +611,24 @@ extension ConnectionManager : MCSessionDelegate {
                     restOfPeers.append(peer.peerID)
                 }
             }
+            print("redirecting message: \(message)")
             self.redirectMessageToPeers(message: message, peersToSend: restOfPeers, whoSaid: peerID.displayName)
         }
         // here, we need to send the received message to the interface
         DispatchQueue.main.async {
-            self.messages.append(message)
-            var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
-            print("message \(filteredMessage) recorded")
-            //print("always run added to message list \(message)")
-            self.messageModels.append(messageModel)
+            // here, we also check if the message is duplicate, check upto 3 message in
+            // message list
+            var duplicated = self.checkDuplicatedMessage(message: filteredMessage, whoSaid: whoSaid)
+            if !(duplicated) {
+                self.messages.append(filteredMessage)
+                var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
+                print("message \(filteredMessage) recorded")
+                //print("always run added to message list \(message)")
+                self.messageModels.append(messageModel)
+                print("not duplicated, checked")
+            } else {
+                print("checked, duplicated, ignore")
+            }
         }
     }
     
