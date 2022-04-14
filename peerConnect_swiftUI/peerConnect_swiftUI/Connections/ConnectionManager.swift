@@ -233,6 +233,7 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     private func resetSelectedPeersAndNormalState() {
+        /*
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 peer.isChecked.toggle()
@@ -240,6 +241,7 @@ class ConnectionManager : NSObject, ObservableObject {
             }
         }
         self.endChatState = false
+         */
     }
     
     // this name strings is stored in the peers field in the message model
@@ -535,8 +537,11 @@ extension ConnectionManager : MCSessionDelegate {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
+                    // may call endChat here
+                    
                     if !self.isHost {
-                        self.endChatState = true
+                    //    self.endChatState = true
+                        self.endChat()
                     }
                     self.getAppState()
                 }
@@ -587,6 +592,7 @@ extension ConnectionManager : MCSessionDelegate {
         print("message received: \(message) from peer: \(peerID.displayName)" )
         // here we also check if the message is a redirect message,
         // we check the key, and get the who said string behind it
+        var showInMessageList = false
         var whoSaid = ""
         var filteredMessage = ""
         var resultArray = Array<String>()
@@ -595,7 +601,7 @@ extension ConnectionManager : MCSessionDelegate {
             whoSaid = resultArray[0]
             filteredMessage = resultArray[1]
             print("got message from peers, need to redirect it \(filteredMessage)")
-            
+            showInMessageList = true
         // here we check if the message is from host, for group members
         } else if (message.contains(self.groupNameKey)) {
             self.decodeGroupName(info: message)
@@ -603,6 +609,7 @@ extension ConnectionManager : MCSessionDelegate {
             whoSaid = peerID.displayName
             filteredMessage = message
             print("normal message \(message)")
+            showInMessageList = true
         }
         
         // here we got messages from peers.  Peers can't send to other peers directly,
@@ -619,20 +626,22 @@ extension ConnectionManager : MCSessionDelegate {
             print("redirecting message: \(message)")
             self.redirectMessageToPeers(message: message, peersToSend: restOfPeers, whoSaid: peerID.displayName)
         }
-        // here, we need to send the received message to the interface
-        DispatchQueue.main.async {
-            // here, we also check if the message is duplicate, check upto 3 message in
-            // message list
-            var duplicated = self.checkDuplicatedMessage(message: filteredMessage, whoSaid: whoSaid)
-            if !(duplicated) {
-                self.messages.append(filteredMessage)
-                var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
-                print("message \(filteredMessage) recorded")
-                //print("always run added to message list \(message)")
-                self.messageModels.append(messageModel)
-                print("not duplicated, checked")
-            } else {
-                print("checked, duplicated, ignore")
+        if (showInMessageList) {
+            // here, we need to send the received message to the interface
+            DispatchQueue.main.async {
+                // here, we also check if the message is duplicate, check upto 3 message in
+                // message list
+                var duplicated = self.checkDuplicatedMessage(message: filteredMessage, whoSaid: whoSaid)
+                if !(duplicated) {
+                    self.messages.append(filteredMessage)
+                    var messageModel = self.createMessageModel(message: filteredMessage, whoSaid: whoSaid)
+                    print("message \(filteredMessage) recorded")
+                    //print("always run added to message list \(message)")
+                    self.messageModels.append(messageModel)
+                    print("not duplicated, checked")
+                } else {
+                    print("checked, duplicated, ignore")
+                }
             }
         }
     }

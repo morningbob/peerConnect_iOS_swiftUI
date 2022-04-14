@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MessageModel : Codable, Identifiable {
+struct MessageModel : Codable, Identifiable, Equatable {
     
     var id = UUID()
     let content : String

@@ -19,7 +19,7 @@ struct PeersListView: View {
     
     var body: some View {
         
-        ScrollViewReader { proxy in
+        //ScrollViewReader { proxy in
         
         VStack {
             
@@ -139,11 +139,11 @@ struct PeersListView: View {
             }
             print("total peers: \(String(i))")
             
-            guard !peersInfo.isEmpty else { return }
+            //guard !peersInfo.isEmpty else { return }
 
-            withAnimation(Animation.easeInOut) {
-                proxy.scrollTo(peersInfo.last!.id)
-            }
+            //withAnimation(Animation.easeInOut) {
+            //    proxy.scrollTo(peersInfo.last!.id)
+            //}
         })
         /*
         .onReceive(connectionManager.$appState, perform: { state in
@@ -192,7 +192,7 @@ struct PeersListView: View {
              }
             }
          */
-        }
+        //}
     }
     
 }

@@ -23,12 +23,43 @@ struct ChatView: View {
         
         VStack {
             Text("Chat View")
-            List(connectionManager.messageModels) {
-                messageModel in
-                Text(messageModel.whoSaid + ":  " + messageModel.content)
+            Spacer()
+            ScrollViewReader { proxy in
+                //ScrollView {
+                    //LazyVStack {
+                //padding(.top, 20)
+                        List(connectionManager.messageModels, id: \.id) { messageModel in
+                            //ForEach(connectionManager.messageModels, id: \.id) { messageModel in
+                            Text(messageModel.whoSaid + ":  " + messageModel.content).id(messageModel.id)
+                            //}
+                        }
+                    //}
+                        .environmentObject(connectionManager)
+                        //.safeAreaInset(edge: .top, content: {
+                            
+                        //})
+                /*
+                        .onChange(of: self.connectionManager.$messageModels, perform: { messageModels in
+                            guard !messageModels.isEmpty else { return }
+                            withAnimation(Animation.easeInOut) {
+                                proxy.scrollTo(messageModels.last!.id)
+                                //proxy.scrollTo("MessageList", anchor: .bottom)
+                            }
+                        })
+                        .id("MessageList")
+                 */
                 
-            }.environmentObject(connectionManager)
-                .frame( height: 300)
+                    .onReceive(self.connectionManager.$messageModels, perform: { messageModels in
+                        guard !messageModels.isEmpty else { return }
+                        withAnimation(Animation.easeInOut) {
+                            proxy.scrollTo(messageModels.last!.id)
+                            
+                        }
+                    })
+                 
+                //}
+            }.frame( height: UIScreen.screenHeight*0.4)
+            
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 print("chat view, send message once ")
                 connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
@@ -51,26 +82,7 @@ struct ChatView: View {
                     connectionManager.isHost = false
                     connectionManager.endChatState = true
                     // show alert of chat ending
-                    guard let window = UIApplication.shared.keyWindow else {
-                            return }
-                    let endChatAlert = UIAlertController(title: "Chat ended", message: "The app ended the chat.  All peers disconnected.", preferredStyle: .alert)
-                    
-                    endChatAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                        // end the chat
-                        print("confirmed")
-                        // already disconnected the peers above
-                        // clear list and peers status here
-                        self.resetChatView()
-                        // dismiss chat view
-                        self.presentation.wrappedValue.dismiss()
-                    })
-                    endChatAlert.addAction(UIAlertAction(title: "Stay in Chat View", style: .default) {
-                        _ in
-                        // don't dismiss the chat view
-                    })
-                    DispatchQueue.main.async {
-                        window.rootViewController?.present(endChatAlert, animated: true)
-                    }
+                    self.notifyUserEndChat()
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -111,9 +123,14 @@ struct ChatView: View {
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
             .onReceive(connectionManager.$appState, perform: { appState in
-                //if (appState == AppState.normal || appState == AppState.endChat) {
-                //    self.presentation.wrappedValue.dismiss()
-                //}
+                if (appState == AppState.normal || appState == AppState.endChat) {
+                    //self.presentation.wrappedValue.dismiss()
+                    if (self.connectionManager.connectedPeer == nil) {
+                        print("connected peer == nil")
+                        self.notifyUserEndChat()
+                    }
+                    //self.notifyUserEndChat()
+                }
             })
             .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 // here we can also update the peers status below the chat field.
@@ -122,7 +139,7 @@ struct ChatView: View {
             })
             
             
-        }
+        } // end of VStack
         .padding(.bottom, 120)
         Spacer()
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
@@ -141,6 +158,7 @@ struct ChatView: View {
                 }
             }
          */
+        
     }
     
     struct PeerStatus : View {
@@ -152,24 +170,30 @@ struct ChatView: View {
         @State var groupMembersText : String = "none"
         
         var body: some View {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 //HStack {
                     Text("Connected:  \(self.connectedPeersText)" )
                     .padding(25)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(4)
                     Spacer()
                     Text("Disconnected:  \(self.disconnectedPeersText)")
                     .padding(25)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(4)
                     Spacer()
                     Text("Group members:  \(self.groupMembersText)")
                     .padding(25)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(4)
                     Spacer()
-                    //Text()
                     
-                //}
-            }.onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+            }
+            //.frame(height: UIScreen.screenHeight*0.4)
+            .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 print("getPeerStatus triggered")
                 getPeerStatus()
             })
@@ -219,6 +243,29 @@ struct ChatView: View {
         // it should be cleared from connection manager
         // when the app state is endChat
         self.connectionManager.clearMessageList()
+    }
+    
+    private func notifyUserEndChat() {
+        guard let window = UIApplication.shared.keyWindow else {
+                return }
+        let endChatAlert = UIAlertController(title: "Chat ended", message: "The app ended the chat.  All peers disconnected.", preferredStyle: .alert)
+        
+        endChatAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            // end the chat
+            print("confirmed")
+            // already disconnected the peers above
+            // clear list and peers status here
+            self.resetChatView()
+            // dismiss chat view
+            self.presentation.wrappedValue.dismiss()
+        })
+        endChatAlert.addAction(UIAlertAction(title: "Stay in Chat View", style: .default) {
+            _ in
+            // don't dismiss the chat view
+        })
+        DispatchQueue.main.async {
+            window.rootViewController?.present(endChatAlert, animated: true)
+        }
     }
     
     private func getDocumentFromUrl() {
