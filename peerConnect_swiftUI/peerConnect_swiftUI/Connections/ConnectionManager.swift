@@ -414,6 +414,11 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         return duplicated
     }
+    
+    func clearMessageList() {
+        self.messageModels = []
+        self.messages = []
+    }
 }
 
 // to receive invitation

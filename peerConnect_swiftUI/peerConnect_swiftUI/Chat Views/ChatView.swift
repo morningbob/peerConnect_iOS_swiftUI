@@ -50,8 +50,27 @@ struct ChatView: View {
                     // reset isHost, no longer to be the host
                     connectionManager.isHost = false
                     connectionManager.endChatState = true
-                    // pop this view
+                    // show alert of chat ending
+                    guard let window = UIApplication.shared.keyWindow else {
+                            return }
+                    let endChatAlert = UIAlertController(title: "Chat ended", message: "The app ended the chat.  All peers disconnected.", preferredStyle: .alert)
                     
+                    endChatAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                        // end the chat
+                        print("confirmed")
+                        // already disconnected the peers above
+                        // clear list and peers status here
+                        self.resetChatView()
+                        // dismiss chat view
+                        self.presentation.wrappedValue.dismiss()
+                    })
+                    endChatAlert.addAction(UIAlertAction(title: "Stay in Chat View", style: .default) {
+                        _ in
+                        // don't dismiss the chat view
+                    })
+                    DispatchQueue.main.async {
+                        window.rootViewController?.present(endChatAlert, animated: true)
+                    }
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -92,9 +111,9 @@ struct ChatView: View {
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
             .onReceive(connectionManager.$appState, perform: { appState in
-                if (appState == AppState.normal || appState == AppState.endChat) {
-                    self.presentation.wrappedValue.dismiss()
-                }
+                //if (appState == AppState.normal || appState == AppState.endChat) {
+                //    self.presentation.wrappedValue.dismiss()
+                //}
             })
             .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 // here we can also update the peers status below the chat field.
@@ -104,6 +123,8 @@ struct ChatView: View {
             
             
         }
+        .padding(.bottom, 120)
+        Spacer()
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
             .sheet(isPresented: $showingDocumentPicker) {
@@ -121,8 +142,6 @@ struct ChatView: View {
             }
          */
     }
-    
-    
     
     struct PeerStatus : View {
         
@@ -193,6 +212,14 @@ struct ChatView: View {
         
     }
 
+    private func resetChatView() {
+        self.peerStatus = ""
+        // clear message model list here
+        // it might be bad to clean messages here.
+        // it should be cleared from connection manager
+        // when the app state is endChat
+        self.connectionManager.clearMessageList()
+    }
     
     private func getDocumentFromUrl() {
         print("document: \(self.urlContent.url)")
