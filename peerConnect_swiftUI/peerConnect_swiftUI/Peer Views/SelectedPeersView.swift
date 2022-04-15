@@ -65,7 +65,7 @@ struct PeerStatusView : View {
         HStack {
             
             Text(peerInfo.peerID.displayName + ":  " + getNewStatus())
-            Text(peerInfo.state == PeerState.connected ? "✅" : "🔲")
+            Text(peerInfo.state == PeerState.connected ? "    ✅" : "    🔲")
         }
        
     }

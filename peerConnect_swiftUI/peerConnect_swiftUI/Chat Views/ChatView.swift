@@ -17,24 +17,50 @@ struct ChatView: View {
     @State private var showingDocumentPicker = false
     @State private var urlContent = UrlContent()
     @State private var peerStatus = ""
+    @State private var messageCount = 0
     //@Environment(\.navigationManager) var nvmanager
     
     var body: some View {
         
         VStack {
-            Text("Chat View")
             Spacer()
             ScrollViewReader { proxy in
-                //ScrollView {
-                    //LazyVStack {
-                //padding(.top, 20)
-                        List(connectionManager.messageModels, id: \.id) { messageModel in
-                            //ForEach(connectionManager.messageModels, id: \.id) { messageModel in
+                ScrollView {
+                    LazyVStack (alignment: .leading) {
+                        ForEach(connectionManager.messageModels, id: \.id) { messageModel in
                             Text(messageModel.whoSaid + ":  " + messageModel.content).id(messageModel.id)
-                            //}
+                                .padding([.leading, .trailing], 20)
                         }
+                        .padding(0.5)
+                        //.padding([.top, .trailing], 0.5)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    //.padding([.leading, .trailing], 2)
+                }
+                /*
+                .onReceive(self.connectionManager.$messageModels, perform: { messageModels in
+                    //("lazy stack: onReceive")
+                    guard !messageModels.isEmpty else { return }
+                    withAnimation(Animation.easeInOut) {
+                        proxy.scrollTo(connectionManager.messageModels.last?.id, anchor: .center)
+                        print("scrolled")
+                        
+                    }
+                })
+                 */
+                .onChange(of: self.connectionManager.messageModels.count, perform: { _ in
+                    
+                })
+            
+            }.navigationBarTitle("Chat View")
+                //padding(.top, 20)
+                        //List(connectionManager.messageModels, id: \.id) { messageModel in
+                            //ForEach(connectionManager.messageModels, id: \.id) { messageModel in
+                        //    Text(messageModel.whoSaid + ":  " + messageModel.content).id(messageModel.id)
+                            //}
+                        //}.environmentObject(connectionManager)
                     //}
-                        .environmentObject(connectionManager)
+                        
                         //.safeAreaInset(edge: .top, content: {
                             
                         //})
@@ -49,16 +75,10 @@ struct ChatView: View {
                         .id("MessageList")
                  */
                 
-                    .onReceive(self.connectionManager.$messageModels, perform: { messageModels in
-                        guard !messageModels.isEmpty else { return }
-                        withAnimation(Animation.easeInOut) {
-                            proxy.scrollTo(messageModels.last!.id)
-                            
-                        }
-                    })
+                    
                  
                 //}
-            }//.frame( height: UIScreen.screenHeight*0.35)
+            //}//.frame( height: UIScreen.screenHeight*0.35)
             
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 print("chat view, send message once ")

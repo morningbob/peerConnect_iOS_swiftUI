@@ -133,7 +133,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 peersToSend.append(peer.peerID)
             }
         }
-        /*
+        
         if !isHost {
             //guard let connectedPeerInfo = self.connectedPeerInfo else {
             //return
@@ -144,7 +144,7 @@ class ConnectionManager : NSObject, ObservableObject {
             }
             peersToSend = [connectedPeer]
         }
-         */
+        
         
         if peersToSend.isEmpty {
             print("send message to peers, no peer to send, return")
@@ -337,7 +337,7 @@ class ConnectionManager : NSObject, ObservableObject {
                     allDisconnected = false
                     readyToChat = 1   // someone is still connecting
                 break
-            } else if (peer.isChecked && peer.state == PeerState.connected) {
+            } else if (peer.state == PeerState.connected) {
                 allDisconnected = false
             }
             readyToChat = 2     // there is no one set ready to 1
@@ -444,7 +444,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             print("confirmed")
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
-                self.connectedPeerInfo = PeerInfo(peer: peerID)
+                //self.connectedPeerInfo = PeerInfo(peer: peerID)
                 //self.connectedPeerInfo?.state = PeerState.connected
                 // for the client, show peer status as connected to the host
                 //self.peersInfo.append(self.connectedPeerInfo!)
@@ -500,17 +500,26 @@ extension ConnectionManager : MCSessionDelegate {
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)
                 //print("should dismiss done")
-                guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
-                    return
+                // this is for the host, who has checked peersInfo.
+                let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID })
+                if (peerIndex != nil) {
+                    print("didChange, got peerIndex, changed state to connected, peer: \(peerID.displayName)")
+                    // here, we trigger a change in peerInfo, so peer status changes can be detected.
+                    var peerInfo = self.peersInfo[peerIndex!]
+                    peerInfo.state = PeerState.connected
+                    self.peersInfo[peerIndex!] = peerInfo
+                } else {
+                    // this is for the client, there is no peersInfo checked,
+                    // need to set the connectedPeer, that is the host
+                    self.connectedPeer = peerID
+                    var peerInfo = PeerInfo(peer: self.connectedPeer!)
+                    peerInfo.isChecked = true
+                    self.peersInfo.append(peerInfo)
                 }
-                print("didChange, got peerIndex, changed state to connected, peer: \(peerID.displayName)")
-                // here, we trigger a change in peerInfo, so peer status changes can be detected.
-                var peerInfo = self.peersInfo[peerIndex]
-                peerInfo.state = PeerState.connected
-                self.peersInfo[peerIndex] = peerInfo
                 //self.peersInfo[peerIndex].state = PeerState.connected
                 //self.connectionState = ConnectionState.connected
-                self.connectedPeer = peerID
+                
+                // here we also set the
                 self.getAppState()
                 //print("should navigate done")
                 
@@ -564,7 +573,7 @@ extension ConnectionManager : MCSessionDelegate {
             self.fromConnectedOrConnecting = 0
             DispatchQueue.main.async {
                 // not successfully connected, eg peer decline the invitation
-                self.connectionState = ConnectionState.notConnected
+                //self.connectionState = ConnectionState.notConnected
                 self.connectedPeer = nil
             }
             // remote peer should navigate to peerslistview
@@ -577,7 +586,7 @@ extension ConnectionManager : MCSessionDelegate {
                 }
                 self.peersInfo[peerIndex].state = PeerState.connecting
                 //self.appState = AppState.connecting
-                self.connectionState = ConnectionState.connecting
+                //self.connectionState = ConnectionState.connecting
                 self.getAppState()
             }
             
