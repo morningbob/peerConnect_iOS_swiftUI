@@ -233,15 +233,16 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     private func resetSelectedPeersAndNormalState() {
-        /*
+        
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 peer.isChecked.toggle()
                 print("isChecked toggled")
             }
         }
+        self.groupMemberNames = []
         self.endChatState = false
-         */
+         
     }
     
     // this name strings is stored in the peers field in the message model
@@ -542,6 +543,7 @@ extension ConnectionManager : MCSessionDelegate {
                     if !self.isHost {
                     //    self.endChatState = true
                         self.endChat()
+                        self.endChatState = true
                     }
                     self.getAppState()
                 }

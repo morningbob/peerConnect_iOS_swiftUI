@@ -58,7 +58,7 @@ struct ChatView: View {
                     })
                  
                 //}
-            }.frame( height: UIScreen.screenHeight*0.4)
+            }//.frame( height: UIScreen.screenHeight*0.35)
             
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 print("chat view, send message once ")
@@ -70,6 +70,7 @@ struct ChatView: View {
             Spacer()
             PeerStatus(connectionManager: self.connectionManager)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                //.frame(height: UIScreen.screenHeight*0.30)
                 //.frame(alignment: .leading)
             
             Spacer()
@@ -139,8 +140,9 @@ struct ChatView: View {
             })
             
             
-        } // end of VStack
-        .padding(.bottom, 120)
+        }//.background(Color.blue.edgesIgnoringSafeArea(.top))
+        // end of VStack
+        //.padding(.bottom, 60)
         Spacer()
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
@@ -170,22 +172,22 @@ struct ChatView: View {
         @State var groupMembersText : String = "none"
         
         var body: some View {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 0) {
                 //HStack {
                     Text("Connected:  \(self.connectedPeersText)" )
-                    .padding(25)
+                    .padding([.top, .leading, .trailing], 25)
                     .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
                     Spacer()
                     Text("Disconnected:  \(self.disconnectedPeersText)")
-                    .padding(25)
+                    .padding([.top, .leading, .trailing], 25)
                     .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
                     Spacer()
                     Text("Group members:  \(self.groupMembersText)")
-                    .padding(25)
+                    .padding([.top, .leading, .trailing], 25)
                     .frame(maxWidth: UIScreen.screenWidth, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
