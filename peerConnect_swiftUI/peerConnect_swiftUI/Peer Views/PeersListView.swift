@@ -18,13 +18,9 @@ struct PeersListView: View {
     @Environment(\.presentationMode) private var presentationMode
     
     var body: some View {
-        
-        //ScrollViewReader { proxy in
-        
         VStack {
             
             List(self.connectionManager.peersInfo, id: \.id) { peerInfo in
-                //ForEach(
                 PeerRowView(peerInfo: peerInfo).id(peerInfo.id)
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
@@ -32,8 +28,6 @@ struct PeersListView: View {
                     if let checkedIndex =
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
                         self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
-                            //peerInfo.isChecked.toggle()
-                            //self.connectionManager.peersInfo[checkedIndex] = peerInfo
                             print("toggled")
                             print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
                         
@@ -68,13 +62,31 @@ struct PeersListView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    connectionManager.connectPeers()
+                    // check if there is checked peer
+                    var checkedPeersCount = 0
+                    for peer in self.connectionManager.peersInfo {
+                        if (peer.isChecked) {
+                            checkedPeersCount += 1
+                        }
+                    }
+                    if checkedPeersCount > 0 {
+                    self.connectionManager.connectPeers()
                     print("connectPeers is triggered")
                     // this is to distinguish if the app should send messages to peers in the list,
                     // or the connected peer as a client, in the other words, distinguish which
                     // side (server or client) to run send message
-                    connectionManager.isHost = true
-                    self.shouldNavigateToPeerStatus = true
+                        connectionManager.isHost = true
+                        self.shouldNavigateToPeerStatus = true
+                    } else {
+                        // alert user to choose a peer
+                        guard let window = UIApplication.shared.keyWindow else {
+                                return }
+                        let choosePeerAlert = UIAlertController(title: "Choose a peer", message: "Please choose a peer to connect.  You can choose up to 7 peers.", preferredStyle: .alert)
+                        
+                        choosePeerAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                            print("confirmed")
+                        })
+                    }
                 })
                 {
                     Text("Connect")

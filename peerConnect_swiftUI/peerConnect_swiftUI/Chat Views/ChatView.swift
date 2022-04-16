@@ -37,6 +37,14 @@ struct ChatView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     //.padding([.leading, .trailing], 2)
                 }
+                .onChange(of: self.connectionManager.messageModels.count, perform: { _ in
+                    guard self.connectionManager.messageModels.count > 0 else { return }
+                    withAnimation(Animation.easeInOut) {
+                        proxy.scrollTo(self.connectionManager.messageModels.last?.id, anchor: .center)
+                        print("scrolled")
+                        
+                    }
+                })
                 /*
                 .onReceive(self.connectionManager.$messageModels, perform: { messageModels in
                     //("lazy stack: onReceive")
@@ -48,9 +56,7 @@ struct ChatView: View {
                     }
                 })
                  */
-                .onChange(of: self.connectionManager.messageModels.count, perform: { _ in
-                    
-                })
+                
             
             }.navigationBarTitle("Chat View")
                 //padding(.top, 20)
@@ -146,7 +152,7 @@ struct ChatView: View {
             .onReceive(connectionManager.$appState, perform: { appState in
                 if (appState == AppState.normal || appState == AppState.endChat) {
                     //self.presentation.wrappedValue.dismiss()
-                    if (self.connectionManager.connectedPeer == nil) {
+                    if (self.connectionManager.connectedPeer == nil && !self.connectionManager.isHost) {
                         print("connected peer == nil")
                         self.notifyUserEndChat()
                     }
@@ -227,8 +233,18 @@ struct ChatView: View {
             
         
         private func getPeerStatus()  {
-            var connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
-            var disconnectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
+            var connectedPeers : [String] = []
+            if (connectionManager.isHost) {
+                connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+            } else {
+                connectedPeers = [connectionManager.connectedPeer?.displayName ?? ""]
+            }
+            var disconnectedPeers : [String] = []
+            if (connectionManager.isHost) {
+            connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
+            } else {
+                //disconnectedPeers = [connectedPeers.co]
+            }
             var connectedText = ""
             for peer in connectedPeers {
                 connectedText += peer + "   "

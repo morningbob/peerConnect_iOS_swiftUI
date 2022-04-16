@@ -444,7 +444,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             print("confirmed")
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
-                //self.connectedPeerInfo = PeerInfo(peer: peerID)
+                self.connectedPeerInfo = PeerInfo(peer: peerID)
                 //self.connectedPeerInfo?.state = PeerState.connected
                 // for the client, show peer status as connected to the host
                 //self.peersInfo.append(self.connectedPeerInfo!)
@@ -512,6 +512,7 @@ extension ConnectionManager : MCSessionDelegate {
                     // this is for the client, there is no peersInfo checked,
                     // need to set the connectedPeer, that is the host
                     self.connectedPeer = peerID
+                    self.connectedPeerInfo?.isChecked = true
                     var peerInfo = PeerInfo(peer: self.connectedPeer!)
                     peerInfo.isChecked = true
                     self.peersInfo.append(peerInfo)
@@ -542,23 +543,31 @@ extension ConnectionManager : MCSessionDelegate {
             case 1:
                 print("not connected state: from connected 1")
                 DispatchQueue.main.async {
+                    if !self.isHost {
+                    //    self.endChatState = true
+                        self.endChat()
+                        self.endChatState = true
+                        self.connectedPeerInfo?.state = PeerState.fromConnectedToDisconnected
+                        self.getAppState()
+                    }
                     //self.appState = AppState.fromConnectedToDisconnected
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
-                    // may call endChat here
-                    
-                    if !self.isHost {
-                    //    self.endChatState = true
-                        self.endChat()
-                        self.endChatState = true
-                    }
+                 
                     self.getAppState()
                 }
             case 0:
                 print("not connected state: from connecting 0")
                 DispatchQueue.main.async {
+                    if !self.isHost {
+                    //    self.endChatState = true
+                        self.endChat()
+                        self.endChatState = true
+                        self.connectedPeerInfo?.state = PeerState.fromConnectingToNotConnected
+                        self.getAppState()
+                    }
                     //self.appState = AppState.fromConnectingToNotConnected
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
