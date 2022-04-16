@@ -196,8 +196,14 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     private func decodeGroupName(info: String) {
-        // add user's name to the group first
-        self.groupMemberNames.append(myPeerId.displayName)
+        // add user's name to the group first, we need to avoid duplicates
+        // the connected state may be triggered more than once in a chat.
+        if (!self.groupMemberNames.contains(self.myPeerId.displayName)) {
+            self.groupMemberNames.append(self.myPeerId.displayName)
+            print("group names added \(myPeerId.displayName)")
+            print("count: \(self.groupMemberNames.count)")
+        }
+        
         let start = info.index(info.startIndex, offsetBy: 6)
         let memberString = String(info[start...])
         print("memberString \(memberString)")
@@ -217,7 +223,11 @@ class ConnectionManager : NSObject, ObservableObject {
             let name = memberString[memberString.startIndex..<endingNameInd!]
             print("name \(name)")
             DispatchQueue.main.async {
-                self.groupMemberNames.append(String(name))
+                if (!self.groupMemberNames.contains(String(name))) {
+                    self.groupMemberNames.append(String(name))
+                    print("group name added \(String(name))")
+                    print("count: \(self.groupMemberNames.count)")
+                }
             }
             let begin = memberString.index(endingNameInd!, offsetBy: 3)
             let restMemberString = memberString[begin..<memberString.endIndex]
@@ -508,7 +518,7 @@ extension ConnectionManager : MCSessionDelegate {
                     var peerInfo = self.peersInfo[peerIndex!]
                     peerInfo.state = PeerState.connected
                     self.peersInfo[peerIndex!] = peerInfo
-                } else {
+                } else if (!self.isHost && peerIndex == nil){
                     // this is for the client, there is no peersInfo checked,
                     // need to set the connectedPeer, that is the host
                     self.connectedPeer = peerID
@@ -531,7 +541,7 @@ extension ConnectionManager : MCSessionDelegate {
                     self.decodeGroupName(info: self.getGroupInfo(peerID: self.myPeerId))
                 } else {
                     // here we connect to all the peers in the group
-                    self.connectToOtherGroupMembers()
+                    
                 }
                 
             }
@@ -623,8 +633,11 @@ extension ConnectionManager : MCSessionDelegate {
             print("got message from peers, need to redirect it \(filteredMessage)")
             showInMessageList = true
         // here we check if the message is from host, for group members
-        } else if (message.contains(self.groupNameKey)) {
+        } else if (message.contains(self.groupNameKey) && !isHost) {
             self.decodeGroupName(info: message)
+            print("decodeGroupName ran")
+            // setup checked peersInfo
+            self.connectToOtherGroupMembers()
         } else {
             whoSaid = peerID.displayName
             filteredMessage = message

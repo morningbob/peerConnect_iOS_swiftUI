@@ -236,6 +236,16 @@ struct ChatView: View {
             var connectedPeers : [String] = []
             if (connectionManager.isHost) {
                 connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+                /*
+                for peerName in connectionManager.groupMemberNames {
+                    for peer in connectionManager.peersInfo {
+                        if (peerName == peer.peerID.displayName && peer.state == PeerState.connected && !connectedPeers.contains(peerName)) {
+                            connectedPeers.append(peerName)
+                            break  // break out of the first for loop
+                        }
+                    }
+                }
+                 */
             } else {
                 connectedPeers = [connectionManager.connectedPeer?.displayName ?? ""]
             }
