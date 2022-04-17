@@ -27,6 +27,8 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
+    private var host: MCPeerID? = nil
+    private var hostInfo: PeerInfo? = nil
     @Published var disconnectedPeer: MCPeerID? = nil
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal {
@@ -43,6 +45,7 @@ class ConnectionManager : NSObject, ObservableObject {
     // for status info.
     private let peerNameKey = "7431rk"
     private let groupNameKey = "3984kg"
+    private let endChatMessageKey = "2951fo"
     @Published var groupMemberNames : [String] = []
     // this variable is to record if the app goes from connecting or connected state to notConnected state
     // if it is 1, it goes from connected state to notConnected state, so it is user ends the chat or
@@ -240,7 +243,13 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func endChat() {
+        // host ends chat here
         // should let remote peer knows
+        if isHost {
+            self.endChatMessage()
+            print("send end chat message")
+        }
+        print("perform disconnect")
         session.disconnect()
     }
     
@@ -332,6 +341,25 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         print("connect to other group memebers num: \(peersToConnect.count)")
         //self.connectPeers()
+    }
+    
+    private func endChatMessage() {
+        let message = "\(endChatMessageKey)end"
+        var peersToSend : [MCPeerID] = []
+        if isHost {
+            
+            for peer in self.peersInfo {
+                if (peer.isChecked) {
+                    peersToSend.append(peer.peerID)
+                }
+            }
+        } else {
+            guard self.host != nil else { return }
+            print("endChatMessage: host: \(host?.displayName)")
+            peersToSend = [self.host!]
+            
+        }
+        sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
     }
     // this method is only for server side to monitor connection progress
     // this method will be triggered by selectedPeersView,
@@ -461,6 +489,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
             DispatchQueue.main.async {
                 self.connectedPeer = peerID
                 self.connectedPeerInfo = PeerInfo(peer: peerID)
+                self.hostInfo = PeerInfo(peer: peerID)
                 //self.connectedPeerInfo?.state = PeerState.connected
                 // for the client, show peer status as connected to the host
                 //self.peersInfo.append(self.connectedPeerInfo!)
@@ -558,12 +587,18 @@ extension ConnectionManager : MCSessionDelegate {
             switch fromConnectedOrConnecting {
             case 1:
                 print("not connected state: from connected 1")
+                print("peer: \(peerID.displayName)")
                 DispatchQueue.main.async {
                     if !self.isHost {
-                    //    self.endChatState = true
-                        self.endChat()
-                        self.endChatState = true
-                        self.connectedPeerInfo?.state = PeerState.fromConnectedToDisconnected
+                        if (self.hostInfo?.peerID == peerID) {
+                            self.hostInfo?.state = PeerState.fromConnectedToDisconnected
+                            print("set host disconnected state, endChatState = true")
+                            self.endChatState = true
+                        }
+                        if (self.connectedPeerInfo?.peerID == peerID) {
+                            print("set peer disconnected state")
+                            self.connectedPeerInfo?.state = PeerState.fromConnectedToDisconnected
+                        }
                         self.getAppState()
                     }
                     //self.appState = AppState.fromConnectedToDisconnected
@@ -578,13 +613,17 @@ extension ConnectionManager : MCSessionDelegate {
                 print("not connected state: from connecting 0")
                 DispatchQueue.main.async {
                     if !self.isHost {
-                    //    self.endChatState = true
-                        self.endChat()
-                        self.endChatState = true
-                        self.connectedPeerInfo?.state = PeerState.fromConnectingToNotConnected
+                        if (self.hostInfo?.peerID == peerID) {
+                            self.hostInfo?.state = PeerState.fromConnectingToNotConnected
+                            print("set host disconnected state, endChatState = true")
+                            self.endChatState = true
+                        }
+                        if (self.connectedPeerInfo?.peerID == peerID) {
+                            self.connectedPeerInfo?.state = PeerState.fromConnectingToNotConnected
+                            print("set host disconnected state")
+                        }
                         self.getAppState()
                     }
-                    //self.appState = AppState.fromConnectingToNotConnected
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
@@ -629,6 +668,7 @@ extension ConnectionManager : MCSessionDelegate {
         print("message received: \(message) from peer: \(peerID.displayName)" )
         // here we also check if the message is a redirect message,
         // we check the key, and get the who said string behind it
+        var redirect = false
         var showInMessageList = false
         var whoSaid = ""
         var filteredMessage = ""
@@ -645,16 +685,28 @@ extension ConnectionManager : MCSessionDelegate {
             print("decodeGroupName ran")
             // setup checked peersInfo
             self.connectToOtherGroupMembers()
+        } else if (message.contains("\(self.endChatMessageKey)end")) {
+            // this is the server side
+            if isHost {
+                // won't redirect message, also won't end the chat
+                redirect = false
+            } else {
+            // this is client side
+                self.endChatState = true
+                self.getAppState()
+            }
+            
         } else {
             whoSaid = peerID.displayName
             filteredMessage = message
             print("normal message \(message)")
             showInMessageList = true
+            redirect = true
         }
         
         // here we got messages from peers.  Peers can't send to other peers directly,
         // so, the host of the chat will send for them, and send here
-        if isHost {
+        if isHost && redirect {
             var restOfPeers : [MCPeerID] = [] // don't need to send to the peer who send the message to the host
             
             // extract the MCPeerID from peersInfo, to send

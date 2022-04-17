@@ -18,6 +18,9 @@ struct ChatView: View {
     @State private var urlContent = UrlContent()
     @State private var peerStatus = ""
     @State private var messageCount = 0
+    // shouldNotifyEndChat is used to check if end chat alert is already displayed.
+    // if it is false, it is already displayed
+    @State private var shouldNotifyEndChat = true
     //@Binding var shouldPopToRoot : Bool
     //@State var popToPeerList : Bool = false
     //@Environment(\.navigationManager) var nvmanager
@@ -117,9 +120,11 @@ struct ChatView: View {
             .onReceive(connectionManager.$appState, perform: { appState in
                 if (appState == AppState.normal || appState == AppState.endChat) {
                     //self.presentation.wrappedValue.dismiss()
-                    if (self.connectionManager.connectedPeer == nil && !self.connectionManager.isHost) {
-                        print("connected peer == nil")
+                    if (self.connectionManager.connectedPeer == nil && self.shouldNotifyEndChat) {
+                        //print("connected peer == nil")
                         self.notifyUserEndChat()
+                        //self.connectionManager
+                        self.shouldNotifyEndChat = false
                     }
                     //self.notifyUserEndChat()
                 }
@@ -129,6 +134,7 @@ struct ChatView: View {
                 // update peer status view
                 connectionManager.getAppState()
             })
+            
             
             
         }//.background(Color.blue.edgesIgnoringSafeArea(.top))

@@ -12,8 +12,6 @@ struct SelectedPeersView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
-    //@Binding var shouldPopToPeerList : Bool
-    @State private var empty = false
     
     var body: some View {
         
