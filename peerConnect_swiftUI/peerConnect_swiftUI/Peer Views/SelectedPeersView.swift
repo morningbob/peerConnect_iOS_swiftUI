@@ -12,12 +12,13 @@ struct SelectedPeersView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
+    //@Binding var shouldPopToPeerList : Bool
+    @State private var empty = false
     
     var body: some View {
         
         VStack {
             // here we input the peersInfo which are selected
-            
             List(self.connectionManager.peersInfo) { peerInfo in
                 // we do the selection here
                 if (peerInfo.isChecked) {
@@ -34,10 +35,29 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
-            } //else if (state == AppState.endChat) {
+            } else if (state == AppState.endChat) {
+                print("endChat detected, dismissing")
+                //self.presentation.wrappedValue.dismiss()
+            }
+            //else if (state == AppState.endChat) {
               //  self.presentation.wrappedValue.dismiss()
             //}
         })
+        .onAppear() {
+            self.connectionManager.getAppState()
+            if (self.connectionManager.appState == AppState.endChat) {
+                print("endChat detected, dismissing")
+                self.presentation.wrappedValue.dismiss()
+            }
+            /*
+            for peer in self.connectionManager.peersInfo {
+                if (peer.isChecked) {
+                    print("there is selected peers")
+                    break
+                }
+            }
+             */
+        }
         .navigationTitle("Peers Status")
         NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $shouldNavigateToChat) {
             EmptyView()
@@ -48,6 +68,7 @@ struct SelectedPeersView: View {
 }
 
 struct SelectedPeersView_Previews: PreviewProvider {
+    @State static var showPeerStatus : Bool = false
     static var previews: some View {
         SelectedPeersView()
     }

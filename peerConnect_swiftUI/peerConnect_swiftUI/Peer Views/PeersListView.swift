@@ -18,7 +18,9 @@ struct PeersListView: View {
     // this variable is used to keep track of the num of peer checked,
     // so to avoid checking more than 7 peers.
     @State private var checkedPeers : [PeerInfo] = []
+    let maxConnectPeers = 7
     @Environment(\.presentationMode) private var presentationMode
+    //@State var showPeerStatus : Bool = false
     
     var body: some View {
         VStack {
@@ -31,7 +33,7 @@ struct PeersListView: View {
                     
                     if let checkedIndex =
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
-                        if (!self.connectionManager.peersInfo[checkedIndex].isChecked && self.checkedPeers.count >= 2) {
+                        if (!self.connectionManager.peersInfo[checkedIndex].isChecked && self.checkedPeers.count >= self.maxConnectPeers) {
                             // alert user that he can only select 7 peers
                             self.showNumberOfPeersAlert()
                         } else {
@@ -104,6 +106,7 @@ struct PeersListView: View {
                     // side (server or client) to run send message
                         connectionManager.isHost = true
                         self.shouldNavigateToPeerStatus = true
+                        //self.showPeerStatus = true
                     } else {
                         self.showChoosePeerAlert()
                     }
@@ -193,9 +196,10 @@ struct PeersListView: View {
          
         // I put the navigation link here instead of in the VStack,
         // to avoid it to be activated by clicking on it.  It's a SwiftUI bug.
-        NavigationLink(destination: SelectedPeersView().environmentObject(connectionManager), isActive: self.$shouldNavigateToPeerStatus) {
+        NavigationLink(destination: SelectedPeersView().environmentObject(connectionManager), //isActive: self.$shouldNavigateToPeerStatus) {
+            isActive: self.$shouldNavigateToPeerStatus) {
             EmptyView()
-        }.isDetailLink(false)
+        }//.isDetailLink(false)
         NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $shouldNavigateToChat) {
             EmptyView()
         }
@@ -272,6 +276,8 @@ struct PeerRowView : View {
 }
 
 struct PeersListView_Previews: PreviewProvider {
+    
+    
     static var previews: some View {
         PeersListView()
     }

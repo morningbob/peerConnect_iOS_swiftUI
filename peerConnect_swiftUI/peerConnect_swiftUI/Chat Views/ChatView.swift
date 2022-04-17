@@ -18,6 +18,8 @@ struct ChatView: View {
     @State private var urlContent = UrlContent()
     @State private var peerStatus = ""
     @State private var messageCount = 0
+    //@Binding var shouldPopToRoot : Bool
+    //@State var popToPeerList : Bool = false
     //@Environment(\.navigationManager) var nvmanager
     
     var body: some View {
@@ -71,6 +73,8 @@ struct ChatView: View {
                     connectionManager.endChatState = true
                     // show alert of chat ending
                     self.notifyUserEndChat()
+                    //self.shouldPopToRoot = false
+                    //self.popToPeerList = true
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -137,6 +141,13 @@ struct ChatView: View {
                 DocumentPicker(urlChosed: $urlContent.url)
                 //self.getDocumentFromUrl()
             }
+        /*
+        NavigationLink(destination: PeersListView(showPeerStatus:  shouldPopToRoot).environmentObject(connectionManager),
+                       isActive: self.$popToPeerList) {
+             
+            EmptyView()
+        }.isDetailLink(false)
+         */
         /*
             .onAppear() {
                 if (self.inputUrl != nil) {
@@ -295,6 +306,7 @@ struct UrlContent {
 }
 
 struct ChatView_Previews: PreviewProvider {
+    @State static var show : Bool = false
     static var previews: some View {
         ChatView().environmentObject(ConnectionManager())
     }
