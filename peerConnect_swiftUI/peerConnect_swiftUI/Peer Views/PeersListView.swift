@@ -12,9 +12,12 @@ struct PeersListView: View {
     @StateObject var connectionManager = ConnectionManager()
     @State private var shouldNavigateToPeerStatus = false
     @State private var shouldNavigateToChat = false
-    @State private var infoText = "Please choose a peer."
+    @State private var infoText = "Please choose a peer.  You can choose up to 7 peers."
     //@State private var showUnsuccessfulConnection = false
     @State private var showConnectingAlert : Bool = false
+    // this variable is used to keep track of the num of peer checked,
+    // so to avoid checking more than 7 peers.
+    @State private var checkedPeers : [PeerInfo] = []
     @Environment(\.presentationMode) private var presentationMode
     
     var body: some View {
@@ -25,12 +28,35 @@ struct PeersListView: View {
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    
                     if let checkedIndex =
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
-                        self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
-                            print("toggled")
-                            print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
-                        
+                        if (!self.connectionManager.peersInfo[checkedIndex].isChecked && self.checkedPeers.count >= 2) {
+                            // alert user that he can only select 7 peers
+                            self.showNumberOfPeersAlert()
+                        } else {
+                            self.connectionManager.peersInfo[checkedIndex].isChecked.toggle()
+                                print("toggled")
+                                print("peerInfo state: \(self.connectionManager.peersInfo[checkedIndex].isChecked)")
+                            // here we analyze if there is more than 7 peers checked
+                            if (self.connectionManager.peersInfo[checkedIndex].isChecked) {
+                                //self.checkedPeersCount += 1
+                                if (!self.checkedPeers.contains(where: { $0.id == self.connectionManager.peersInfo[checkedIndex].id
+                                })) {
+                                    // add to checkedPeers
+                                    self.checkedPeers.append(self.connectionManager.peersInfo[checkedIndex])
+                                }
+                                print("after checkedPeers append \(self.connectionManager.peersInfo[checkedIndex].peerID.displayName)")
+                                print("num of peers: \(checkedPeers.count)")
+                                // else if isChecked is false, delete from checkedPeers
+                            } else {
+                                if let checkedPeerIndex = self.checkedPeers.firstIndex(where: { $0.id == self.connectionManager.peersInfo[checkedIndex].id }) {
+                                    self.checkedPeers.remove(at: checkedPeerIndex)
+                                    print("after checkedPeers remove")
+                                    print("num of peers: \(checkedPeers.count)")
+                                }
+                            }
+                        }
                     }
                 }
                 .alert("Connecting to ", isPresented: $showConnectingAlert, actions: {
@@ -49,7 +75,7 @@ struct PeersListView: View {
                     }
                 })
                 
-            }
+            } // end of list
             Spacer()
             Text(infoText)
                 .padding()
@@ -79,14 +105,7 @@ struct PeersListView: View {
                         connectionManager.isHost = true
                         self.shouldNavigateToPeerStatus = true
                     } else {
-                        // alert user to choose a peer
-                        guard let window = UIApplication.shared.keyWindow else {
-                                return }
-                        let choosePeerAlert = UIAlertController(title: "Choose a peer", message: "Please choose a peer to connect.  You can choose up to 7 peers.", preferredStyle: .alert)
-                        
-                        choosePeerAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                            print("confirmed")
-                        })
+                        self.showChoosePeerAlert()
                     }
                 })
                 {
@@ -111,7 +130,7 @@ struct PeersListView: View {
                         .stroke(Color.blue, lineWidth: 1))
                 }
                 Spacer()
-            }
+            } // end of HStack
             Spacer()
             
         }
@@ -126,21 +145,13 @@ struct PeersListView: View {
          */
             
         .onReceive(connectionManager.$appState, perform: { state in
+            self.getNewInfo(state: state)
             
-            switch state {
-            case AppState.fromConnectingToNotConnected:
-                self.infoText = "Could not connect to peer.  Please choose a peer."
-            case AppState.fromConnectedToDisconnected:
-                self.infoText = "Bad connection or peer disconnected."
-            case AppState.connecting:
-                self.infoText = "Connecting to peer"
-            case AppState.connected:
-                //print("from onReceive, connected")
-                self.infoText = "Connected to peer"
-            default:
-                print("unknown error")
-            }
         })
+        .onAppear() {
+            print("onAppear ran")
+            self.getNewInfo(state: self.connectionManager.appState)
+        }
         .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
             print("Peer list view, peerInfo changed")
             var i = 0
@@ -188,24 +199,53 @@ struct PeersListView: View {
         NavigationLink(destination: ChatView().environmentObject(connectionManager), isActive: $shouldNavigateToChat) {
             EmptyView()
         }
-        /*
-        .onChange(of: scenePhase) { newScenePhase in
-            switch newScenePhase {
-             case .active:
-              //open QR Scanner when app is resumed
-              self.QRScannerisPresented = true
-              return
-            case .background:
-             //app moves to backgound
-             return
-            case .inactive:
-             return
-            @unknown default:
-             return
-             }
-            }
-         */
-        //}
+       
+    }
+    
+    private func getNewInfo(state: AppState) {
+        switch state {
+        case AppState.normal:
+            self.infoText = "Please choose a peer."
+        case AppState.fromConnectingToNotConnected:
+            self.infoText = "Could not connect to peer.  Please choose a peer."
+        case AppState.fromConnectedToDisconnected:
+            self.infoText = "Bad connection or peer disconnected."
+        case AppState.connecting:
+            self.infoText = "Connecting to peer"
+        case AppState.connected:
+            //print("from onReceive, connected")
+            self.infoText = "Connected to peer"
+        default:
+            print("unknown error")
+        }
+    }
+    
+    private func showChoosePeerAlert() {
+        // alert user to choose a peer
+        guard let window = UIApplication.shared.keyWindow else {
+                return }
+        let choosePeerAlert = UIAlertController(title: "Choose a peer", message: "Please choose a peer to connect.  You can choose up to 7 peers.", preferredStyle: .alert)
+        
+        choosePeerAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            print("confirmed")
+        })
+    }
+    
+    private func showNumberOfPeersAlert() {
+        guard let window = UIApplication.shared.keyWindow else {
+                return }
+        
+        let numberAlert = UIAlertController(title: "Number of peers", message: "The app can only connect to 7 peers, the maximum.", preferredStyle: .alert)
+        
+        numberAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            // end the chat
+            print("confirmed")
+            
+        })
+        
+        DispatchQueue.main.async {
+            window.rootViewController?.present(numberAlert, animated: true)
+        }
     }
     
 }
@@ -229,34 +269,6 @@ struct PeerRowView : View {
             //Text("isCheck \(String(peerInfo.isChecked))")
         }
     }
-}
-
-private func createCheckListItems(peersInfo: [PeerInfo]) -> [PeerCheckListItem] {
-    var peerList : [PeerCheckListItem] = []
-    for peer in peersInfo {
-        let peerItem = PeerCheckListItem(id: peer.id, peerInfo: peer)
-        peerList.append(peerItem)
-    }
-    return peerList
-}
-
-private func selectedPeers(peerItems: [PeerCheckListItem]) -> [PeerInfo] {
-    var selectedPeers : [PeerInfo] = []
-    for peer in peerItems {
-        if peer.isChecked {
-            selectedPeers.append(peer.peerInfo)
-        }
-    }
-    return selectedPeers
-}
-
-
-
-struct PeerCheckListItem : Identifiable  {
-    
-    var id : UUID
-    var peerInfo : PeerInfo
-    var isChecked : Bool = false
 }
 
 struct PeersListView_Previews: PreviewProvider {

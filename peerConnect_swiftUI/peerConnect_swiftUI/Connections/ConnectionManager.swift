@@ -27,12 +27,14 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var messageModels : [MessageModel] = []
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
+    @Published var disconnectedPeer: MCPeerID? = nil
     @Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal {
         didSet {
             if (appState == AppState.endChat) {
                 print("endChat detected, reset starts")
                 self.resetSelectedPeersAndNormalState()
+                //appState = AppState.normal
             }
         }
     }
@@ -301,9 +303,11 @@ class ConnectionManager : NSObject, ObservableObject {
         
         for i in 0...(self.peersInfo.count - 1) {
             print("peersInfo count \(self.peersInfo.count), i \(i)")
-            var peer = self.peersInfo[i]
+            let peer = self.peersInfo[i]
             print("peer name \(peer.peerID.displayName)")
-            peer.isChecked = false
+            DispatchQueue.main.async {
+                peer.isChecked = false
+            }
             self.peersInfo[i] = peer
         }
         // create new peerinfo and make sure it is unique
@@ -313,9 +317,11 @@ class ConnectionManager : NSObject, ObservableObject {
             let peerInfoIndex = self.peersInfo.firstIndex(where: { $0.peerID.displayName == peer })
             if (peerInfoIndex != nil) {
                 print("connect to other members, found a peer in peer list, \(peerInfoIndex)")
-                var peerInfo = self.peersInfo[peerInfoIndex!]
+                let peerInfo = self.peersInfo[peerInfoIndex!]
                 if (peerInfo != nil) {
-                    peerInfo.isChecked = true
+                    DispatchQueue.main.async {
+                        peerInfo.isChecked = true
+                    }
                     print("checked one peer \(peerInfo.peerID.displayName)")
                     self.peersInfo[peerInfoIndex!] = peerInfo
                     peersToConnect.append(peerInfo.peerID)
@@ -594,6 +600,7 @@ extension ConnectionManager : MCSessionDelegate {
                 // not successfully connected, eg peer decline the invitation
                 //self.connectionState = ConnectionState.notConnected
                 self.connectedPeer = nil
+                self.disconnectedPeer = peerID
             }
             // remote peer should navigate to peerslistview
         case .connecting:

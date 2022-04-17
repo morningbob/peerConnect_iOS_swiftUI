@@ -32,10 +32,10 @@ struct ChatView: View {
                                 .padding([.leading, .trailing], 20)
                         }
                         .padding(0.5)
-                        //.padding([.top, .trailing], 0.5)
+                        
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    //.padding([.leading, .trailing], 2)
+                    
                 }
                 .onChange(of: self.connectionManager.messageModels.count, perform: { _ in
                     guard self.connectionManager.messageModels.count > 0 else { return }
@@ -45,45 +45,8 @@ struct ChatView: View {
                         
                     }
                 })
-                /*
-                .onReceive(self.connectionManager.$messageModels, perform: { messageModels in
-                    //("lazy stack: onReceive")
-                    guard !messageModels.isEmpty else { return }
-                    withAnimation(Animation.easeInOut) {
-                        proxy.scrollTo(connectionManager.messageModels.last?.id, anchor: .center)
-                        print("scrolled")
-                        
-                    }
-                })
-                 */
-                
             
             }.navigationBarTitle("Chat View")
-                //padding(.top, 20)
-                        //List(connectionManager.messageModels, id: \.id) { messageModel in
-                            //ForEach(connectionManager.messageModels, id: \.id) { messageModel in
-                        //    Text(messageModel.whoSaid + ":  " + messageModel.content).id(messageModel.id)
-                            //}
-                        //}.environmentObject(connectionManager)
-                    //}
-                        
-                        //.safeAreaInset(edge: .top, content: {
-                            
-                        //})
-                /*
-                        .onChange(of: self.connectionManager.$messageModels, perform: { messageModels in
-                            guard !messageModels.isEmpty else { return }
-                            withAnimation(Animation.easeInOut) {
-                                proxy.scrollTo(messageModels.last!.id)
-                                //proxy.scrollTo("MessageList", anchor: .bottom)
-                            }
-                        })
-                        .id("MessageList")
-                 */
-                
-                    
-                 
-                //}
             //}//.frame( height: UIScreen.screenHeight*0.35)
             
             TextField("Enter Message: ", text: $messageText, onCommit: {
@@ -96,8 +59,6 @@ struct ChatView: View {
             Spacer()
             PeerStatus(connectionManager: self.connectionManager)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
-                //.frame(height: UIScreen.screenHeight*0.30)
-                //.frame(alignment: .leading)
             
             Spacer()
             HStack {
@@ -253,7 +214,9 @@ struct ChatView: View {
             if (connectionManager.isHost) {
             connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
             } else {
-                //disconnectedPeers = [connectedPeers.co]
+                // here, for the client, there is no peersInfo list checked, the client is always
+                // just connected to the host, the disconnected peer is the host.
+                disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
             }
             var connectedText = ""
             for peer in connectedPeers {
