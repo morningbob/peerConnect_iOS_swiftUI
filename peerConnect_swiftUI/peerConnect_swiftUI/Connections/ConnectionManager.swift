@@ -135,19 +135,23 @@ class ConnectionManager : NSObject, ObservableObject {
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 print("send message to peers, peer \(peer.peerID.displayName)")
+                print("connection: \(peer.state)")
                 peersToSend.append(peer.peerID)
             }
         }
+        print("isHost : \(isHost)")
         
         if !isHost {
             //guard let connectedPeerInfo = self.connectedPeerInfo else {
             //return
             //}
             //print("isHost is false, client side, connected peer")
-            guard let connectedPeer = self.connectedPeer else {
-                return
-            }
-            peersToSend = [connectedPeer]
+            //guard let connectedPeer = self.connectedPeer else {
+            //    return
+            //}
+            print("isHost false")
+            print("hostInfo: \(self.hostInfo?.peerID.displayName)")
+            peersToSend = [self.hostInfo!.peerID]
         }
         
         
@@ -156,11 +160,14 @@ class ConnectionManager : NSObject, ObservableObject {
             return
         }
         
-        if (sendMessage(message, peersToSend: peersToSend, whoSaid: whoSaid)) {
-            self.messages.append(message)
-            var messageModel = createMessageModel(message: message, whoSaid: whoSaid)
-            self.messageModels.append(messageModel)
-        }
+        // here I don't check if the sent function success or not.  It is only
+        // successful if all peers are connected.
+        sendMessage(message, peersToSend: peersToSend, whoSaid: whoSaid)
+        
+        self.messages.append(message)
+        var messageModel = createMessageModel(message: message, whoSaid: whoSaid)
+        self.messageModels.append(messageModel)
+        
     }
     
     // this send message method is for server side to redirect messages from other peers to
@@ -383,9 +390,11 @@ class ConnectionManager : NSObject, ObservableObject {
                 break
             } else if (peer.state == PeerState.connected) {
                 allDisconnected = false
+                print("getAppState: peer connected: \(peer.peerID.displayName)")
             }
             readyToChat = 2     // there is no one set ready to 1
         }
+        
         
         if (readyToChat == 2 && !allDisconnected) {
             DispatchQueue.main.async {
@@ -592,21 +601,25 @@ extension ConnectionManager : MCSessionDelegate {
                     if !self.isHost {
                         if (self.hostInfo?.peerID == peerID) {
                             self.hostInfo?.state = PeerState.fromConnectedToDisconnected
-                            print("set host disconnected state, endChatState = true")
-                            self.endChatState = true
+                            print("set host disconnected state, endChatState = true, host: \(self.hostInfo?.peerID.displayName)")
+                            //self.endChatState = true
                         }
                         if (self.connectedPeerInfo?.peerID == peerID) {
                             print("set peer disconnected state")
                             self.connectedPeerInfo?.state = PeerState.fromConnectedToDisconnected
                         }
-                        self.getAppState()
+                        //self.getAppState()
+                        //self.sendMessage("after one disconnected", peersToSend: [self.hostInfo!.peerID], whoSaid: "Me")
                     }
                     //self.appState = AppState.fromConnectedToDisconnected
+                    
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
-                 
+                    // here I found an interesting thing, if I try to connect to this
+                    // notConnected peer, I can't send message to other peers which are connected
+                    self.peersInfo[peerIndex].isChecked = false
                     self.getAppState()
                 }
             case 0:
@@ -622,12 +635,14 @@ extension ConnectionManager : MCSessionDelegate {
                             self.connectedPeerInfo?.state = PeerState.fromConnectingToNotConnected
                             print("set host disconnected state")
                         }
-                        self.getAppState()
+                        //self.getAppState()
                     }
+                    
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
                     self.peersInfo[peerIndex].state = PeerState.fromConnectingToNotConnected
+                    self.peersInfo[peerIndex].isChecked = false
                     self.getAppState()
                 }
             default:
