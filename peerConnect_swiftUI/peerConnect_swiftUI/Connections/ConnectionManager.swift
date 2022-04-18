@@ -133,7 +133,7 @@ class ConnectionManager : NSObject, ObservableObject {
         
         // extract the MCPeerID from peersInfo, to send
         for peer in self.peersInfo {
-            if (peer.isChecked) {
+            if (peer.isChecked && peer.state == PeerState.connected) {
                 print("send message to peers, peer \(peer.peerID.displayName)")
                 print("connection: \(peer.state)")
                 peersToSend.append(peer.peerID)
@@ -611,15 +611,18 @@ extension ConnectionManager : MCSessionDelegate {
                         //self.getAppState()
                         //self.sendMessage("after one disconnected", peersToSend: [self.hostInfo!.peerID], whoSaid: "Me")
                     }
-                    //self.appState = AppState.fromConnectedToDisconnected
                     
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
-                    self.peersInfo[peerIndex].state = PeerState.fromConnectedToDisconnected
-                    // here I found an interesting thing, if I try to connect to this
-                    // notConnected peer, I can't send message to other peers which are connected
-                    self.peersInfo[peerIndex].isChecked = false
+                    print("from connected to disconnected: the peer \(peerID.displayName) set disconnected")
+                    var peerInfo = self.peersInfo[peerIndex]
+                    peerInfo.state = PeerState.fromConnectedToDisconnected
+                    // here we let isChecked = true, when sending message, we'll also
+                    // check the state.  so, with isChecked true, we can figure out who
+                    // is disconnected and update peer info in chat view.
+                    //self.peersInfo[peerIndex].isChecked = false
+                    self.peersInfo[peerIndex] = peerInfo
                     self.getAppState()
                 }
             case 0:
@@ -641,10 +644,14 @@ extension ConnectionManager : MCSessionDelegate {
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
                         return
                     }
-                    self.peersInfo[peerIndex].state = PeerState.fromConnectingToNotConnected
-                    self.peersInfo[peerIndex].isChecked = false
+                    print("from connecting to disconnected: the peer \(peerID.displayName) set disconnected")
+                    var peerInfo = self.peersInfo[peerIndex]
+                    peerInfo.state = PeerState.fromConnectingToNotConnected
+                    self.peersInfo[peerIndex] = peerInfo
+                    //self.peersInfo[peerIndex].state = PeerState.fromConnectingToNotConnected
+                    //self.peersInfo[peerIndex].isChecked = false
                     self.getAppState()
-                }
+                } 
             default:
                 print("not connected state: 0")
             }
@@ -710,6 +717,11 @@ extension ConnectionManager : MCSessionDelegate {
                 self.endChatState = true
                 self.getAppState()
             }
+            
+        } else if ((message.contains(self.peerNameKey)) || (message.contains(self.groupNameKey)) || message.contains("\(self.endChatMessageKey)end")) && self.isHost {
+            // ignore the message
+            redirect = false
+            showInMessageList = false
             
         } else {
             whoSaid = peerID.displayName

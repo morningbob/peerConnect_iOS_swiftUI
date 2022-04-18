@@ -24,6 +24,9 @@ struct ChatView: View {
     //@Binding var shouldPopToRoot : Bool
     //@State var popToPeerList : Bool = false
     //@Environment(\.navigationManager) var nvmanager
+    @State var connectedPeersText : String = "none"
+    @State var disconnectedPeersText : String = "none"
+    @State var groupMembersText : String = "none"
     
     var body: some View {
         
@@ -62,7 +65,8 @@ struct ChatView: View {
             .padding()
             .background(Color.white)
             Spacer()
-            PeerStatus(connectionManager: self.connectionManager)
+            PeerStatus(connectionManager: self.connectionManager, connectedPeersText: self.$connectedPeersText, disconnectedPeersText: self.$disconnectedPeersText,
+                       groupMembersText: self.$groupMembersText)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             
             Spacer()
@@ -133,6 +137,11 @@ struct ChatView: View {
                 // here we can also update the peers status below the chat field.
                 // update peer status view
                 connectionManager.getAppState()
+                print("getPeerStatus triggered, for chat view peer info")
+                getPeerStatus()
+            })
+            .onReceive(connectionManager.$groupMemberNames, perform: { names in
+                getPeerStatus()
             })
             
             
@@ -167,13 +176,65 @@ struct ChatView: View {
         
     }
     
+    private func getPeerStatus()  {
+        var connectedPeers : [String] = []
+        if (connectionManager.isHost) {
+            connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+            /*
+            for peerName in connectionManager.groupMemberNames {
+                for peer in connectionManager.peersInfo {
+                    if (peerName == peer.peerID.displayName && peer.state == PeerState.connected && !connectedPeers.contains(peerName)) {
+                        connectedPeers.append(peerName)
+                        break  // break out of the first for loop
+                    }
+                }
+            }
+             */
+        } else {
+            connectedPeers = [connectionManager.connectedPeer?.displayName ?? ""]
+        }
+        var disconnectedPeers : [String] = []
+        if (connectionManager.isHost) {
+            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected))
+            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectingToNotConnected))
+        } else {
+            // here, for the client, there is no peersInfo list checked, the client is always
+            // just connected to the host, the disconnected peer is the host.
+            disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
+        }
+        var connectedText = ""
+        for peer in connectedPeers {
+            connectedText += peer + "   "
+        }
+        if connectedText == "" {
+            connectedText = "none"
+        }
+        var disconnectedText = ""
+        for peer in disconnectedPeers {
+            disconnectedText += peer + "   "
+        }
+        if disconnectedText == "" {
+            disconnectedText = "none"
+        }
+        // assgin to state variables once only for the whole text
+        // to avoid too many refresh.
+        self.connectedPeersText = connectedText
+        self.disconnectedPeersText = disconnectedText
+        
+        var groupMembers = connectionManager.groupMemberNames
+        var groupText = ""
+        for member in groupMembers {
+            groupText += member + "   "
+        }
+        self.groupMembersText = groupText
+    }
+    
     struct PeerStatus : View {
         
         @ObservedObject var connectionManager : ConnectionManager
-        
-        @State var connectedPeersText : String = "none"
-        @State var disconnectedPeersText : String = "none"
-        @State var groupMembersText : String = "none"
+        @Binding var connectedPeersText : String
+        @Binding var disconnectedPeersText : String
+        @Binding var groupMembersText : String
         
         var body: some View {
             VStack(alignment: .leading, spacing: 0) {
@@ -198,68 +259,6 @@ struct ChatView: View {
                     Spacer()
                     
             }
-            //.frame(height: UIScreen.screenHeight*0.4)
-            .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
-                print("getPeerStatus triggered")
-                getPeerStatus()
-            })
-            .onReceive(connectionManager.$groupMemberNames, perform: { names in
-                getPeerStatus()
-            })
-            
-        }
-            
-        
-        private func getPeerStatus()  {
-            var connectedPeers : [String] = []
-            if (connectionManager.isHost) {
-                connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
-                /*
-                for peerName in connectionManager.groupMemberNames {
-                    for peer in connectionManager.peersInfo {
-                        if (peerName == peer.peerID.displayName && peer.state == PeerState.connected && !connectedPeers.contains(peerName)) {
-                            connectedPeers.append(peerName)
-                            break  // break out of the first for loop
-                        }
-                    }
-                }
-                 */
-            } else {
-                connectedPeers = [connectionManager.connectedPeer?.displayName ?? ""]
-            }
-            var disconnectedPeers : [String] = []
-            if (connectionManager.isHost) {
-            connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected)
-            } else {
-                // here, for the client, there is no peersInfo list checked, the client is always
-                // just connected to the host, the disconnected peer is the host.
-                disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
-            }
-            var connectedText = ""
-            for peer in connectedPeers {
-                connectedText += peer + "   "
-            }
-            if connectedText == "" {
-                connectedText = "none"
-            }
-            var disconnectedText = ""
-            for peer in disconnectedPeers {
-                disconnectedText += peer + "   "
-            }
-            if disconnectedText == "" {
-                disconnectedText = "none"
-            }
-            // assgin to state variables once only for the whole text
-            // to avoid too many refresh.
-            self.connectedPeersText = connectedText
-            self.disconnectedPeersText = disconnectedText
-            
-            var groupMembers = connectionManager.groupMemberNames
-            var groupText = ""
-            for member in groupMembers {
-                groupText += member + "   "
-            }
-            self.groupMembersText = groupText
         }
         
     }
