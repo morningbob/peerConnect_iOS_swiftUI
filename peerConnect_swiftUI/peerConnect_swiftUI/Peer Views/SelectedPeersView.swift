@@ -28,13 +28,13 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed
             print("selected peers view, peersInfo changed")
-            connectionManager.getAppState()
+            self.connectionManager.getAppState()
         })
         .onReceive(self.connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
             } else if (state == AppState.endChat) {
-                print("endChat detected, dismissing")
+                print("endChat detected, from onReceive selectedPeerView, dismissing")
                 //self.presentation.wrappedValue.dismiss()
             }
             //else if (state == AppState.endChat) {
@@ -44,7 +44,7 @@ struct SelectedPeersView: View {
         .onAppear() {
             self.connectionManager.getAppState()
             if (self.connectionManager.appState == AppState.endChat) {
-                print("endChat detected, dismissing")
+                print("endChat detected, from onAppear selectedPeerView, dismissing")
                 self.presentation.wrappedValue.dismiss()
             }
             /*
