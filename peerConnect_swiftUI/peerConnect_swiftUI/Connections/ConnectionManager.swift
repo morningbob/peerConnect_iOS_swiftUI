@@ -34,9 +34,10 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var appState = AppState.normal {
         didSet {
             if (appState == AppState.endChat) {
+                // this is for host to detect when all peers disconnected
+                // it needs to end the chat.
                 print("endChat detected, reset starts")
                 self.resetSelectedPeersAndNormalState()
-                //appState = AppState.normal
             }
         }
     }
@@ -258,22 +259,18 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         print("perform disconnect")
         session.disconnect()
-        
+        // may clean peersInfo here
+        // we'll clean peersInfo after we send the end chat message to all
+        // the connected peers
+        //self.clearPeersInfo()
     }
     
     private func resetSelectedPeersAndNormalState() {
-        /*
-        for peer in self.peersInfo {
-            if (peer.isChecked) {
-                peer.isChecked.toggle()
-                print("isChecked toggled")
-            }
-        }
-         */
-        //self.clearPeersInfo()
+        
         self.groupMemberNames = []
+        // reset
         self.endChatState = false
-         
+        //self.clearPeersInfo()
     }
     
     // this name strings is stored in the peers field in the message model
@@ -353,11 +350,11 @@ class ConnectionManager : NSObject, ObservableObject {
         //self.connectPeers()
     }
     
+    // need to do this before cleaning peersInfo
     private func endChatMessage() {
         let message = "\(endChatMessageKey)end"
         var peersToSend : [MCPeerID] = []
         if isHost {
-            
             for peer in self.peersInfo {
                 if (peer.isChecked) {
                     peersToSend.append(peer.peerID)
@@ -371,7 +368,9 @@ class ConnectionManager : NSObject, ObservableObject {
             */
         }
         sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
+        
         self.clearPeersInfo()
+        
     }
     // this method is only for server side to monitor connection progress
     // this method will be triggered by selectedPeersView,
@@ -384,24 +383,44 @@ class ConnectionManager : NSObject, ObservableObject {
         
         // here I set readyToChat as 0, 1, or 2, not true or false, I want to distinguish
         // the case of no selected peer too.
-        var readyToChat = 0
-        
+        var someoneConnecting = 0
+        var oneIsNotDisconnected = 0// this is to detect if all peers are disconnected,
+        // if so, endOfChat is true
         var allDisconnected = true
         for peer in self.peersInfo {
-            if //(peer.isChecked && (peer.state == PeerState.connected || peer.state == PeerState.fromConnectedToDisconnected || peer.state == PeerState.fromConnectingToNotConnected)) {
-                (peer.isChecked && (peer.state == PeerState.connecting)) {
+            if (peer.isChecked && (peer.state == PeerState.connecting)) {
                     allDisconnected = false
-                    readyToChat = 1   // someone is still connecting
+                    someoneConnecting = 1   // someone is still connecting
                 break
-            } else if (peer.state == PeerState.connected) {
+            } else if (peer.isChecked && peer.state == PeerState.connected) {
                 allDisconnected = false
                 print("getAppState: peer connected: \(peer.peerID.displayName)")
+            } else if (peer.isChecked  && peer.state != PeerState.fromConnectedToDisconnected && peer.state != PeerState.fromConnectingToNotConnected) {
+                oneIsNotDisconnected = 1
+                break
             }
-            readyToChat = 2     // there is no one set ready to 1
+            oneIsNotDisconnected = 2
+            someoneConnecting = 2     // there is no one set ready to 1
         }
+        /*
         
-        
-        if (readyToChat == 2 && !allDisconnected) {
+        if allDisconnected {
+            for peer in self.peersInfo {
+                if (peer.isChecked  && peer.state != PeerState.fromConnectedToDisconnected && peer.state != PeerState.fromConnectingToNotConnected) {
+                    oneIsNotDisconnected = true
+                    break
+                }
+            }
+        }
+        */
+        //if !(peer.state == PeerState.fromConnectedToDisconnected || peer.state == //PeerState.fromConnectingToNotConnected) {
+         //   endOfChat = false
+        //}
+        if (oneIsNotDisconnected == 2 && someoneConnecting == 2 && allDisconnected) {
+            DispatchQueue.main.async {
+                self.appState = AppState.endChat
+            }
+        } else if (someoneConnecting == 2 && !allDisconnected) {
             DispatchQueue.main.async {
                 self.appState = AppState.connected
             }
@@ -412,17 +431,17 @@ class ConnectionManager : NSObject, ObservableObject {
                 self.appState = AppState.endChat
             }
             print("model: appState end chat")
-        } else if (readyToChat == 1) {
+        } else if (someoneConnecting == 1) {
             DispatchQueue.main.async {
                 self.appState = AppState.connecting
             }
             print("model: appState connecting")
             // so, no peer is connecting or connected
-        } else if (allDisconnected && readyToChat == 2) {
+        } else if (allDisconnected && someoneConnecting == 2) {
             DispatchQueue.main.async {
-                self.appState = AppState.endChat
+                self.appState = AppState.normal
             }
-            print("model: appState all disconnected, endChat state")
+            print("model: appState all disconnected, normal state")
         
         } else {
             DispatchQueue.main.async {
@@ -483,8 +502,14 @@ class ConnectionManager : NSObject, ObservableObject {
     
     private func clearPeersInfo() {
         for i in 0...self.peersInfo.count - 1 {
-            self.peersInfo[i].isChecked = false
-            self.peersInfo[i].state = PeerState.discovered
+            if (self.peersInfo[i].isChecked || self.peersInfo[i].state != PeerState.discovered) {
+                // this is done for triggering the change of peersInfo,
+                // so the chat view, peers info will display it
+                var peer = self.peersInfo[i]
+                peer.isChecked = false
+                peer.state = PeerState.discovered
+                self.peersInfo[i] = peer
+            }
         }
     }
 }

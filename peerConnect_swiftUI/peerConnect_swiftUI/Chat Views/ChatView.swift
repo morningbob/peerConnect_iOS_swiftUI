@@ -122,7 +122,7 @@ struct ChatView: View {
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
             .onReceive(connectionManager.$appState, perform: { appState in
-                if (appState == AppState.normal || appState == AppState.endChat) {
+                if ( appState == AppState.endChat) {
                     //self.presentation.wrappedValue.dismiss()
                     if (self.connectionManager.connectedPeer == nil && self.shouldNotifyEndChat) {
                         //print("connected peer == nil")
