@@ -258,16 +258,19 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         print("perform disconnect")
         session.disconnect()
+        
     }
     
     private func resetSelectedPeersAndNormalState() {
-        
+        /*
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 peer.isChecked.toggle()
                 print("isChecked toggled")
             }
         }
+         */
+        //self.clearPeersInfo()
         self.groupMemberNames = []
         self.endChatState = false
          
@@ -361,12 +364,14 @@ class ConnectionManager : NSObject, ObservableObject {
                 }
             }
         } else {
-            guard self.host != nil else { return }
-            print("endChatMessage: host: \(host?.displayName)")
+            /*
+            guard self.hostInfo != nil else { return }
+            print("endChatMessage: host: \(hostInfo?.displayName)")
             peersToSend = [self.host!]
-            
+            */
         }
         sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
+        self.clearPeersInfo()
     }
     // this method is only for server side to monitor connection progress
     // this method will be triggered by selectedPeersView,
@@ -415,9 +420,9 @@ class ConnectionManager : NSObject, ObservableObject {
             // so, no peer is connecting or connected
         } else if (allDisconnected && readyToChat == 2) {
             DispatchQueue.main.async {
-                self.appState = AppState.normal
+                self.appState = AppState.endChat
             }
-            print("model: appState all disconnected, normal state")
+            print("model: appState all disconnected, endChat state")
         
         } else {
             DispatchQueue.main.async {
@@ -474,6 +479,13 @@ class ConnectionManager : NSObject, ObservableObject {
     func clearMessageList() {
         self.messageModels = []
         self.messages = []
+    }
+    
+    private func clearPeersInfo() {
+        for i in 0...self.peersInfo.count - 1 {
+            self.peersInfo[i].isChecked = false
+            self.peersInfo[i].state = PeerState.discovered
+        }
     }
 }
 
@@ -708,20 +720,25 @@ extension ConnectionManager : MCSessionDelegate {
             // setup checked peersInfo
             self.connectToOtherGroupMembers()
         } else if (message.contains("\(self.endChatMessageKey)end")) {
+            print("endChatMessage detected")
             // this is the server side
             if isHost {
                 // won't redirect message, also won't end the chat
                 redirect = false
+                print("host detected peer \(peerID.displayName)")
             } else {
             // this is client side
+                print("client detected peer \(peerID.displayName)")
                 self.endChatState = true
+                session.disconnect()
+                self.clearPeersInfo()
                 self.getAppState()
             }
             
-        } else if ((message.contains(self.peerNameKey)) || (message.contains(self.groupNameKey)) || message.contains("\(self.endChatMessageKey)end")) && self.isHost {
+        //} else if ((message.contains(self.peerNameKey)) || (message.contains(self.groupNameKey)) || message.contains("\(self.endChatMessageKey)end")) && self.isHost {
             // ignore the message
-            redirect = false
-            showInMessageList = false
+            //redirect = false
+            //showInMessageList = false
             
         } else {
             whoSaid = peerID.displayName
