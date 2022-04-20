@@ -10,7 +10,7 @@ import MultipeerConnectivity
 //import NavigationViewKit
 
 struct ChatView: View {
-    @EnvironmentObject var connectionManager : ConnectionManager
+    @EnvironmentObject var connectionManager : ChatConnectionManager
     @Environment(\.presentationMode) var presentation
     @State private var messageText = ""
     //@State private var isSendFile = false
@@ -56,13 +56,13 @@ struct ChatView: View {
             
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 print("chat view, send message once ")
-                connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
+                //connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
                 messageText = ""
             })
             .padding()
             .background(Color.white)
             Spacer()
-            PeerStatus(connectionManager: self.connectionManager, connectedPeersText: self.$connectedPeersText, disconnectedPeersText: self.$disconnectedPeersText,
+            PeerStatus(connectedPeersText: self.$connectedPeersText, disconnectedPeersText: self.$disconnectedPeersText,
                        groupMembersText: self.$groupMembersText)
                 .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             
@@ -70,7 +70,7 @@ struct ChatView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    connectionManager.endChat()
+                    //connectionManager.endChat()
                     print("button ending chat")
                     // reset isHost, no longer to be the host
                     connectionManager.isHost = false
@@ -133,7 +133,7 @@ struct ChatView: View {
             .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 // here we can also update the peers status below the chat field.
                 // update peer status view
-                connectionManager.getAppState()
+                //connectionManager.getAppState()
                 print("getPeerStatus triggered, for chat view peer info")
                 getPeerStatus()
             })
@@ -176,7 +176,7 @@ struct ChatView: View {
     private func getPeerStatus()  {
         var connectedPeers : [String] = []
         if (connectionManager.isHost) {
-            connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
+            //connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
             /*
             for peerName in connectionManager.groupMemberNames {
                 for peer in connectionManager.peersInfo {
@@ -192,12 +192,12 @@ struct ChatView: View {
         }
         var disconnectedPeers : [String] = []
         if (connectionManager.isHost) {
-            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected))
-            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectingToNotConnected))
+            //disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected))
+            //disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectingToNotConnected))
         } else {
             // here, for the client, there is no peersInfo list checked, the client is always
             // just connected to the host, the disconnected peer is the host.
-            disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
+            //disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
         }
         var connectedText = ""
         for peer in connectedPeers {
@@ -228,7 +228,6 @@ struct ChatView: View {
     
     struct PeerStatus : View {
         
-        @ObservedObject var connectionManager : ConnectionManager
         @Binding var connectedPeersText : String
         @Binding var disconnectedPeersText : String
         @Binding var groupMembersText : String
@@ -266,7 +265,7 @@ struct ChatView: View {
         // it might be bad to clean messages here.
         // it should be cleared from connection manager
         // when the app state is endChat
-        self.connectionManager.clearMessageList()
+        //self.connectionManager.clearMessageList()
     }
     
     private func notifyUserEndChat() {

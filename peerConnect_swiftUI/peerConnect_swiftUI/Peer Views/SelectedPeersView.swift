@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SelectedPeersView: View {
     
-    @EnvironmentObject var connectionManager : ConnectionManager
+    @EnvironmentObject var connectionManager : ChatConnectionManager
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
     
@@ -28,7 +28,7 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed
             print("selected peers view, peersInfo changed")
-            self.connectionManager.getAppState()
+            //self.connectionManager.getAppState()
         })
         .onReceive(self.connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {
@@ -42,7 +42,7 @@ struct SelectedPeersView: View {
             //}
         })
         .onAppear() {
-            self.connectionManager.getAppState()
+            //self.connectionManager.getAppState()
             if (self.connectionManager.appState == AppState.endChat) {
                 print("endChat detected, from onAppear selectedPeerView, dismissing")
                 self.presentation.wrappedValue.dismiss()

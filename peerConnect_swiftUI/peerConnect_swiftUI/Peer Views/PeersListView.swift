@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PeersListView: View {
     
-    @StateObject var connectionManager = ConnectionManager()
+    @StateObject var connectionManager = ChatConnectionManager()
     @State private var shouldNavigateToPeerStatus = false
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer.  You can choose up to 7 peers."
@@ -98,7 +98,7 @@ struct PeersListView: View {
                         }
                     }
                     if checkedPeersCount > 0 {
-                    self.connectionManager.connectPeers()
+                    //self.connectionManager.connectPeers()
                     print("connectPeers is triggered")
                         print("num of peers info: \(self.connectionManager.peersInfo.count)")
                     // this is to distinguish if the app should send messages to peers in the list,

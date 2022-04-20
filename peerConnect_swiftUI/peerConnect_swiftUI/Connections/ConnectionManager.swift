@@ -16,6 +16,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var peersInfo : [PeerInfo] = []
     
     private var session: MCSession!
+    private var listOfSessions : [MCSession] = []
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
     
     //private let peerReceivedHandler: PeerReceivedHandler?
@@ -58,11 +59,6 @@ class ConnectionManager : NSObject, ObservableObject {
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
-        session = MCSession(
-            peer: myPeerId,
-            securityIdentity: nil,
-            encryptionPreference: .none)
-        
         //self.peerReceivedHandler = peerReceivedHandler
         
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(
@@ -73,12 +69,22 @@ class ConnectionManager : NSObject, ObservableObject {
         
         self.nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: ConnectionManager.service)
         super.init()
+        self.createNewSession()
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceBrowser.delegate = self
         print("start advertising")
         self.nearbyServiceAdvertiser.startAdvertisingPeer()
         print("start browsing")
-        startBrowsing()
+        self.startBrowsing()
+        
+    }
+    
+    private func createNewSession() {
+        self.session = MCSession(
+            peer: myPeerId,
+            securityIdentity: nil,
+            encryptionPreference: .none)
+        //self.listOfSessions.append()
         self.session.delegate = self
     }
     
@@ -252,11 +258,16 @@ class ConnectionManager : NSObject, ObservableObject {
     
     
     private func resetSelectedPeersAndNormalState() {
-        
+        // in case the session is not closed
+        self.session.disconnect()
         self.groupMemberNames = []
         // reset
         self.endChatState = false
         self.clearPeersInfo()
+        // here we prepare for new session and chats
+        self.createNewSession()
+        self.startBrowsing()
+        self.nearbyServiceAdvertiser.startAdvertisingPeer()
     }
     
     // this name strings is stored in the peers field in the message model
@@ -296,7 +307,9 @@ class ConnectionManager : NSObject, ObservableObject {
                 self.inviteConnect(peerID: peer.peerID)
             }
         }
-       
+        // here we stop the browsing and advertising
+        self.stopBrowsing()
+        self.nearbyServiceAdvertiser.stopAdvertisingPeer()
     }
     
     private func connectToOtherGroupMembers() {
