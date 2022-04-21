@@ -29,20 +29,22 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var connectedPeer: MCPeerID? = nil
     @Published var connectedPeerInfo: PeerInfo?
     private var host: MCPeerID? = nil
-    private var hostInfo: PeerInfo? = nil
+    @Published var hostInfo: PeerInfo? = nil
     @Published var disconnectedPeer: MCPeerID? = nil
-    @Published var connectionState = ConnectionState.listening
+    //@Published var connectionState = ConnectionState.listening
     @Published var appState = AppState.normal {
         didSet {
             if (appState == AppState.endChat) {
                 // this is for host to detect when all peers disconnected
                 // it needs to end the chat.
                 print("endChat detected in didSet, reset starts")
+                self.endChatState = false
                 self.resetSelectedPeersAndNormalState()
             }
         }
     }
     var isHost = false
+    @Published var clientShouldNavigateToChat = false
     // the following keys are for the clients to identify messages sent from the host,
     // for status info.
     private let peerNameKey = "7431rk"
@@ -55,7 +57,7 @@ class ConnectionManager : NSObject, ObservableObject {
     // if it is 0, it goes from connecting state to notConnected state, so it is the peer refused the
     //   invitation.
     private var fromConnectedOrConnecting = 0
-    var endChatState = false
+    @Published var endChatState = false
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -266,8 +268,8 @@ class ConnectionManager : NSObject, ObservableObject {
         self.clearPeersInfo()
         // here we prepare for new session and chats
         self.createNewSession()
-        self.startBrowsing()
-        self.nearbyServiceAdvertiser.startAdvertisingPeer()
+        //self.startBrowsing()
+        //self.nearbyServiceAdvertiser.startAdvertisingPeer()
     }
     
     // this name strings is stored in the peers field in the message model
@@ -308,8 +310,8 @@ class ConnectionManager : NSObject, ObservableObject {
             }
         }
         // here we stop the browsing and advertising
-        self.stopBrowsing()
-        self.nearbyServiceAdvertiser.stopAdvertisingPeer()
+        //self.stopBrowsing()
+        //self.nearbyServiceAdvertiser.stopAdvertisingPeer()
     }
     
     private func connectToOtherGroupMembers() {
@@ -356,6 +358,8 @@ class ConnectionManager : NSObject, ObservableObject {
             print("start sending end chat message")
             self.endChatMessage()
             print("sent end chat message")
+            self.endChatState = true
+            print("set sendChatState true")
         }
         
         // may clean peersInfo here
@@ -401,13 +405,17 @@ class ConnectionManager : NSObject, ObservableObject {
         
         // here I set readyToChat as 0, 1, or 2, not true or false, I want to distinguish
         // the case of no selected peer too.
+        print("getting AppState")
         if isHost {
+            print("host side")
             var someoneConnecting = 0
             var oneIsNotDisconnected = 0// this is to detect if all peers are disconnected,
             // if so, endOfChat is true
+            print("peersInfo count: \(self.peersInfo.count)")
             var allDisconnected = true
             var selectedPeersCount = 0
             for peer in self.peersInfo {
+                print("peer: \(peer.peerID.displayName)")
                 if (peer.isChecked && (peer.state == PeerState.connecting)) {
                         allDisconnected = false
                         someoneConnecting = 1   // someone is still connecting
@@ -416,44 +424,37 @@ class ConnectionManager : NSObject, ObservableObject {
                     allDisconnected = false
                     print("getAppState: peer connected: \(peer.peerID.displayName)")
                 } else if (peer.isChecked  && peer.state != PeerState.fromConnectedToDisconnected && peer.state != PeerState.fromConnectingToNotConnected) {
-                    oneIsNotDisconnected = 1
+                    oneIsNotDisconnected = 1  // there is a peer who is not in disconnected or
+                    // connected state
                     break
                 }
                 oneIsNotDisconnected = 2
                 someoneConnecting = 2     // there is no one set ready to 1
                 selectedPeersCount += 1
             }
-            /*
             
-            if allDisconnected {
-                for peer in self.peersInfo {
-                    if (peer.isChecked  && peer.state != PeerState.fromConnectedToDisconnected && peer.state != PeerState.fromConnectingToNotConnected) {
-                        oneIsNotDisconnected = true
-                        break
-                    }
-                }
-            }
-            */
-            //if !(peer.state == PeerState.fromConnectedToDisconnected || peer.state == //PeerState.fromConnectingToNotConnected) {
-             //   endOfChat = false
-            //}
-            if (oneIsNotDisconnected == 2 && someoneConnecting == 2 && allDisconnected && selectedPeersCount > 0) {
+            
+            if (self.endChatState) {
                 DispatchQueue.main.async {
+                    print("set endChat state because of endChatState")
                     self.appState = AppState.endChat
-                    print("set endChat state because of first conditions")
+                    // reset endChatState here
+                    self.endChatState = false
                 }
-            } else if (someoneConnecting == 2 && !allDisconnected) {
+                print("model: appState end chat")
+            } else
+             if (someoneConnecting == 2 && !allDisconnected) {
                 DispatchQueue.main.async {
                     self.appState = AppState.connected
                 }
                 print("model: appState startChat")
                 
-            } else if (self.endChatState) {
+            } else if (oneIsNotDisconnected == 2 && someoneConnecting == 2 && allDisconnected && selectedPeersCount > 0) {
                 DispatchQueue.main.async {
-                    print("set endChat state because of endChatState")
                     self.appState = AppState.endChat
+                    print("set endChat state because of first conditions")
                 }
-                print("model: appState end chat")
+                 
             } else if (someoneConnecting == 1) {
                 DispatchQueue.main.async {
                     self.appState = AppState.connecting
@@ -596,7 +597,9 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
                 //self.connectedPeerInfo?.state = PeerState.connected
                 // for the client, show peer status as connected to the host
                 //self.peersInfo.append(self.connectedPeerInfo!)
-                
+                //DispatchQueue.main.async {
+                //    self.clientShouldNavigateToChat = true
+                //}
             }
             invitationHandler(true, self.session)
         })

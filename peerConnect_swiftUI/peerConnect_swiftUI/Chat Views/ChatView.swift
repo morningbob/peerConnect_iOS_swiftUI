@@ -10,7 +10,7 @@ import MultipeerConnectivity
 //import NavigationViewKit
 
 struct ChatView: View {
-    @EnvironmentObject var connectionManager : ChatConnectionManager
+    @EnvironmentObject var connectionManager : ConnectionManager
     @Environment(\.presentationMode) var presentation
     @State private var messageText = ""
     //@State private var isSendFile = false
@@ -56,7 +56,7 @@ struct ChatView: View {
             
             TextField("Enter Message: ", text: $messageText, onCommit: {
                 print("chat view, send message once ")
-                //connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
+                connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
                 messageText = ""
             })
             .padding()
@@ -70,11 +70,11 @@ struct ChatView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    //connectionManager.endChat()
+                    connectionManager.endChat()
                     print("button ending chat")
                     // reset isHost, no longer to be the host
                     connectionManager.isHost = false
-                    connectionManager.endChatState = true
+                    //connectionManager.endChatState = true
                     // show alert of chat ending
                     self.notifyUserEndChat()
                     //self.shouldPopToRoot = false
@@ -123,6 +123,8 @@ struct ChatView: View {
                     //self.presentation.wrappedValue.dismiss()
                     if (self.shouldNotifyEndChat) {
                         //print("connected peer == nil")
+                        // reset endChatState here
+                        self.connectionManager.endChatState = false
                         self.notifyUserEndChat()
                         //self.connectionManager
                         self.shouldNotifyEndChat = false
@@ -133,7 +135,7 @@ struct ChatView: View {
             .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
                 // here we can also update the peers status below the chat field.
                 // update peer status view
-                //connectionManager.getAppState()
+                connectionManager.getAppState()
                 print("getPeerStatus triggered, for chat view peer info")
                 getPeerStatus()
             })
@@ -141,9 +143,7 @@ struct ChatView: View {
                 getPeerStatus()
             })
             
-            
-            
-        }//.background(Color.blue.edgesIgnoringSafeArea(.top))
+        }//.background(Color.blue.edgesIgnoringS afeArea(.top))
         // end of VStack
         //.padding(.bottom, 60)
         Spacer()
@@ -152,6 +152,10 @@ struct ChatView: View {
             .sheet(isPresented: $showingDocumentPicker) {
                 DocumentPicker(urlChosed: $urlContent.url)
                 //self.getDocumentFromUrl()
+            }
+            .onAppear() {
+                print("chat view appear")
+                print("endChatState: \(self.connectionManager.endChatState)")
             }
         /*
         NavigationLink(destination: PeersListView(showPeerStatus:  shouldPopToRoot).environmentObject(connectionManager),
@@ -177,7 +181,7 @@ struct ChatView: View {
         var connectedPeers : [String] = []
         if (connectionManager.isHost) {
             //connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
-            /*
+            
             for peerName in connectionManager.groupMemberNames {
                 for peer in connectionManager.peersInfo {
                     if (peerName == peer.peerID.displayName && peer.state == PeerState.connected && !connectedPeers.contains(peerName)) {
@@ -186,18 +190,18 @@ struct ChatView: View {
                     }
                 }
             }
-             */
+             
         } else {
             connectedPeers = [connectionManager.connectedPeer?.displayName ?? ""]
         }
         var disconnectedPeers : [String] = []
         if (connectionManager.isHost) {
-            //disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected))
-            //disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectingToNotConnected))
+            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectedToDisconnected))
+            disconnectedPeers.append(contentsOf: connectionManager.getPeerNameStringForState(peerState: PeerState.fromConnectingToNotConnected))
         } else {
             // here, for the client, there is no peersInfo list checked, the client is always
             // just connected to the host, the disconnected peer is the host.
-            //disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
+            disconnectedPeers = [connectionManager.disconnectedPeer?.displayName ?? ""]
         }
         var connectedText = ""
         for peer in connectedPeers {
@@ -253,10 +257,8 @@ struct ChatView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
                     Spacer()
-                    
             }
         }
-        
     }
 
     private func resetChatView() {

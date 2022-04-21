@@ -11,7 +11,8 @@ import SwiftUI
 
 class ChatConnectionManager : NSObject, ObservableObject, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate {
    
-    private var session: MCSession! {
+    private var session: MCSession! //{
+        /*
         didSet {
             if (!session.connectedPeers.isEmpty && !isHost) {
                 print("session didSet: create client")
@@ -22,7 +23,8 @@ class ChatConnectionManager : NSObject, ObservableObject, MCNearbyServiceAdverti
                 self.host = Host(peers: self.getSelectedPeers(), sess: session)
             }
         }
-    }
+         */
+    //}
     //private var listOfSessions : [MCSession] = []
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
     private static let service = "peerconnect"
