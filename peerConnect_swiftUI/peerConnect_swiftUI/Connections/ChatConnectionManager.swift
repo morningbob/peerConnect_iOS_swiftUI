@@ -32,6 +32,7 @@ class ChatConnectionManager : NSObject, ObservableObject, MCNearbyServiceAdverti
     var client: Client!
     private var hostPeerID: MCPeerID!
     private var hostPeerInfo: PeerInfo!
+    private var initHostOrClient = false
     
     @Published var peers: [MCPeerID] = []
     @Published var peersInfo : [PeerInfo] = []
@@ -216,13 +217,23 @@ extension ChatConnectionManager : MCSessionDelegate {
         switch state {
         case .connected:
             print("state connected: with peer \(peerID.displayName)")
+            // if we couldn't find that peer, we return, maybe warn the user
+            guard let index = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else { return }
+            var peerInfo = self.peersInfo[index]
+            peerInfo.state = PeerState.connected
+             
+            self.peersInfo[index] = peerInfo
+             
             // create client or host
-            if (self.isHost) {
-                self.host = Host(peers: self.getSelectedPeers(), sess: session)
-            } else {
+            if (self.isHost && !self.initHostOrClient) {
+                self.host = Host(peers: self.getSelectedPeers(), sess: session, peerConnected: peerInfo)
+            } else if (!self.isHost && !self.initHostOrClient) {
                 self.client = Client(host: hostPeerInfo, sess: session)
             }
-        
+            // this variable makes sure host or client only init once
+            self.initHostOrClient = true
+            
+            
         case .connecting:
             print("state connecting: with peer \(peerID.displayName)")
             
@@ -256,25 +267,54 @@ extension ChatConnectionManager : MCSessionDelegate {
 class Host : NSObject, ObservableObject {
     
     var peersSelected : [PeerInfo]!
+    var peerConnected : PeerInfo!
     var session : MCSession!
     @Published var messages : [String]!
     @Published var messageModels : [MessageModel]!
     
-    init(peers: [PeerInfo], sess: MCSession) {
+    init(peers: [PeerInfo], sess: MCSession, peerConnected: PeerInfo) {
         self.peersSelected = peers
         self.session = sess
+        self.peerConnected = peerConnected
         super.init()
-        //self.session.delegate = self
+        self.session.delegate = self
+        // after one peer is connected, Host is initiated.  We need to record that
+        // peer's state
+        self.updatePeerInfoState(peerID: self.peerConnected.peerID, state: PeerState.connected)
         print("init host")
     }
     
-    
+    private func updatePeerInfoState(peerID: MCPeerID, state: PeerState) -> Bool {
+        var success = false
+        guard let index = self.peersSelected.firstIndex(where: { $0.peerID == peerID }) else { return success }
+        var peerInfo = self.peersSelected[index]
+        peerInfo.state = state
+         
+        self.peersSelected[index] = peerInfo
+        success = true
+        return success
+    }
 }
 
 extension Host : MCSessionDelegate {
     
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        switch state {
+        case .connected:
+            print("state connected: with peer \(peerID.displayName)")
+            
+            
+        case .connecting:
+            print("state connecting: with peer \(peerID.displayName)")
+            
+        case .notConnected:
+            print("state not connected: with peer \(peerID.displayName)")
         
+        
+        
+        default:
+            print("default")
+        }
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
@@ -306,7 +346,7 @@ class Client : NSObject, ObservableObject {
         self.chatHost = host
         self.session = sess
         super.init()
-        //self.session.delegate = self
+        self.session.delegate = self
         print("init client")
     }
 }

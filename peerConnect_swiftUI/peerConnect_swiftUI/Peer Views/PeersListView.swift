@@ -98,7 +98,7 @@ struct PeersListView: View {
                         }
                     }
                     if checkedPeersCount > 0 {
-                    //self.connectionManager.connectPeers()
+                    self.connectionManager.connectPeers()
                     print("connectPeers is triggered")
                         print("num of peers info: \(self.connectionManager.peersInfo.count)")
                     // this is to distinguish if the app should send messages to peers in the list,
