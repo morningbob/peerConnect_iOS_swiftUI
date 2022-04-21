@@ -125,7 +125,7 @@ struct ChatView: View {
                         //print("connected peer == nil")
                         // reset endChatState here
                         self.connectionManager.endChatState = false
-                        self.notifyUserEndChat()
+                        //self.notifyUserEndChat()
                         //self.connectionManager
                         self.shouldNotifyEndChat = false
                     }
