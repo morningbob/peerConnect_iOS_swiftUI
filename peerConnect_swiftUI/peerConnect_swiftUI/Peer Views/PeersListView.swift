@@ -98,13 +98,13 @@ struct PeersListView: View {
                         }
                     }
                     if checkedPeersCount > 0 {
-                    self.connectionManager.connectPeers()
-                    print("connectPeers is triggered")
+                        self.connectionManager.connectPeers()
+                        print("connectPeers is triggered")
                         print("num of peers info: \(self.connectionManager.peersInfo.count)")
-                    // this is to distinguish if the app should send messages to peers in the list,
-                    // or the connected peer as a client, in the other words, distinguish which
-                    // side (server or client) to run send message
-                        connectionManager.isHost = true
+                        // this is to distinguish if the app should send messages to peers in the list,
+                        // or the connected peer as a client, in the other words, distinguish which
+                        // side (server or client) to run send message
+                        self.connectionManager.isHost = true
                         self.shouldNavigateToPeerStatus = true
                         //self.showPeerStatus = true
                     } else {

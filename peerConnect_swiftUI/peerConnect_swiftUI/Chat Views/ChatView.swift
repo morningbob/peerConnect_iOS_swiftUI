@@ -70,15 +70,15 @@ struct ChatView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    connectionManager.endChat()
-                    print("button ending chat")
-                    // reset isHost, no longer to be the host
-                    connectionManager.isHost = false
-                    //connectionManager.endChatState = true
-                    // show alert of chat ending
+                    // here we do some cleanings.  We show an alert that
+                    // doesn't allow to be dismissed.  so, when the cleaning
+                    // is done, we dismiss the alert and let user interact again.
                     self.notifyUserEndChat()
-                    //self.shouldPopToRoot = false
-                    //self.popToPeerList = true
+                    self.connectionManager.endChat()
+                    print("button ending chat")
+                    //connectionManager.isHost = false
+                    // show alert of chat ending
+                    
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
@@ -120,12 +120,17 @@ struct ChatView: View {
                 // wheneven it is false, dismiss this chat view.
             .onReceive(connectionManager.$appState, perform: { appState in
                 if ( appState == AppState.endChat) {
+                    print("chat view onReceive, detected endChat")
                     //self.presentation.wrappedValue.dismiss()
                     if (self.shouldNotifyEndChat) {
                         //print("connected peer == nil")
+                        print("should notify end chat == true")
                         // reset endChatState here
                         self.connectionManager.endChatState = false
-                        //self.notifyUserEndChat()
+                        print("reset endChatState false")
+                        self.notifyUserEndChat()
+                        
+                        
                         //self.connectionManager
                         self.shouldNotifyEndChat = false
                     }
@@ -156,6 +161,10 @@ struct ChatView: View {
             .onAppear() {
                 print("chat view appear")
                 print("endChatState: \(self.connectionManager.endChatState)")
+            }
+            .onDisappear() {
+                self.connectionManager.endChatState = false
+                print("set endChatState onDisappear, to false")
             }
         /*
         NavigationLink(destination: PeersListView(showPeerStatus:  shouldPopToRoot).environmentObject(connectionManager),
@@ -284,10 +293,15 @@ struct ChatView: View {
             // dismiss chat view
             self.presentation.wrappedValue.dismiss()
         })
+        //endChatAlert
+        
         endChatAlert.addAction(UIAlertAction(title: "Stay in Chat View", style: .default) {
             _ in
             // don't dismiss the chat view
         })
+        // here, clicking ok won't dismiss the alert
+        endChatAlert.actions[0].isEnabled = false
+        
         DispatchQueue.main.async {
             window.rootViewController?.present(endChatAlert, animated: true)
         }

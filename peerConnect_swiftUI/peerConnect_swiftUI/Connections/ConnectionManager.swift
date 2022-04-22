@@ -355,11 +355,18 @@ class ConnectionManager : NSObject, ObservableObject {
         // host ends chat here
         // should let remote peer knows
         if isHost {
-            print("start sending end chat message")
-            self.endChatMessage()
-            print("sent end chat message")
-            self.endChatState = true
-            print("set sendChatState true")
+            // here we clean the peersInfo's states
+            // so when the user starts a chat again, the app state is correct.
+            // we start a routine to run these commands one by one
+            DispatchQueue.global(qos: .background).sync {
+                self.clearPeersInfo()
+                print("start sending end chat message")
+                self.endChatMessage()
+                print("sent end chat message")
+                self.endChatState = true
+                print("set sendChatState true")
+            }
+            
         }
         
         // may clean peersInfo here
@@ -416,9 +423,11 @@ class ConnectionManager : NSObject, ObservableObject {
             var selectedPeersCount = 0
             for peer in self.peersInfo {
                 print("peer: \(peer.peerID.displayName)")
+                print("peer status: \(peer.state)")
                 if (peer.isChecked && (peer.state == PeerState.connecting)) {
                         allDisconnected = false
                         someoneConnecting = 1   // someone is still connecting
+                    print("peer connecting")
                     break
                 } else if (peer.isChecked && peer.state == PeerState.connected) {
                     allDisconnected = false
@@ -426,6 +435,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 } else if (peer.isChecked  && peer.state != PeerState.fromConnectedToDisconnected && peer.state != PeerState.fromConnectingToNotConnected) {
                     oneIsNotDisconnected = 1  // there is a peer who is not in disconnected or
                     // connected state
+                    print("other than disconnected")
                     break
                 }
                 oneIsNotDisconnected = 2
@@ -433,7 +443,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 selectedPeersCount += 1
             }
             
-            
+            print("AppState: endChatState: \(self.endChatState)")
             if (self.endChatState) {
                 DispatchQueue.main.async {
                     print("set endChat state because of endChatState")
@@ -594,6 +604,7 @@ extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
                 self.connectedPeer = peerID
                 self.connectedPeerInfo = PeerInfo(peer: peerID)
                 self.hostInfo = PeerInfo(peer: peerID)
+                self.isHost = false
                 //self.connectedPeerInfo?.state = PeerState.connected
                 // for the client, show peer status as connected to the host
                 //self.peersInfo.append(self.connectedPeerInfo!)
