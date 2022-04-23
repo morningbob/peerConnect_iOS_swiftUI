@@ -358,14 +358,15 @@ class ConnectionManager : NSObject, ObservableObject {
             // here we clean the peersInfo's states
             // so when the user starts a chat again, the app state is correct.
             // we start a routine to run these commands one by one
-            DispatchQueue.global(qos: .background).sync {
-                self.clearPeersInfo()
+            //DispatchQueue.global(qos: .background).sync {
+                //self.clearPeersInfo()
                 print("start sending end chat message")
                 self.endChatMessage()
                 print("sent end chat message")
                 self.endChatState = true
                 print("set sendChatState true")
-            }
+            self.getAppState()
+            //}
             
         }
         
@@ -450,6 +451,7 @@ class ConnectionManager : NSObject, ObservableObject {
                     self.appState = AppState.endChat
                     // reset endChatState here
                     self.endChatState = false
+                    self.clearPeersInfo()
                 }
                 print("model: appState end chat")
             } else

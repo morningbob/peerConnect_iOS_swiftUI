@@ -25,6 +25,7 @@ struct ChatView: View {
     @State var disconnectedPeersText : String = "none"
     @State var groupMembersText : String = "none"
     
+    
     var body: some View {
         
         VStack {
@@ -73,8 +74,18 @@ struct ChatView: View {
                     // here we do some cleanings.  We show an alert that
                     // doesn't allow to be dismissed.  so, when the cleaning
                     // is done, we dismiss the alert and let user interact again.
-                    self.notifyUserEndChat()
-                    self.connectionManager.endChat()
+                    guard let window = UIApplication.shared.keyWindow else {
+                        return }
+                    var alert = self.notifyUserEndChat()
+                    //DispatchQueue.global(qos: .background).sync {
+                        window.rootViewController?.present(alert, animated: true)
+                        self.connectionManager.endChat()
+                        alert.dismiss(animated: true)
+                        self.resetChatView()
+                        // dismiss chat view
+                        self.presentation.wrappedValue.dismiss()
+                    //}
+                    
                     print("button ending chat")
                     //connectionManager.isHost = false
                     // show alert of chat ending
@@ -129,7 +140,6 @@ struct ChatView: View {
                         self.connectionManager.endChatState = false
                         print("reset endChatState false")
                         self.notifyUserEndChat()
-                        
                         
                         //self.connectionManager
                         self.shouldNotifyEndChat = false
@@ -270,7 +280,7 @@ struct ChatView: View {
         }
     }
 
-    private func resetChatView() {
+    private func resetChatView()  {
         self.peerStatus = ""
         // clear message model list here
         // it might be bad to clean messages here.
@@ -279,9 +289,8 @@ struct ChatView: View {
         //self.connectionManager.clearMessageList()
     }
     
-    private func notifyUserEndChat() {
-        guard let window = UIApplication.shared.keyWindow else {
-                return }
+    private func notifyUserEndChat() -> UIAlertController {
+        
         let endChatAlert = UIAlertController(title: "Chat ended", message: "The app ended the chat.  All peers disconnected.", preferredStyle: .alert)
         
         endChatAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
@@ -302,9 +311,8 @@ struct ChatView: View {
         // here, clicking ok won't dismiss the alert
         endChatAlert.actions[0].isEnabled = false
         
-        DispatchQueue.main.async {
-            window.rootViewController?.present(endChatAlert, animated: true)
-        }
+        
+        return endChatAlert
     }
     
     private func getDocumentFromUrl() {
