@@ -32,6 +32,7 @@ class ConnectionManager : NSObject, ObservableObject {
     @Published var hostInfo: PeerInfo? = nil
     @Published var disconnectedPeer: MCPeerID? = nil
     //@Published var connectionState = ConnectionState.listening
+    private var canGetAppState = true
     @Published var appState = AppState.normal {
         didSet {
             if (appState == AppState.endChat) {
@@ -116,20 +117,22 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func sendMessage(_ message: String, peersToSend: [MCPeerID], whoSaid: String) -> Bool {
-        var success = false
+        //var success = false
             
         do {
             let data = try JSONEncoder().encode(message)
             //let peers = getPeerIDs(peerInfoList: peerInfoList)
             try session.send(data, toPeers: peersToSend, with: .reliable)
             print("send message success")
-            success = true
+            //success = true
+            return true
         } catch {
             print(error.localizedDescription)
             print("send message failed")
-            success = false
+            //success = false
+            return false
         }
-        return success
+        //return success
         
     }
     
@@ -261,11 +264,17 @@ class ConnectionManager : NSObject, ObservableObject {
     
     private func resetSelectedPeersAndNormalState() {
         // in case the session is not closed
-        self.session.disconnect()
+        //self.session.disconnect()
+        print("reset peers report")
+        for peer in self.peersInfo {
+            print("peer: \(peer.peerID.displayName)  peer state: \(peer.state)")
+        }
         self.groupMemberNames = []
         // reset
         self.endChatState = false
-        self.clearPeersInfo()
+        
+        //self.clearPeersInfo()
+        //self.session.disconnect()
         // here we prepare for new session and chats
         self.createNewSession()
         //self.startBrowsing()
@@ -303,6 +312,7 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func connectPeers() {
+        print("in connectPeer: isHost: \(self.isHost)")
         for peer in self.peersInfo {
             if (peer.isChecked) {
                 print("connect peers is triggered \(peer.peerID.displayName)")
@@ -360,14 +370,14 @@ class ConnectionManager : NSObject, ObservableObject {
             // we start a routine to run these commands one by one
             //DispatchQueue.global(qos: .background).sync {
                 //self.clearPeersInfo()
-                print("start sending end chat message")
-                self.endChatMessage()
-                print("sent end chat message")
-                self.endChatState = true
-                print("set sendChatState true")
-            self.getAppState()
+            print("start sending end chat message")
+            self.endChatMessage()
+            print("sent end chat message")
+            //self.endChatState = true
+            //print("set sendChatState true")
+            //self.appState = AppState.endChat
+            self.canGetAppState = false
             //}
-            
         }
         
         // may clean peersInfo here
@@ -395,11 +405,18 @@ class ConnectionManager : NSObject, ObservableObject {
             */
         }
         var success = false
+        // we need to wait for end message to finish before we perform disconnect
+        DispatchQueue.global(qos: .background).sync {
         success = sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
         print("sending message: \(success)")
         print("perform disconnect")
+        //DispatchQueue.global(qos: .background).sync {
+        // disconnect is executed here, while send message is still operating
         session.disconnect()
+        // and we need to wait for disconnect finished before we clean the info
         self.clearPeersInfo()
+            self.canGetAppState = true
+        }
         
     }
     // this method is only for server side to monitor connection progress
@@ -414,7 +431,7 @@ class ConnectionManager : NSObject, ObservableObject {
         // here I set readyToChat as 0, 1, or 2, not true or false, I want to distinguish
         // the case of no selected peer too.
         print("getting AppState")
-        if isHost {
+        if self.isHost && self.canGetAppState {
             print("host side")
             var someoneConnecting = 0
             var oneIsNotDisconnected = 0// this is to detect if all peers are disconnected,
@@ -486,7 +503,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 print("there is no selected peer.")
                 // not going to change app state
             }
-        } else {
+        } else if (self.canGetAppState) {
             // for the client, watch only hostInfo
             if (self.hostInfo != nil ) {
                 print("getAppState accessed, for client")
@@ -563,23 +580,31 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     private func clearPeersInfo() {
-        DispatchQueue.main.async {
+        self.canGetAppState = false
+        DispatchQueue.global(qos: .background).sync {
             self.connectedPeer = nil
             self.connectedPeerInfo = nil
             self.hostInfo = nil
             self.disconnectedPeer = nil
-        }
-        self.isHost = false
-        for i in 0...self.peersInfo.count - 1 {
-            if (self.peersInfo[i].isChecked || self.peersInfo[i].state != PeerState.discovered) {
+            self.isHost = false
+            print("cleaning starts")
+            // run cleaning here to intentionally blocks the other method to access
+            // peersInfo before it is cleaned up.
+            for i in 0...self.peersInfo.count - 1 {
+                //if (self.peersInfo[i].isChecked || self.peersInfo[i].state != PeerState.discovered) {
                 // this is done for triggering the change of peersInfo,
                 // so the chat view, peers info will display it
+                
                 var peer = self.peersInfo[i]
+                print("cleaned peer \(peer.peerID.displayName )")
                 peer.isChecked = false
                 peer.state = PeerState.discovered
                 self.peersInfo[i] = peer
+                //}
             }
+            self.canGetAppState = true
         }
+        
         
     }
 }

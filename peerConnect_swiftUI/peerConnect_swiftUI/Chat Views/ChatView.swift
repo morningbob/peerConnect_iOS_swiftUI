@@ -24,6 +24,7 @@ struct ChatView: View {
     @State var connectedPeersText : String = "none"
     @State var disconnectedPeersText : String = "none"
     @State var groupMembersText : String = "none"
+    @State private var shouldDismissChatView = false
     
     
     var body: some View {
@@ -74,16 +75,15 @@ struct ChatView: View {
                     // here we do some cleanings.  We show an alert that
                     // doesn't allow to be dismissed.  so, when the cleaning
                     // is done, we dismiss the alert and let user interact again.
-                    guard let window = UIApplication.shared.keyWindow else {
-                        return }
-                    var alert = self.notifyUserEndChat()
+                    
+                    //var alert = self.notifyUserEndChat()
                     //DispatchQueue.global(qos: .background).sync {
-                        window.rootViewController?.present(alert, animated: true)
-                        self.connectionManager.endChat()
-                        alert.dismiss(animated: true)
-                        self.resetChatView()
-                        // dismiss chat view
-                        self.presentation.wrappedValue.dismiss()
+                    self.connectionManager.endChat()
+                    //alert.dismiss(animated: true)
+                    self.notifyUserEndChat()
+                    self.resetChatView()
+                    // dismiss chat view
+                    self.shouldDismissChatView = true
                     //}
                     
                     print("button ending chat")
@@ -129,16 +129,22 @@ struct ChatView: View {
                 
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
-            .onReceive(connectionManager.$appState, perform: { appState in
+            .onReceive(self.connectionManager.$appState, perform: { appState in
                 if ( appState == AppState.endChat) {
                     print("chat view onReceive, detected endChat")
                     //self.presentation.wrappedValue.dismiss()
                     if (self.shouldNotifyEndChat) {
+                        print("should notify end chat is true")
                         //print("connected peer == nil")
-                        print("should notify end chat == true")
+                        //print("should notify end chat == true")
                         // reset endChatState here
                         self.connectionManager.endChatState = false
-                        print("reset endChatState false")
+                        //print("reset endChatState false")
+                        //guard let window = UIApplication.shared.keyWindow else {
+                         //   return }
+                        // alert = self.notifyUserEndChat()
+                        //DispatchQueue.global(qos: .background).sync {
+                          //  window.rootViewController?.present(alert, animated: true)
                         self.notifyUserEndChat()
                         
                         //self.connectionManager
@@ -146,17 +152,19 @@ struct ChatView: View {
                     }
                     //self.notifyUserEndChat()
                 }
-            })
-            .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+                })
+            .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
                 // here we can also update the peers status below the chat field.
                 // update peer status view
                 connectionManager.getAppState()
                 print("getPeerStatus triggered, for chat view peer info")
                 getPeerStatus()
             })
-            .onReceive(connectionManager.$groupMemberNames, perform: { names in
+            .onReceive(self.connectionManager.$groupMemberNames, perform: { names in
                 getPeerStatus()
             })
+            
+               
             
         }//.background(Color.blue.edgesIgnoringS afeArea(.top))
         // end of VStack
@@ -176,6 +184,13 @@ struct ChatView: View {
                 self.connectionManager.endChatState = false
                 print("set endChatState onDisappear, to false")
             }
+        /*
+            .onReceive($shouldDismissChatView, perform: { dismiss in
+                if (dismiss) {
+                    self.presentation.wrappedValue.dismiss()
+                }
+            })
+         */
         /*
         NavigationLink(destination: PeersListView(showPeerStatus:  shouldPopToRoot).environmentObject(connectionManager),
                        isActive: self.$popToPeerList) {
@@ -289,7 +304,10 @@ struct ChatView: View {
         //self.connectionManager.clearMessageList()
     }
     
-    private func notifyUserEndChat() -> UIAlertController {
+    private func notifyUserEndChat() {
+        
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
         
         let endChatAlert = UIAlertController(title: "Chat ended", message: "The app ended the chat.  All peers disconnected.", preferredStyle: .alert)
         
@@ -306,13 +324,10 @@ struct ChatView: View {
         
         endChatAlert.addAction(UIAlertAction(title: "Stay in Chat View", style: .default) {
             _ in
-            // don't dismiss the chat view
         })
         // here, clicking ok won't dismiss the alert
-        endChatAlert.actions[0].isEnabled = false
-        
-        
-        return endChatAlert
+        //endChatAlert.actions[0].isEnabled = false
+        window.rootViewController?.present(endChatAlert, animated: true)
     }
     
     private func getDocumentFromUrl() {
