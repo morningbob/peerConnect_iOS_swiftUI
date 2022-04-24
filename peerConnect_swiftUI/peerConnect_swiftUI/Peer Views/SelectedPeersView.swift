@@ -12,7 +12,6 @@ struct SelectedPeersView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
-    //@State private var shouldNavigateToChat = false
     
     var body: some View {
         
@@ -52,10 +51,10 @@ struct SelectedPeersView: View {
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
                 print("appState changed to connected, navigate to chat")
-            } else if (state == AppState.endChat) {
-                print("endChat detected, from onReceive selectedPeerView")
+            } //else if (state == AppState.endChat) {
+                //print("endChat detected, from onReceive selectedPeerView")
                 //self.presentation.wrappedValue.dismiss()
-            }
+            //}
             //else if (state == AppState.endChat) {
               //  self.presentation.wrappedValue.dismiss()
             //}

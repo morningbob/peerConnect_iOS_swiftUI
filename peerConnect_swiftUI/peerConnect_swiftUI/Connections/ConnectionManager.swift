@@ -31,7 +31,6 @@ class ConnectionManager : NSObject, ObservableObject {
     private var host: MCPeerID? = nil
     @Published var hostInfo: PeerInfo? = nil
     @Published var disconnectedPeer: MCPeerID? = nil
-    //@Published var connectionState = ConnectionState.listening
     private var canGetAppState = true
     @Published var appState = AppState.normal {
         didSet {
@@ -41,22 +40,10 @@ class ConnectionManager : NSObject, ObservableObject {
                 print("endChat detected in didSet, no reset")
                 self.endChatState = false
                 self.resetSelectedPeersAndNormalState()
-                //self.resetSelectedPeersAndNormalState()
-            } else if (appState == AppState.disconnected) {
-                print("detected app state disconnected in didSet, resetting")
-                //print("that's after 1.5 seconds")
-                // Here, whenever all the devices are disconnected,
-                // the app will end the chat
-                // update the end Chat app state here instead
-                //self.appState = AppState.endChat
-                //self.resetSelectedPeersAndNormalState()
-                //self.clearPeersInfo()
-                //self.canGetAppState = true
             }
         }
     }
     var isHost = false
-    @Published var clientShouldNavigateToChat = false
     // the following keys are for the clients to identify messages sent from the host,
     // for status info.
     private let peerNameKey = "7431rk"
@@ -128,22 +115,18 @@ class ConnectionManager : NSObject, ObservableObject {
     }
     
     func sendMessage(_ message: String, peersToSend: [MCPeerID], whoSaid: String) -> Bool {
-        //var success = false
             
         do {
             let data = try JSONEncoder().encode(message)
             //let peers = getPeerIDs(peerInfoList: peerInfoList)
             try session.send(data, toPeers: peersToSend, with: .reliable)
             print("send message success")
-            //success = true
             return true
         } catch {
             print(error.localizedDescription)
             print("send message failed")
-            //success = false
             return false
         }
-        //return success
         
     }
     
@@ -275,7 +258,6 @@ class ConnectionManager : NSObject, ObservableObject {
     
     private func resetSelectedPeersAndNormalState() {
         // in case the session is not closed
-        //self.session.disconnect()
         print("reset peers report")
         for peer in self.peersInfo {
             print("peer: \(peer.peerID.displayName)  peer state: \(peer.state)")
@@ -285,10 +267,7 @@ class ConnectionManager : NSObject, ObservableObject {
         self.endChatState = false
         self.clearMessageList()
         self.clearPeersInfo()
-        //self.session.disconnect()
         // here we prepare for new session and chats
-        // we set end chat state directly, for chat view to be dismkssed
-        //self.appState = AppState.endChat
         self.createNewSession()
         //self.startBrowsing()
         //self.nearbyServiceAdvertiser.startAdvertisingPeer()
@@ -323,7 +302,7 @@ class ConnectionManager : NSObject, ObservableObject {
         //}
         //}
     }
-    
+    // this must be done by host only
     func connectPeers() {
         print("in connectPeer: isHost: \(self.isHost)")
         for peer in self.peersInfo {
@@ -333,6 +312,8 @@ class ConnectionManager : NSObject, ObservableObject {
             }
         }
         // here we stop the browsing and advertising
+        // so the other devices nearby can't connect to the user device
+        // and mess up with the chat.
         //self.stopBrowsing()
         //self.nearbyServiceAdvertiser.stopAdvertisingPeer()
     }
@@ -386,9 +367,6 @@ class ConnectionManager : NSObject, ObservableObject {
             print("start sending end chat message")
             self.endChatMessage()
             print("sent end chat message")
-            //self.endChatState = true
-            //print("set sendChatState true")
-            //self.appState = AppState.endChat
             // cease the update of app state
             self.canGetAppState = false
             //}
@@ -396,17 +374,14 @@ class ConnectionManager : NSObject, ObservableObject {
             // client side
             session.disconnect()
             print("client side disconnect")
-            //self.clearMessageList()
+            print("creating new session")
+            self.createNewSession()
         }
-        
-        // may clean peersInfo here
-        // we'll clean peersInfo after we send the end chat message to all
-        // the connected peers
-        //self.clearPeersInfo()
     }
     
     
-    // need to do this before cleaning peersInfo
+    // need to do this before cleaning peersInfo,
+    // otherwise it will not be cleaned
     private func endChatMessage() {
         let message = "\(endChatMessageKey)end"
         var peersToSend : [MCPeerID] = []
@@ -416,30 +391,18 @@ class ConnectionManager : NSObject, ObservableObject {
                     peersToSend.append(peer.peerID)
                 }
             }
-        } else {
-            /*
-            guard self.hostInfo != nil else { return }
-            print("endChatMessage: host: \(hostInfo?.displayName)")
-            peersToSend = [self.host!]
-            */
         }
         var success = false
         // we need to wait for end message to finish before we perform disconnect
         //DispatchQueue.global(qos: .background).sync {
             success = sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
             print("sending message: \(success)")
-            // disconnect is executed here, while send message is still operating
-            //session.disconnect()
-            // and we need to wait for disconnect finished, and we need to wait for
-            // the disconnected state recorded in peersInfo
-            // before we clean the info
-            //self.clearPeersInfo()
-            //self.canGetAppState = true
+            
         //}
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             // there is no way to know if the sending finished yet,
             // I will wait for 1.5 seconds before performing disconnection.
-            print("perform disconnect after 1.5 seconds")
+            print("perform disconnect after 2.5 seconds")
             self.session.disconnect()
             self.canGetAppState = true
             // here we wait for the disconnect to complete
@@ -449,11 +412,7 @@ class ConnectionManager : NSObject, ObservableObject {
         }
     }
     
-    private func disconnectAndResetInfo() {
-        //print("disconnecting and resetting")
-        self.session.disconnect()
-        
-    }
+    
     // this method is only for server side to monitor connection progress
     // this method will be triggered by selectedPeersView,
     // it needs to access if all peers are connected yet
@@ -639,8 +598,6 @@ class ConnectionManager : NSObject, ObservableObject {
             }
             self.canGetAppState = true
         }
-        
-        
     }
 }
 
@@ -698,7 +655,9 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
             DispatchQueue.main.async {
                 //let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID })
                 // create new peerInfo
-                self.peersInfo.append(self.createPeerInfo(peer: peerID))
+                var peerInfo = self.createPeerInfo(peer: peerID)
+                peerInfo.isConnectable = true
+                self.peersInfo.append(peerInfo)
                 self.peers.append(peerID)
             }
         }
@@ -708,7 +667,16 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
             return
         }
-        peersInfo.remove(at: peerIndex)
+        // here we keep the peersInfo whenever the peer is discovered,
+        // we won't remove the peer, instead, when it is lost, we
+        // set the peer as not connectable.
+        // I do that because I need to stop browsing and stop advertising
+        // so, I don't want the peer to be removed that I can't set it's state
+        // when chatting.
+        var peerInfo = self.peersInfo[peerIndex]
+        peerInfo.isConnectable = false
+        self.peersInfo[peerIndex] = peerInfo
+        //peersInfo.remove(at: peerIndex)
     }
 }
 

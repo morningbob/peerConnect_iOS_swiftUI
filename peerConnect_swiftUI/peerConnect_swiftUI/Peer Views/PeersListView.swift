@@ -20,7 +20,7 @@ struct PeersListView: View {
     @State private var checkedPeers : [PeerInfo] = []
     let maxConnectPeers = 7
     @Environment(\.presentationMode) private var presentationMode
-    //@State var showPeerStatus : Bool = false
+    @State private var connectablePeerList : [PeerInfo] = []
     
     var body: some View {
         VStack {
@@ -163,6 +163,8 @@ struct PeersListView: View {
             print("onAppear ran")
             self.getNewInfo(state: self.connectionManager.appState)
         }
+        // whenever peersInfo changes, I extract all the peers that are
+        // connectable, put them in connectablePeerList and show in the view
         .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
             print("Peer list view, peerInfo changed")
             var i = 0
@@ -174,12 +176,20 @@ struct PeersListView: View {
             }
             print("total peers: \(String(i))")
             
-            //guard !peersInfo.isEmpty else { return }
-
-            //withAnimation(Animation.easeInOut) {
-            //    proxy.scrollTo(peersInfo.last!.id)
-            //}
+            print("extracting connectable peers")
+            
+            for peer in peersInfo {
+                if (peer.isConnectable) {
+                    self.connectablePeerList.append(peer)
+                }
+            }
         })
+        //.onChange(of: self.connectablePeerList, perform: { connectablePeers in
+            
+        //})
+        //.onReceive(self.$connectablePeerList, perform: { connectablePeers in
+            
+        //})
         /*
         .onReceive(connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {

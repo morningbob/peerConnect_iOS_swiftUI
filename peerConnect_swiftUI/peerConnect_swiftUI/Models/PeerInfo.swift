@@ -14,6 +14,7 @@ class PeerInfo : Identifiable, ObservableObject {
     let peerID : MCPeerID
     @Published var state : PeerState
     @Published var isChecked = false
+    var isConnectable = false
     
     init(peer: MCPeerID) {
         //self.name = peer.displayName
