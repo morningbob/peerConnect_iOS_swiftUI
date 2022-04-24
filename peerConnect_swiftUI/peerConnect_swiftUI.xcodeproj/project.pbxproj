@@ -20,7 +20,6 @@
 		E74BCA5E27F2435700B47747 /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74BCA5D27F2435700B47747 /* ConnectionManager.swift */; };
 		E755EFEA2800B58A00C67063 /* SelectedPeersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E755EFE92800B58A00C67063 /* SelectedPeersView.swift */; };
 		E75EA78327FB3E4E0018A812 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75EA78227FB3E4E0018A812 /* Constants.swift */; };
-		E79D138428108D70001C0953 /* ChatConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D138328108D70001C0953 /* ChatConnectionManager.swift */; };
 		E7BD95C827F73F0600001B5C /* DocumentPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BD95C727F73F0600001B5C /* DocumentPickerViewController.swift */; };
 		E7F0604227F4AE5800C10D95 /* MessageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F0604127F4AE5800C10D95 /* MessageModel.swift */; };
 /* End PBXBuildFile section */
@@ -59,7 +58,6 @@
 		E74BCA5D27F2435700B47747 /* ConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		E755EFE92800B58A00C67063 /* SelectedPeersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPeersView.swift; sourceTree = "<group>"; };
 		E75EA78227FB3E4E0018A812 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		E79D138328108D70001C0953 /* ChatConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatConnectionManager.swift; sourceTree = "<group>"; };
 		E7BD95C727F73F0600001B5C /* DocumentPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPickerViewController.swift; sourceTree = "<group>"; };
 		E7E5F98027F38A5900C4D785 /* peerConnect-swiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "peerConnect-swiftUI-Info.plist"; sourceTree = SOURCE_ROOT; };
 		E7F0604127F4AE5800C10D95 /* MessageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageModel.swift; sourceTree = "<group>"; };
@@ -165,7 +163,6 @@
 			isa = PBXGroup;
 			children = (
 				E74BCA5D27F2435700B47747 /* ConnectionManager.swift */,
-				E79D138328108D70001C0953 /* ChatConnectionManager.swift */,
 			);
 			path = Connections;
 			sourceTree = "<group>";
@@ -343,7 +340,6 @@
 				E72B072027FDDA99002B956E /* PeerInfo.swift in Sources */,
 				E75EA78327FB3E4E0018A812 /* Constants.swift in Sources */,
 				409D1B2C27F3DF8000717710 /* ChatView.swift in Sources */,
-				E79D138428108D70001C0953 /* ChatConnectionManager.swift in Sources */,
 				E74BCA3027F228A600B47747 /* peerConnect_swiftUIApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

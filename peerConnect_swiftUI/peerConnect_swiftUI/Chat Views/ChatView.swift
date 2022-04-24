@@ -76,10 +76,12 @@ struct ChatView: View {
                     print("button ending chat")
                     //var alert = self.notifyUserEndChat()
                     //DispatchQueue.global(qos: .background).sync {
+                    self.resetChatView()
                     self.connectionManager.endChat()
                     //alert.dismiss(animated: true)
+                    
                     self.notifyUserEndChat()
-                    self.resetChatView()
+                    
                     // dismiss chat view
                     self.shouldDismissChatView = true
                     //}
@@ -142,6 +144,7 @@ struct ChatView: View {
                         // alert = self.notifyUserEndChat()
                         //DispatchQueue.global(qos: .background).sync {
                           //  window.rootViewController?.present(alert, animated: true)
+                        self.resetChatView()
                         self.notifyUserEndChat()
                         
                         //self.connectionManager

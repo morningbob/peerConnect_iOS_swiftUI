@@ -20,6 +20,7 @@ enum AppState : Codable {
     case connecting
     case fromConnectingToNotConnected  // peer rejected
     case fromConnectedToDisconnected   // user ends chat
+    case disconnected
     case chatting
     case endChat
     case connected

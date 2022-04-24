@@ -38,9 +38,20 @@ class ConnectionManager : NSObject, ObservableObject {
             if (appState == AppState.endChat) {
                 // this is for host to detect when all peers disconnected
                 // it needs to end the chat.
-                print("endChat detected in didSet, reset starts")
+                print("endChat detected in didSet, no reset")
                 self.endChatState = false
                 self.resetSelectedPeersAndNormalState()
+                //self.resetSelectedPeersAndNormalState()
+            } else if (appState == AppState.disconnected) {
+                print("detected app state disconnected in didSet, resetting")
+                //print("that's after 1.5 seconds")
+                // Here, whenever all the devices are disconnected,
+                // the app will end the chat
+                // update the end Chat app state here instead
+                //self.appState = AppState.endChat
+                //self.resetSelectedPeersAndNormalState()
+                //self.clearPeersInfo()
+                //self.canGetAppState = true
             }
         }
     }
@@ -272,10 +283,12 @@ class ConnectionManager : NSObject, ObservableObject {
         self.groupMemberNames = []
         // reset
         self.endChatState = false
-        
-        //self.clearPeersInfo()
+        self.clearMessageList()
+        self.clearPeersInfo()
         //self.session.disconnect()
         // here we prepare for new session and chats
+        // we set end chat state directly, for chat view to be dismkssed
+        //self.appState = AppState.endChat
         self.createNewSession()
         //self.startBrowsing()
         //self.nearbyServiceAdvertiser.startAdvertisingPeer()
@@ -376,12 +389,14 @@ class ConnectionManager : NSObject, ObservableObject {
             //self.endChatState = true
             //print("set sendChatState true")
             //self.appState = AppState.endChat
+            // cease the update of app state
             self.canGetAppState = false
             //}
         } else {
             // client side
             session.disconnect()
-            print("client disconnect")
+            print("client side disconnect")
+            //self.clearMessageList()
         }
         
         // may clean peersInfo here
@@ -410,19 +425,33 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         var success = false
         // we need to wait for end message to finish before we perform disconnect
-        DispatchQueue.global(qos: .background).sync {
+        //DispatchQueue.global(qos: .background).sync {
             success = sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
             print("sending message: \(success)")
-            print("perform disconnect")
-            
             // disconnect is executed here, while send message is still operating
-            session.disconnect()
+            //session.disconnect()
             // and we need to wait for disconnect finished, and we need to wait for
             // the disconnected state recorded in peersInfo
             // before we clean the info
-            self.clearPeersInfo()
+            //self.clearPeersInfo()
+            //self.canGetAppState = true
+        //}
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            // there is no way to know if the sending finished yet,
+            // I will wait for 1.5 seconds before performing disconnection.
+            print("perform disconnect after 1.5 seconds")
+            self.session.disconnect()
             self.canGetAppState = true
+            // here we wait for the disconnect to complete
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                self.getAppState()
+            }
         }
+    }
+    
+    private func disconnectAndResetInfo() {
+        //print("disconnecting and resetting")
+        self.session.disconnect()
         
     }
     // this method is only for server side to monitor connection progress
@@ -498,7 +527,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 // so, no peer is connecting or connected
             } else if (allDisconnected && someoneConnecting == 2) {
                 DispatchQueue.main.async {
-                    self.appState = AppState.normal
+                    self.appState = AppState.disconnected
                 }
                 print("model: appState all disconnected, normal state")
             
@@ -587,7 +616,7 @@ class ConnectionManager : NSObject, ObservableObject {
     
     private func clearPeersInfo() {
         self.canGetAppState = false
-        DispatchQueue.global(qos: .background).sync {
+        DispatchQueue.main.async {
             self.connectedPeer = nil
             self.connectedPeerInfo = nil
             self.hostInfo = nil
@@ -861,8 +890,12 @@ extension ConnectionManager : MCSessionDelegate {
                 print("client detected peer \(peerID.displayName)")
                 //self.endChatState = true
                 session.disconnect()
-                self.getAppState()
-                self.clearPeersInfo()
+                //self.getAppState()
+                //self.clearPeersInfo()
+                // manually set app state end chat here
+                DispatchQueue.main.async {
+                    self.appState = AppState.endChat
+                }
             }
             
         //} else if ((message.contains(self.peerNameKey)) || (message.contains(self.groupNameKey)) || message.contains("\(self.endChatMessageKey)end")) && self.isHost {

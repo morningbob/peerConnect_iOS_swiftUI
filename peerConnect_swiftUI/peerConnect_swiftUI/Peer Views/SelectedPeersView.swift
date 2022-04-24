@@ -12,6 +12,7 @@ struct SelectedPeersView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
+    //@State private var shouldNavigateToChat = false
     
     var body: some View {
         
@@ -23,7 +24,24 @@ struct SelectedPeersView: View {
                     PeerStatusView(peerInfo: peerInfo)
                 }
             }
+            Spacer()
+            Button(action: {
+                // sometimes, the app can't navigate to chat view,
+                // here user can navigate manually
+                
+                self.shouldNavigateToChat = true
+            })
+            {
+                Text("Chat View")
+                    .font(.system(size: 18))
+                    .padding()
+                    .overlay(RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.blue, lineWidth: 1))
+            }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                .padding(.top, 20)
+            Spacer()
         }
+        .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed
