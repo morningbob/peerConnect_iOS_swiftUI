@@ -378,6 +378,10 @@ class ConnectionManager : NSObject, ObservableObject {
             //self.appState = AppState.endChat
             self.canGetAppState = false
             //}
+        } else {
+            // client side
+            session.disconnect()
+            print("client disconnect")
         }
         
         // may clean peersInfo here
@@ -407,14 +411,16 @@ class ConnectionManager : NSObject, ObservableObject {
         var success = false
         // we need to wait for end message to finish before we perform disconnect
         DispatchQueue.global(qos: .background).sync {
-        success = sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
-        print("sending message: \(success)")
-        print("perform disconnect")
-        //DispatchQueue.global(qos: .background).sync {
-        // disconnect is executed here, while send message is still operating
-        session.disconnect()
-        // and we need to wait for disconnect finished before we clean the info
-        self.clearPeersInfo()
+            success = sendMessage(message, peersToSend: peersToSend, whoSaid: "Me")
+            print("sending message: \(success)")
+            print("perform disconnect")
+            
+            // disconnect is executed here, while send message is still operating
+            session.disconnect()
+            // and we need to wait for disconnect finished, and we need to wait for
+            // the disconnected state recorded in peersInfo
+            // before we clean the info
+            self.clearPeersInfo()
             self.canGetAppState = true
         }
         
@@ -685,6 +691,7 @@ extension ConnectionManager : MCSessionDelegate {
             print("Connected, from session")
             //guard let messageToSend = messageToSend else { return }
             print("connected with \(peerID) now")
+            print("isHost: \(self.isHost)")
             fromConnectedOrConnecting = 1
             DispatchQueue.main.async {
                 //connectingAlert.dismiss(animated: true)

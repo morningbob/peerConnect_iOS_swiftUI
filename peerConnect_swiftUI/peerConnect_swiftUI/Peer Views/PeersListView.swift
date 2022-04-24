@@ -105,6 +105,10 @@ struct PeersListView: View {
                         // or the connected peer as a client, in the other words, distinguish which
                         // side (server or client) to run send message
                         self.connectionManager.isHost = true
+                        // here, after we set the is host variable,
+                        // the published feature will not be triggered
+                        // we need to trigger it manually in the view
+                        //self.connectionManager.objectWillChange.send()
                         print("connect button, isHost \(self.connectionManager.isHost)")
                         self.shouldNavigateToPeerStatus = true
                         //self.showPeerStatus = true

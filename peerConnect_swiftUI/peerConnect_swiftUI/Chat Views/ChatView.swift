@@ -72,10 +72,8 @@ struct ChatView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    // here we do some cleanings.  We show an alert that
-                    // doesn't allow to be dismissed.  so, when the cleaning
-                    // is done, we dismiss the alert and let user interact again.
-                    
+                    // here we do some cleanings.
+                    print("button ending chat")
                     //var alert = self.notifyUserEndChat()
                     //DispatchQueue.global(qos: .background).sync {
                     self.connectionManager.endChat()
@@ -85,8 +83,7 @@ struct ChatView: View {
                     // dismiss chat view
                     self.shouldDismissChatView = true
                     //}
-                    
-                    print("button ending chat")
+                  
                     //connectionManager.isHost = false
                     // show alert of chat ending
                     

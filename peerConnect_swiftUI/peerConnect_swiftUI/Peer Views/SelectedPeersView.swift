@@ -33,6 +33,7 @@ struct SelectedPeersView: View {
         .onReceive(self.connectionManager.$appState, perform: { state in
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
+                print("appState changed to connected, navigate to chat")
             } else if (state == AppState.endChat) {
                 print("endChat detected, from onReceive selectedPeerView")
                 //self.presentation.wrappedValue.dismiss()
