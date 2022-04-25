@@ -656,7 +656,7 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
                 //let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID })
                 // create new peerInfo
                 var peerInfo = self.createPeerInfo(peer: peerID)
-                peerInfo.isConnectable = true
+                //peerInfo.isConnectable = true
                 self.peersInfo.append(peerInfo)
                 self.peers.append(peerID)
             }
@@ -673,10 +673,10 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         // I do that because I need to stop browsing and stop advertising
         // so, I don't want the peer to be removed that I can't set it's state
         // when chatting.
-        var peerInfo = self.peersInfo[peerIndex]
-        peerInfo.isConnectable = false
-        self.peersInfo[peerIndex] = peerInfo
-        //peersInfo.remove(at: peerIndex)
+        //var peerInfo = self.peersInfo[peerIndex]
+        //peerInfo.isConnectable = false
+        //self.peersInfo[peerIndex] = peerInfo
+        peersInfo.remove(at: peerIndex)
     }
 }
 

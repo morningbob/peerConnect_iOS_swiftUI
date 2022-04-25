@@ -20,12 +20,13 @@ struct PeersListView: View {
     @State private var checkedPeers : [PeerInfo] = []
     let maxConnectPeers = 7
     @Environment(\.presentationMode) private var presentationMode
-    @State private var connectablePeerList : [PeerInfo] = []
+    //@State private var connectablePeerList : [PeerInfo] = []
     
     var body: some View {
         VStack {
             
-            List(self.connectionManager.peersInfo, id: \.id) { peerInfo in
+            //List(self.connectionManager.peersInfo.filter { $0.isConnectable }, id: \.id)
+            List(self.connectionManager.peersInfo, id: \.id){ peerInfo in
                 PeerRowView(peerInfo: peerInfo).id(peerInfo.id)
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
@@ -166,7 +167,9 @@ struct PeersListView: View {
         // whenever peersInfo changes, I extract all the peers that are
         // connectable, put them in connectablePeerList and show in the view
         .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
+            
             print("Peer list view, peerInfo changed")
+            /*
             var i = 0
             for peer in peersInfo {
                 if (peer.isChecked) {
@@ -183,10 +186,22 @@ struct PeersListView: View {
                     self.connectablePeerList.append(peer)
                 }
             }
+             */
         })
-        //.onChange(of: self.connectablePeerList, perform: { connectablePeers in
-            
-        //})
+        /*
+        .onChange(of: self.connectablePeerList, perform: { connectablePeers in
+            //var peerIndex = 0
+            for peer in connectablePeers {
+                //if (peer.isChecked)
+                if let peerIndex = self.connectionManager.peersInfo.firstIndex(where: {
+                    $0.id == peer.id
+                }) {
+                    var peerInfo = self.connectionManager.peersInfo[index]
+                    //if ()
+                }
+            }
+        })
+         */
         //.onReceive(self.$connectablePeerList, perform: { connectablePeers in
             
         //})
