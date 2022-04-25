@@ -273,6 +273,10 @@ struct PeersListView: View {
         choosePeerAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             print("confirmed")
         })
+        
+        DispatchQueue.main.async {
+            window.rootViewController?.present(choosePeerAlert, animated: true)
+        }
     }
     
     private func showNumberOfPeersAlert() {

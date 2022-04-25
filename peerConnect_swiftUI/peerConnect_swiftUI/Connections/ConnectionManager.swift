@@ -504,10 +504,13 @@ class ConnectionManager : NSObject, ObservableObject {
                 switch (hostInfo!.state) {
                 case PeerState.discovered:
                     self.appState = AppState.normal
+                    print("client, normal state")
                 case PeerState.connecting:
                     self.appState = AppState.connecting
+                    print("client, changed to connecting state")
                 case PeerState.connected:
                     self.appState = AppState.connected
+                    print("client, changed to connected state")
                 case PeerState.fromConnectingToNotConnected:
                     print("client, changed to endChat state")
                     self.appState = AppState.endChat
@@ -517,9 +520,7 @@ class ConnectionManager : NSObject, ObservableObject {
                 default:
                     self.appState = AppState.normal
                 }
-            } //else if (self.endChatState) {
-              //  self.appState = AppState.endChat
-            //}
+            }
         }
         
         
@@ -602,46 +603,53 @@ class ConnectionManager : NSObject, ObservableObject {
 }
 
 // to receive invitation
+// for now, the app likes to refuse invitation automatically when the user is already
+// in a chat.
 extension ConnectionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        // get these references for showing alert
-        guard
-            let window = UIApplication.shared.keyWindow,
-            let context = context,
-            let name = String(data: context, encoding: .utf8)
-        else {
-            return
-        }
-        print("did receive invitation")
-        // display alert to user, to accept the connection or candel it.
-        let incomingAlert = UIAlertController(title: "Incoming Connection", message: "Do you want to accept the connection request from \(name)", preferredStyle: .alert)
-        
-        incomingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
-            // inititiate the chat
-            print("confirmed")
-            DispatchQueue.main.async {
-                self.connectedPeer = peerID
-                self.connectedPeerInfo = PeerInfo(peer: peerID)
-                self.hostInfo = PeerInfo(peer: peerID)
-                self.isHost = false
-                //self.connectedPeerInfo?.state = PeerState.connected
-                // for the client, show peer status as connected to the host
-                //self.peersInfo.append(self.connectedPeerInfo!)
-                //DispatchQueue.main.async {
-                //    self.clientShouldNavigateToChat = true
-                //}
-            }
-            invitationHandler(true, self.session)
-        })
-        
-        incomingAlert.addAction(UIAlertAction(title: "No", style: .cancel)
-        {
-            _ in
+        // app state connecting or connected means the user already initiated a chat or in the chat
+        if (self.appState == AppState.connecting || self.appState == AppState.connected) {
+            print("did receive invitation, but ignored it")
+            // here we tell the peer who send the invitation, we reject it.
             invitationHandler(false, nil)
-            print("cancelled")
-        })
-        DispatchQueue.main.async {
-            window.rootViewController?.present(incomingAlert, animated: true)
+            return
+        } else {
+            
+            print("did receive invitation, handling it")
+            print("app state: \(self.appState)")
+            // get these references for showing alert
+            guard
+                let window = UIApplication.shared.keyWindow,
+                let context = context,
+                let name = String(data: context, encoding: .utf8)
+            else {
+                return
+            }
+            print("did receive invitation")
+            // display alert to user, to accept the connection or candel it.
+            let incomingAlert = UIAlertController(title: "Incoming Connection", message: "Do you want to accept the connection request from \(name)", preferredStyle: .alert)
+            
+            incomingAlert.addAction(UIAlertAction(title: "Yes", style: .default) { _ in
+                // inititiate the chat
+                print("confirmed")
+                DispatchQueue.main.async {
+                    self.connectedPeer = peerID
+                    self.connectedPeerInfo = PeerInfo(peer: peerID)
+                    self.hostInfo = PeerInfo(peer: peerID)
+                    self.isHost = false
+                }
+                invitationHandler(true, self.session)
+            })
+            
+            incomingAlert.addAction(UIAlertAction(title: "No", style: .cancel)
+            {
+                _ in
+                invitationHandler(false, nil)
+                print("cancelled")
+            })
+            DispatchQueue.main.async {
+                window.rootViewController?.present(incomingAlert, animated: true)
+            }
         }
     }
 }
@@ -673,9 +681,6 @@ extension ConnectionManager : MCNearbyServiceBrowserDelegate {
         // I do that because I need to stop browsing and stop advertising
         // so, I don't want the peer to be removed that I can't set it's state
         // when chatting.
-        //var peerInfo = self.peersInfo[peerIndex]
-        //peerInfo.isConnectable = false
-        //self.peersInfo[peerIndex] = peerInfo
         peersInfo.remove(at: peerIndex)
     }
 }
@@ -701,17 +706,16 @@ extension ConnectionManager : MCSessionDelegate {
                     var peerInfo = self.peersInfo[peerIndex!]
                     peerInfo.state = PeerState.connected
                     self.peersInfo[peerIndex!] = peerInfo
-                } else if (!self.isHost && peerIndex == nil){
+                } else if (!self.isHost) {
                     // this is for the client, there is no peersInfo checked,
                     // need to set the connectedPeer, that is the host
-                    self.connectedPeer = peerID
-                    self.connectedPeerInfo?.isChecked = true
-                    var peerInfo = PeerInfo(peer: self.connectedPeer!)
-                    peerInfo.isChecked = true
-                    self.peersInfo.append(peerInfo)
+                    self.hostInfo?.isChecked = true
+                    self.hostInfo?.state = PeerState.connected
+                    //self.connectedPeerInfo?.isChecked = true
+                    //var peerInfo = PeerInfo(peer: self.connectedPeer!)
+                    //peerInfo.isChecked = true
+                    //self.peersInfo.append(peerInfo)
                 }
-                //self.peersInfo[peerIndex].state = PeerState.connected
-                //self.connectionState = ConnectionState.connected
                 
                 // here we also set the
                 self.getAppState()
@@ -722,16 +726,10 @@ extension ConnectionManager : MCSessionDelegate {
                     self.sendMessage(self.getGroupInfo(peerID: peerID), peersToSend: [peerID], whoSaid: "Me")
                     // add to group members variable to display in host's chat view
                     self.decodeGroupName(info: self.getGroupInfo(peerID: self.myPeerId))
-                } else {
-                    // here we connect to all the peers in the group
-                    
                 }
-                
             }
             
         case .notConnected:
-            //print("not connected: \(peerID.displayName)")
-            //print("fromConnectedOrConnecting : \(fromConnectedOrConnecting)")
             switch fromConnectedOrConnecting {
             case 1:
                 print("not connected state: from connected 1")
@@ -743,12 +741,6 @@ extension ConnectionManager : MCSessionDelegate {
                             print("set host disconnected state, endChatState = true, host: \(self.hostInfo?.peerID.displayName)")
                             //self.endChatState = true
                         }
-                        if (self.connectedPeerInfo?.peerID == peerID) {
-                            print("set peer disconnected state")
-                            self.connectedPeerInfo?.state = PeerState.fromConnectedToDisconnected
-                        }
-                        //self.getAppState()
-                        //self.sendMessage("after one disconnected", peersToSend: [self.hostInfo!.peerID], whoSaid: "Me")
                     }
                     
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
@@ -773,11 +765,6 @@ extension ConnectionManager : MCSessionDelegate {
                             print("set host disconnected state, endChatState = true")
                             self.endChatState = true
                         }
-                        if (self.connectedPeerInfo?.peerID == peerID) {
-                            self.connectedPeerInfo?.state = PeerState.fromConnectingToNotConnected
-                            print("set host disconnected state")
-                        }
-                        //self.getAppState()
                     }
                     
                     guard let peerIndex = self.peersInfo.firstIndex(where: { $0.peerID == peerID }) else {
@@ -798,8 +785,6 @@ extension ConnectionManager : MCSessionDelegate {
             self.fromConnectedOrConnecting = 0
             DispatchQueue.main.async {
                 // not successfully connected, eg peer decline the invitation
-                //self.connectionState = ConnectionState.notConnected
-                self.connectedPeer = nil
                 self.disconnectedPeer = peerID
             }
             // remote peer should navigate to peerslistview
@@ -811,8 +796,12 @@ extension ConnectionManager : MCSessionDelegate {
                     return
                 }
                 self.peersInfo[peerIndex].state = PeerState.connecting
-                //self.appState = AppState.connecting
-                //self.connectionState = ConnectionState.connecting
+                if !self.isHost {
+                    if (self.hostInfo?.peerID == peerID) {
+                        self.hostInfo?.state = PeerState.connecting
+                        print("set host connecting state")
+                    }
+                }
                 self.getAppState()
             }
             
@@ -821,7 +810,6 @@ extension ConnectionManager : MCSessionDelegate {
         }
         // we update the app state after states assignments above
         // we should update the app state as a whole whenever peers' connection state changed.
-        //self.getAppState()
     }
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         print("did receive message, triggered  message: \(data)")

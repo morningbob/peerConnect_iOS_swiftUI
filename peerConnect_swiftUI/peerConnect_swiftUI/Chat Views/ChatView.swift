@@ -74,21 +74,11 @@ struct ChatView: View {
                 Button(action: {
                     // here we do some cleanings.
                     print("button ending chat")
-                    //var alert = self.notifyUserEndChat()
-                    //DispatchQueue.global(qos: .background).sync {
                     self.resetChatView()
                     self.connectionManager.endChat()
-                    //alert.dismiss(animated: true)
-                    
                     self.notifyUserEndChat()
-                    
                     // dismiss chat view
                     self.shouldDismissChatView = true
-                    //}
-                  
-                    //connectionManager.isHost = false
-                    // show alert of chat ending
-                    
                 }) {
                     Text("End Chat")
                         .font(.system(size: 18))
