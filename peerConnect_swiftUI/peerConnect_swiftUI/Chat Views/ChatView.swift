@@ -290,8 +290,6 @@ struct ChatView: View {
         // clear message model list here
         // it might be bad to clean messages here.
         // it should be cleared from connection manager
-        // when the app state is endChat
-        //self.connectionManager.clearMessageList()
     }
     
     private func notifyUserEndChat() {

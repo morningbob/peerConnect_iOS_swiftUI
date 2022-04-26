@@ -56,8 +56,9 @@ struct SelectedPeersView: View {
             // we neglect it
             if (state != self.appStateHistory.last) {
                 self.appStateHistory.append(state)
+                print("added \(state) state")
             }
-            print("added new app state \(state)")
+            //print("added new app state \(state)")
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
                 print("appState changed to connected, navigate to chat")

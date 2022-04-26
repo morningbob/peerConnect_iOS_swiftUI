@@ -71,3 +71,12 @@
 
 4. In order to make it more convenient for the whole app to response to user initiated activities, I created an app state enum to represent different stages of the app.  Most part of the app need to accomodate to different app states, like when to show an alert, when to end the chat, show who are connected with the user's device.  Most of the time, the connection manager makes the decision of the change of the app states.  Sometimes, the views decide, like the user press the end chat button, the app is changed to the end chat state.
 
+5. Although the chat messages are not sent to a server, I implemented the chat mechanism in a server and client manner.  The user who initiates the chat is known as the server, the host.  The host has connections with all the peers.  But the peers don't connect to each other.  When a peer, one of the client, send a message in the chat, the message is sent to the host only.  The host then redirects the message to all the peers.  It serves as a server in that sense.  
+
+6. I made the app only handle one chat at a time.  So, when there are incoming connections when the user is chatting, whether he is the host or the client, the app automatically refuses all incoming connections.  I may make the app handles two chats at a time later.
+
+7. I will implement the function for the user to send files to peer devices later.  I will also store the chat records in the device locally using Core Data.
+
+8. Please leave me comments for the project.  Thank you very much!
+
+## All rights reserved.
