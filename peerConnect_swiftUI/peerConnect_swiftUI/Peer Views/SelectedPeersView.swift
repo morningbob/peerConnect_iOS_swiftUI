@@ -52,7 +52,11 @@ struct SelectedPeersView: View {
         })
         .onReceive(self.connectionManager.$appState, perform: { state in
             // keep a history of app states here
-            self.appStateHistory.append(state)
+            // if the app state is the same with the previous state
+            // we neglect it
+            if (state != self.appStateHistory.last) {
+                self.appStateHistory.append(state)
+            }
             print("added new app state \(state)")
             if (state == AppState.connected) {
                 self.shouldNavigateToChat = true
@@ -70,23 +74,26 @@ struct SelectedPeersView: View {
                 print("state: \(state)")
             }
             print("end of history")
-            var previousState = AppState.normal
-            var rejectCount = 0
+            //var previousState = AppState.normal
+            var disconnectedState = false
             for state in self.appStateHistory {
-                if (state == AppState.disconnected) {
-                    previousState = state
-                    rejectCount = 1
+                if (state == AppState.disconnected || state == AppState.normal) {
+                    //previousState = state
+                    disconnectedState = true
                 } else if (state == AppState.endChat) {
                     //if (previousState == AppState)
-                    if (rejectCount == 1) {
-                        rejectCount += 1
+                    if (disconnectedState) {
+                        //rejectCount += 1
+                        print("reject detected")
+                        // clear history here
+                        self.appStateHistory = []
+                        // notify user of chat ends
+                        self.peerRejectionAlert()
+                        break
                     }
-                    print("reject detected")
-                    // notify user of chat ends
-                    self.peerRejectionAlert()
-                    break
+                    
                 } else {
-                    rejectCount = 0
+                    disconnectedState = false
                 }
             }
         })

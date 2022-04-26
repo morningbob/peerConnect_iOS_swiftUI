@@ -493,9 +493,8 @@ class ConnectionManager : NSObject, ObservableObject {
             } else {
                 DispatchQueue.main.async {
                     self.appState = AppState.normal
+                    print("default: ")
                 }
-                print("there is no selected peer.")
-                // not going to change app state
             }
         } else if (self.canGetAppState) {
             // for the client, watch only hostInfo
@@ -522,8 +521,6 @@ class ConnectionManager : NSObject, ObservableObject {
                 }
             }
         }
-        
-        
     }
     
     func getGroupInfo(peerID: MCPeerID) -> String {
