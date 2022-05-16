@@ -295,12 +295,20 @@ class ConnectionManager : NSObject, ObservableObject {
         return peerNames
     }
      
-    func sendFile(peer: MCPeerID) {
-        //session.sendResource(at: <#T##URL#>, withName: <#T##String#>, toPeer: peer) { error in
-        //    if let error = error {
-        //      print(error.localizedDescription)
+    func sendFile(peer: MCPeerID, url: URL) {
+        //let tempFile = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("messages.data")
+        //do {
+            //try data.write(to: )
         //}
-        //}
+        print("sendFile, starts")
+        session.sendResource(at: url, withName: "fromPeerFile", toPeer: peer) { error in
+            if let error = error {
+              print(error.localizedDescription)
+            } else {
+                print("file sent to \(peer.displayName) with no error")
+            }
+            
+        }
     }
     // this must be done by host only
     func connectPeers() {
@@ -900,13 +908,21 @@ extension ConnectionManager : MCSessionDelegate {
     
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        
+        print("connection mgr: starts receiving file")
     }
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
         
     }
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
-        
+        guard
+            let localURL = localURL,
+            let data = try? Data(contentsOf: localURL)
+            //print("data received: \(data)")
+        else {
+            print("couldn't parse data received.")
+            return
+        }
+        print("data received: \(data)")
     }
 }
 

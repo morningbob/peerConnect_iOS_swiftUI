@@ -7,7 +7,6 @@
 
 import SwiftUI
 import MultipeerConnectivity
-//import NavigationViewKit
 
 struct ChatView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
@@ -15,16 +14,15 @@ struct ChatView: View {
     @State private var messageText = ""
     //@State private var isSendFile = false
     @State private var showingDocumentPicker = false
-    @State private var urlContent = UrlContent()
+    @State private var urlContent : URL?
     @State private var peerStatus = ""
     @State private var messageCount = 0
-    // shouldNotifyEndChat is used to check if end chat alert is already displayed.
-    // if it is false, it is already displayed
     @State private var shouldNotifyEndChat = true
     @State var connectedPeersText : String = "none"
     @State var disconnectedPeersText : String = "none"
     @State var groupMembersText : String = "none"
     @State private var shouldDismissChatView = false
+    @State private var shouldNavigateToSelectPeer = false
     
     
     var body: some View {
@@ -160,10 +158,13 @@ struct ChatView: View {
         // end of VStack
         //.padding(.bottom, 60)
         Spacer()
+        NavigationLink(destination: PeersToSendFileView(urlChosen: self.$urlContent).environmentObject(connectionManager), isActive: $shouldNavigateToSelectPeer) {
+            EmptyView()
+        }
             .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
             .sheet(isPresented: $showingDocumentPicker) {
-                DocumentPicker(urlChosed: $urlContent.url)
+                DocumentPicker(urlChosed: $urlContent)
                 //self.getDocumentFromUrl()
             }
             .onAppear() {
@@ -174,30 +175,18 @@ struct ChatView: View {
                 self.connectionManager.endChatState = false
                 print("set endChatState onDisappear, to false")
             }
-        /*
-            .onReceive($shouldDismissChatView, perform: { dismiss in
-                if (dismiss) {
-                    self.presentation.wrappedValue.dismiss()
+            .onChange(of: urlContent, perform: { content in
+                print("got url: \(content)")
+                // we check if any document is picked here before we navigate to
+                // select peer view.
+                if (content != nil) {
+                    // get file name and display an alert to confirm
+                    self.sendConfirmationAlert()
+                    //self.shouldNavigateToSelectPeer = true
+                } else {
+                    self.notifyUserNilUrlAlert()
                 }
             })
-         */
-        /*
-        NavigationLink(destination: PeersListView(showPeerStatus:  shouldPopToRoot).environmentObject(connectionManager),
-                       isActive: self.$popToPeerList) {
-             
-            EmptyView()
-        }.isDetailLink(false)
-         */
-        /*
-            .onAppear() {
-                if (self.inputUrl != nil) {
-                    print("inputUrl is not null")
-                    getDocumentFromUrl()
-                } else {
-                    print("nothing in inputUrl")
-                }
-            }
-         */
         
     }
     
@@ -319,8 +308,60 @@ struct ChatView: View {
     }
     
     private func getDocumentFromUrl() {
-        print("document: \(self.urlContent.url)")
+        print("document: \(self.urlContent)")
+        // check if there urlContent is not nil
+        
+        // display a list of peers connected for user to choose to send the file.
+        self.shouldNavigateToSelectPeer = true
+        //self.connectionManager.sendFile(peer: <#T##MCPeerID#>, url: self.urlContent)
+        /*
+        if (self.urlContent != nil) {
+            if let fileData = try? Data(contentsOf: self.urlContent!) {
+                print("file, from data: \(fileData)")
+            }
+            
+        } else {
+            print("there is no url.")
+        }
+         */
     }
+    
+    private func notifyUserNilUrlAlert() {
+        
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
+        
+        let urlNilAlert = UIAlertController(title: "No Document is chosen", message: "There is no document chosen to send.  Please try again.", preferredStyle: .alert)
+        
+        urlNilAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            print("confirmed")
+        })
+        
+        window.rootViewController?.present(urlNilAlert, animated: true)
+    }
+    
+    private func sendConfirmationAlert() {
+        
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
+        
+        let sendAlert = UIAlertController(title: "Send Confirmation", message: "Do you want to send the file?", preferredStyle: .alert)
+        
+        sendAlert.addAction(UIAlertAction(title: "Send", style: .default) { _ in
+            print("confirmed")
+            self.shouldNavigateToSelectPeer = true
+        })
+        
+        sendAlert.addAction(UIAlertAction(title: "Cancel", style: .default) {
+            _ in
+            // clear url here
+            
+        })
+
+        window.rootViewController?.present(sendAlert, animated: true)
+    }
+    
+    //private func
 }
 
 struct UrlContent {
@@ -339,3 +380,9 @@ struct ChatView_Previews: PreviewProvider {
         ChatView().environmentObject(ConnectionManager())
     }
 }
+/*
+ if let fileContents = try? String(contentsOf: self.urlContent!) {
+     print("file contents, from contentsOf: \(fileContents)")
+ //} else {
+ }
+ */

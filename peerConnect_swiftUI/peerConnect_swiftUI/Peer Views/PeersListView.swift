@@ -297,7 +297,7 @@ struct PeersListView: View {
     }
     
 }
-
+/*
 struct PeerRowView : View {
     
     @ObservedObject var peerInfo : PeerInfo
@@ -318,7 +318,7 @@ struct PeerRowView : View {
         }
     }
 }
-
+*/
 struct PeersListView_Previews: PreviewProvider {
     
     

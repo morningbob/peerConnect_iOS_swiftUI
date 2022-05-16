@@ -13,6 +13,7 @@ class PeerInfo : Identifiable, ObservableObject {
     let peerID : MCPeerID
     @Published var state : PeerState
     @Published var isChecked = false
+    @Published var sendFileTo = false
     
     init(peer: MCPeerID) {
         self.peerID = peer
