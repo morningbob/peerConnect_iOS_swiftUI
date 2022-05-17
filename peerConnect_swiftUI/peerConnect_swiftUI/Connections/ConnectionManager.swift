@@ -57,6 +57,7 @@ class ConnectionManager : NSObject, ObservableObject {
     //   invitation.
     private var fromConnectedOrConnecting = 0
     @Published var endChatState = false
+    @Published var sendFileSuccessDict : [String : Bool] = [:]
     
     //init(_ peerReceivedHandler: PeerReceivedHandler? = nil) {
     override init() {
@@ -294,18 +295,32 @@ class ConnectionManager : NSObject, ObservableObject {
         }
         return peerNames
     }
+    
+    func sendFileToPeers(peersInfo: [PeerInfo], urlChosen: URL) {
+        for peer in peersInfo {
+            //var success =
+            self.sendFile(peer: peer.peerID, url: urlChosen)
+            //self.sendFileSuccessDict[peer.peerID.displayName] = success
+            //print("success? \(success) peer: \(peer.peerID.displayName)")
+        }
+    }
      
     func sendFile(peer: MCPeerID, url: URL) {
-        //let tempFile = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("messages.data")
-        //do {
-            //try data.write(to: )
-        //}
+        
         print("sendFile, starts")
         session.sendResource(at: url, withName: "fromPeerFile", toPeer: peer) { error in
             if let error = error {
-              print(error.localizedDescription)
+                print(error.localizedDescription)
+                print("result is set to false")
+                DispatchQueue.main.async {
+                    self.sendFileSuccessDict[peer.displayName] = false
+                }
             } else {
                 print("file sent to \(peer.displayName) with no error")
+                print("result is set to true")
+                DispatchQueue.main.async {
+                    self.sendFileSuccessDict[peer.displayName] = true
+                }
             }
             
         }

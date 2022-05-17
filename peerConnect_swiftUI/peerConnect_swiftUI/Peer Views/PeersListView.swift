@@ -27,7 +27,7 @@ struct PeersListView: View {
             
             //List(self.connectionManager.peersInfo.filter { $0.isConnectable }, id: \.id)
             List(self.connectionManager.peersInfo, id: \.id){ peerInfo in
-                PeerRowView(peerInfo: peerInfo).id(peerInfo.id)
+                PeerRowView(peerInfo: peerInfo, sendTo: false).id(peerInfo.id)
                 // contentShape is to set the whole row area as can be tapped.
                 .contentShape(Rectangle())
                 .onTapGesture {

@@ -12,13 +12,16 @@ struct PeersToSendFileView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State var checkedpeers : [PeerInfo] = []
     @Binding var urlChosen : URL?
+    @State var sendFileSuccess : [String : Bool] = [:]
+    @State var sendFileStatus : String = ""
     
     var body: some View {
         // List of connected peers in the chat
+        Spacer()
         Text("Please choose the peers to send the file to:")
         Spacer()
         List(self.connectionManager.peersInfo, id: \.id){ peerInfo in
-            PeerRowView(peerInfo: peerInfo)
+            PeerRowView(peerInfo: peerInfo, sendTo: true)
                 .onTapGesture {
                     if let checkedIndex =
                         self.connectionManager.peersInfo.firstIndex(where: { $0.id == peerInfo.id }) {
@@ -33,11 +36,22 @@ struct PeersToSendFileView: View {
         VStack {
             Spacer()
             Text("File: file name.txt")
+            Text(self.sendFileStatus)
+                .padding()
             Spacer()
             Button(action: {
+                 
+                /*
                 for peer in checkedpeers {
-                    self.connectionManager.sendFile(peer: peer.peerID, url: urlChosen!)
+                    var success = self.connectionManager.sendFile(peer: peer.peerID, url: urlChosen!)
+                    self.sendFileSuccess[peer.peerID.displayName] = success
+                    print("success? \(success) peer: \(peer.peerID.displayName)")
                 }
+                print("sendFileSuccess count: \(sendFileSuccess.count)")
+                 */
+                // report the success and failure
+                // list of name, list of success
+                self.getSendStatus(sendDict: self.sendFileSuccess)
                 
             }) { Text("Send")
             }
@@ -60,6 +74,15 @@ struct PeersToSendFileView: View {
         .onChange(of: self.urlChosen, perform: { url in
             print("url got from chat view: \(url)")
         })
+        
+    }
+    
+    private func getSendStatus(sendDict: [String:Bool]) {
+        
+        for (key, value) in sendDict {
+            var success = value ? "success" : "failure"
+            self.sendFileStatus += "\(key) : \(success)  "
+        }
         
     }
 }

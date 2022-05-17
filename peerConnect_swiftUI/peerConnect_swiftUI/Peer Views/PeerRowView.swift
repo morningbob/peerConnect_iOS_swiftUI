@@ -10,9 +10,11 @@ import SwiftUI
 struct PeerRowView : View {
     
     @ObservedObject var peerInfo : PeerInfo
+    private var sendTo = false
     
-    init(peerInfo: PeerInfo) {
+    init(peerInfo: PeerInfo, sendTo: Bool) {
         self.peerInfo = peerInfo
+        self.sendTo = sendTo
     }
     
     var body: some View {
@@ -22,8 +24,17 @@ struct PeerRowView : View {
             // the user can tap anywhere in the row to trigger onTapGesture
             Text(peerInfo.peerID.displayName)
             Spacer()
-            Text(peerInfo.isChecked ? "✅" : "🔲")
-            //Text("isCheck \(String(peerInfo.isChecked))")
+            //Text(peerInfo.isChecked ? "✅" : "🔲")
+            self.peerCheckBox()
+            
+        }
+    }
+    
+    private func peerCheckBox() -> AnyView {
+        if !self.sendTo {
+            return AnyView(Text(peerInfo.isChecked ? "✅" : "🔲"))
+        } else {
+            return AnyView(Text(peerInfo.sendFileTo ? "✅" : "🔲"))
         }
     }
 }
