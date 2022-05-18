@@ -13,6 +13,7 @@ struct SelectedPeersView: View {
     @State private var shouldNavigateToChat = false
     @Environment(\.presentationMode) var presentation
     @State private var appStateHistory : [AppState] = []
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         
@@ -35,13 +36,15 @@ struct SelectedPeersView: View {
                 Text("Chat View")
                     .font(.system(size: 18))
                     .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.blue, lineWidth: 1))
-            }.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+                    .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+                    .overlay(RoundedRectangle(cornerRadius: 15)
+                    .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
+            }.background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
                 .padding(.top, 20)
             Spacer()
         }
-        .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        //.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             // verified, here, we can observe states changed

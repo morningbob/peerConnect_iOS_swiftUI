@@ -14,6 +14,8 @@ struct PeersToSendFileView: View {
     @Binding var urlChosen : URL?
     @State var sendFileSuccess : [String : Bool] = [:]
     @State var sendFileStatus : String = ""
+    @Environment(\.colorScheme) var colorScheme
+    @State var isSent = false
     
     var body: some View {
         // List of connected peers in the chat
@@ -55,9 +57,10 @@ struct PeersToSendFileView: View {
             }
             .font(.system(size: 18))
             .padding()
-            .overlay(RoundedRectangle(cornerRadius: 20)
-            .stroke(Color.blue, lineWidth: 1))
-            .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+            .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+            .overlay(RoundedRectangle(cornerRadius: 15)
+            .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
+            .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             Spacer()
             
         }
@@ -85,8 +88,12 @@ struct PeersToSendFileView: View {
             self.sendFileStatus += "\(key):  \(success)    "
             print("total send files count: \(self.sendFileStatus.count)")
         }
-        if (self.sendFileStatus.count == self.checkedpeers.count) {
+        if (!self.sendFileStatus.isEmpty && self.sendFileStatus.count == self.checkedpeers.count) {
             print("file sent")
+            self.isSent = true
+            // clear previous selection and url
+            self.checkedpeers = []
+            self.urlChosen = nil
             // display alert of file sent
             self.fileSentAlert()
         }

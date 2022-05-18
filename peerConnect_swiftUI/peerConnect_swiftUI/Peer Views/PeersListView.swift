@@ -13,14 +13,13 @@ struct PeersListView: View {
     @State private var shouldNavigateToPeerStatus = false
     @State private var shouldNavigateToChat = false
     @State private var infoText = "Please choose a peer.  You can choose up to 7 peers."
-    //@State private var showUnsuccessfulConnection = false
     @State private var showConnectingAlert : Bool = false
     // this variable is used to keep track of the num of peer checked,
     // so to avoid checking more than 7 peers.
     @State private var checkedPeers : [PeerInfo] = []
     let maxConnectPeers = 7
     @Environment(\.presentationMode) private var presentationMode
-    //@State private var connectablePeerList : [PeerInfo] = []
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack {
@@ -121,8 +120,9 @@ struct PeersListView: View {
                     Text("Connect")
                         .font(.system(size: 18))
                         .padding()
-                        .overlay(RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.blue, lineWidth: 1))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+                        .overlay(RoundedRectangle(cornerRadius: 15)
+                        .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
                 }
                 Spacer()
                 Button(action: {
@@ -135,8 +135,9 @@ struct PeersListView: View {
                     Text("Chat View")
                         .font(.system(size: 18))
                         .padding()
-                        .overlay(RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.blue, lineWidth: 1))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+                        .overlay(RoundedRectangle(cornerRadius: 15)
+                        .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
                 }
                 Spacer()
             } // end of HStack
@@ -144,7 +145,8 @@ struct PeersListView: View {
             
         }
         .environmentObject(connectionManager)
-        .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        //.background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+        .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         .navigationTitle("Peers")
         /*
         .alert(isPresented: $showUnsuccessfulConnection) {

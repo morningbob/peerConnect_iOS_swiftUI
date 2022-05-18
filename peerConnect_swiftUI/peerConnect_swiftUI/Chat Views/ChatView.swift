@@ -23,6 +23,7 @@ struct ChatView: View {
     @State var groupMembersText : String = "none"
     @State private var shouldDismissChatView = false
     @State private var shouldNavigateToSelectPeer = false
+    @Environment(\.colorScheme) var colorScheme
     
     
     var body: some View {
@@ -59,12 +60,13 @@ struct ChatView: View {
                 connectionManager.sendMessageToPeers(message: messageText, whoSaid: "Me")
                 messageText = ""
             })
+            .foregroundColor(Color.black)
             .padding()
             .background(Color.white)
             Spacer()
             PeerStatus(connectedPeersText: self.$connectedPeersText, disconnectedPeersText: self.$disconnectedPeersText,
                        groupMembersText: self.$groupMembersText)
-                .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+            .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             
             Spacer()
             HStack {
@@ -81,8 +83,9 @@ struct ChatView: View {
                     Text("End Chat")
                         .font(.system(size: 18))
                         .padding()
-                        .overlay(RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.blue, lineWidth: 1))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+                        .overlay(RoundedRectangle(cornerRadius: 15)
+                        .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
                 }
                 Spacer()
                 // add navigation link here later
@@ -95,50 +98,24 @@ struct ChatView: View {
                     Text("Send File")
                         .font(.system(size: 18))
                         .padding()
-                        .overlay(RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.blue, lineWidth: 1))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+                        .overlay(RoundedRectangle(cornerRadius: 15)
+                        .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
                 }
                 Spacer()
-                Button(action: {
-                    getDocumentFromUrl()
-                    //isSendFile = true
-                    // should
-                    //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
-                }) {
-                    Text("get file url")
-                        .font(.system(size: 18))
-                        .padding()
-                        .overlay(RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.blue, lineWidth: 1))
-                }
-                Spacer()
-                
                 
             }  // this is the observer for the navigateToChat value in connection manager,
                 // wheneven it is false, dismiss this chat view.
             .onReceive(self.connectionManager.$appState, perform: { appState in
                 if ( appState == AppState.endChat) {
                     print("chat view onReceive, detected endChat")
-                    //self.presentation.wrappedValue.dismiss()
                     if (self.shouldNotifyEndChat) {
                         print("should notify end chat is true")
-                        //print("connected peer == nil")
-                        //print("should notify end chat == true")
-                        // reset endChatState here
                         self.connectionManager.endChatState = false
-                        //print("reset endChatState false")
-                        //guard let window = UIApplication.shared.keyWindow else {
-                         //   return }
-                        // alert = self.notifyUserEndChat()
-                        //DispatchQueue.global(qos: .background).sync {
-                          //  window.rootViewController?.present(alert, animated: true)
                         self.resetChatView()
                         self.notifyUserEndChat()
-                        
-                        //self.connectionManager
                         self.shouldNotifyEndChat = false
                     }
-                    //self.notifyUserEndChat()
                 }
                 })
             .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
@@ -161,7 +138,7 @@ struct ChatView: View {
         NavigationLink(destination: PeersToSendFileView(urlChosen: self.$urlContent).environmentObject(connectionManager), isActive: $shouldNavigateToSelectPeer) {
             EmptyView()
         }
-            .background(Color(red: 0.7725, green: 0.9412, blue: 0.8157))
+            .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             //present chooser for user to choose file
             .sheet(isPresented: $showingDocumentPicker) {
                 DocumentPicker(urlChosed: $urlContent)
@@ -193,8 +170,6 @@ struct ChatView: View {
     private func getPeerStatus()  {
         var connectedPeers : [String] = []
         if (connectionManager.isHost) {
-            //connectedPeers = connectionManager.getPeerNameStringForState(peerState: PeerState.connected)
-            
             for peerName in connectionManager.groupMemberNames {
                 for peer in connectionManager.peersInfo {
                     if (peerName == peer.peerID.displayName && peer.state == PeerState.connected && !connectedPeers.contains(peerName)) {
@@ -372,4 +347,19 @@ struct ChatView_Previews: PreviewProvider {
      print("file contents, from contentsOf: \(fileContents)")
  //} else {
  }
+ 
+ Button(action: {
+     getDocumentFromUrl()
+     //isSendFile = true
+     // should
+     //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
+ }) {
+     Text("get file url")
+         .font(.system(size: 18))
+         .padding()
+         .foregroundColor(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141))
+         .overlay(RoundedRectangle(cornerRadius: 15)
+         .stroke(colorScheme == .dark ? Color.white : Color(red: 0, green: 0.2461058497, blue: 0.5265290141), lineWidth: 1))
+ }
+ Spacer()
  */
