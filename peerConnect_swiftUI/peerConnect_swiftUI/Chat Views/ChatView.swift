@@ -309,21 +309,8 @@ struct ChatView: View {
     
     private func getDocumentFromUrl() {
         print("document: \(self.urlContent)")
-        // check if there urlContent is not nil
-        
         // display a list of peers connected for user to choose to send the file.
         self.shouldNavigateToSelectPeer = true
-        //self.connectionManager.sendFile(peer: <#T##MCPeerID#>, url: self.urlContent)
-        /*
-        if (self.urlContent != nil) {
-            if let fileData = try? Data(contentsOf: self.urlContent!) {
-                print("file, from data: \(fileData)")
-            }
-            
-        } else {
-            print("there is no url.")
-        }
-         */
     }
     
     private func notifyUserNilUrlAlert() {

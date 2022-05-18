@@ -19,6 +19,7 @@ struct PeersToSendFileView: View {
         // List of connected peers in the chat
         Spacer()
         Text("Please choose the peers to send the file to:")
+            .padding()
         Spacer()
         List(self.connectionManager.peersInfo, id: \.id){ peerInfo in
             PeerRowView(peerInfo: peerInfo, sendTo: true)
@@ -35,23 +36,20 @@ struct PeersToSendFileView: View {
         }
         VStack {
             Spacer()
-            Text("File: file name.txt")
+            Text("File: \(urlChosen?.lastPathComponent ?? "No file is chosen.")")
             Text(self.sendFileStatus)
                 .padding()
             Spacer()
             Button(action: {
                  
-                /*
-                for peer in checkedpeers {
-                    var success = self.connectionManager.sendFile(peer: peer.peerID, url: urlChosen!)
-                    self.sendFileSuccess[peer.peerID.displayName] = success
-                    print("success? \(success) peer: \(peer.peerID.displayName)")
+                if (urlChosen == nil) {
+                    // alert user
+                    self.notifyUserNilUrlAlert()
+                } else {
+                    print("sending starts")
+                    self.connectionManager.sendFileToPeers(peersInfo: self.checkedpeers, urlChosen: urlChosen!)
+                    //self.getSendStatus(sendDict: self.sendFileSuccess)
                 }
-                print("sendFileSuccess count: \(sendFileSuccess.count)")
-                 */
-                // report the success and failure
-                // list of name, list of success
-                self.getSendStatus(sendDict: self.sendFileSuccess)
                 
             }) { Text("Send")
             }
@@ -74,16 +72,52 @@ struct PeersToSendFileView: View {
         .onChange(of: self.urlChosen, perform: { url in
             print("url got from chat view: \(url)")
         })
+        .onReceive(self.connectionManager.$sendFileSuccessDict, perform: { dict in
+            self.getSendStatus(sendDict: dict)
+        })
         
     }
     
     private func getSendStatus(sendDict: [String:Bool]) {
-        
+        self.sendFileStatus = ""
         for (key, value) in sendDict {
             var success = value ? "success" : "failure"
-            self.sendFileStatus += "\(key) : \(success)  "
+            self.sendFileStatus += "\(key):  \(success)    "
+            print("total send files count: \(self.sendFileStatus.count)")
         }
+        if (self.sendFileStatus.count == self.checkedpeers.count) {
+            print("file sent")
+            // display alert of file sent
+            self.fileSentAlert()
+        }
+    }
+    
+    private func notifyUserNilUrlAlert() {
         
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
+        
+        let urlNilAlert = UIAlertController(title: "No Document is chosen", message: "There is no document chosen to send.  Please try again.", preferredStyle: .alert)
+        
+        urlNilAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            print("confirmed")
+        })
+        
+        window.rootViewController?.present(urlNilAlert, animated: true)
+    }
+    
+    private func fileSentAlert() {
+        
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
+        
+        let fileSentAlert = UIAlertController(title: "File Sent", message: "The file is sent.  Please read the details in the bottom of the screen.", preferredStyle: .alert)
+        
+        fileSentAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            print("confirmed")
+        })
+        
+        window.rootViewController?.present(fileSentAlert, animated: true)
     }
 }
 

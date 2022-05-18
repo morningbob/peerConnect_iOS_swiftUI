@@ -308,7 +308,7 @@ class ConnectionManager : NSObject, ObservableObject {
     func sendFile(peer: MCPeerID, url: URL) {
         
         print("sendFile, starts")
-        session.sendResource(at: url, withName: "fromPeerFile", toPeer: peer) { error in
+        session.sendResource(at: url, withName: url.lastPathComponent, toPeer: peer) { error in
             if let error = error {
                 print(error.localizedDescription)
                 print("result is set to false")
