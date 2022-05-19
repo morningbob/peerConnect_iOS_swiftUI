@@ -43,3 +43,11 @@ extension UIScreen{
    static let screenSize = UIScreen.main.bounds.size
 }
 
+enum SendFileState : Codable, Equatable {
+    case notSending
+    case toBeSent
+    case sending
+    case sentWithSuccess
+    case sentWithNoSuccess
+}
+

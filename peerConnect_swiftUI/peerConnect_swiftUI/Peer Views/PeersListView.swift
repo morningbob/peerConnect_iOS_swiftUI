@@ -170,51 +170,8 @@ struct PeersListView: View {
         // connectable, put them in connectablePeerList and show in the view
         .onReceive(connectionManager.$peersInfo, perform: { peersInfo in
             
-            print("Peer list view, peerInfo changed")
-            /*
-            var i = 0
-            for peer in peersInfo {
-                if (peer.isChecked) {
-                    print("checked \(peer.peerID.displayName)")
-                    i += 1
-                }
-            }
-            print("total peers: \(String(i))")
-            
-            print("extracting connectable peers")
-            
-            for peer in peersInfo {
-                if (peer.isConnectable) {
-                    self.connectablePeerList.append(peer)
-                }
-            }
-             */
-        })
-        /*
-        .onChange(of: self.connectablePeerList, perform: { connectablePeers in
-            //var peerIndex = 0
-            for peer in connectablePeers {
-                //if (peer.isChecked)
-                if let peerIndex = self.connectionManager.peersInfo.firstIndex(where: {
-                    $0.id == peer.id
-                }) {
-                    var peerInfo = self.connectionManager.peersInfo[index]
-                    //if ()
-                }
-            }
-        })
-         */
-        //.onReceive(self.$connectablePeerList, perform: { connectablePeers in
-            
-        //})
-        /*
-        .onReceive(connectionManager.$appState, perform: { state in
-            if (state == AppState.connected) {
-                print("appState change detected")
-                self.shouldNavigateToChat = true
-            }
-        })
-         */
+            print("Peer list view, peerInfo changed")}
+        )
         .onReceive(connectionManager.$hostInfo, perform: { host in
             if (host != nil && !connectionManager.isHost) {
                 // we watch the connectedPeer to see if the connection from the server is successful,

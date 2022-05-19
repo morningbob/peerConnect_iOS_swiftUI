@@ -24,6 +24,7 @@ struct ChatView: View {
     @State private var shouldDismissChatView = false
     @State private var shouldNavigateToSelectPeer = false
     @Environment(\.colorScheme) var colorScheme
+    @State private var prepareSendState = SendFileState.notSending
     
     
     var body: some View {
@@ -38,10 +39,8 @@ struct ChatView: View {
                                 .padding([.leading, .trailing], 20)
                         }
                         .padding(0.5)
-                        
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
                 }
                 .onChange(of: self.connectionManager.messageModels.count, perform: { _ in
                     guard self.connectionManager.messageModels.count > 0 else { return }
@@ -92,8 +91,6 @@ struct ChatView: View {
                 Button(action: {
                     showingDocumentPicker = true
                     //isSendFile = true
-                    // should
-                    //connectionManager.sendFile(peer: connectionManager.connectedPeer!)
                 }) {
                     Text("Send File")
                         .font(.system(size: 18))
@@ -135,7 +132,7 @@ struct ChatView: View {
         // end of VStack
         //.padding(.bottom, 60)
         Spacer()
-        NavigationLink(destination: PeersToSendFileView(urlChosen: self.$urlContent).environmentObject(connectionManager), isActive: $shouldNavigateToSelectPeer) {
+        NavigationLink(destination: PeersToSendFileView(urlChosen: self.$urlContent, sendingState: self.$prepareSendState).environmentObject(connectionManager), isActive: $shouldNavigateToSelectPeer) {
             EmptyView()
         }
             .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
@@ -159,9 +156,8 @@ struct ChatView: View {
                 if (content != nil) {
                     // get file name and display an alert to confirm
                     self.sendConfirmationAlert()
-                    //self.shouldNavigateToSelectPeer = true
                 } else {
-                    self.notifyUserNilUrlAlert()
+                    //self.notifyUserNilUrlAlert()
                 }
             })
         

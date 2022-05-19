@@ -15,7 +15,22 @@ struct PeersToSendFileView: View {
     @State var sendFileSuccess : [String : Bool] = [:]
     @State var sendFileStatus : String = ""
     @Environment(\.colorScheme) var colorScheme
-    @State var isSent = false
+    @State var fileName = ""
+    @Binding var sendingState : SendFileState
+    @Environment(\.presentationMode) var presentation
+    
+    
+    var buttonBack : some View {
+        Button(action: {
+            self.presentation.wrappedValue.dismiss()
+        }) {
+            HStack {
+                Image("ic_back")
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(colorScheme == .dark ? Color.white : Color.blue)
+            }
+        }
+    }
     
     var body: some View {
         // List of connected peers in the chat
@@ -38,9 +53,11 @@ struct PeersToSendFileView: View {
         }
         VStack {
             Spacer()
-            Text("File: \(urlChosen?.lastPathComponent ?? "No file is chosen.")")
+            Text((self.urlChosen?.lastPathComponent ?? self.fileName))
             Text(self.sendFileStatus)
                 .padding()
+            Spacer()
+            Text(getSendText())
             Spacer()
             Button(action: {
                  
@@ -49,8 +66,8 @@ struct PeersToSendFileView: View {
                     self.notifyUserNilUrlAlert()
                 } else {
                     print("sending starts")
+                    self.sendingState = SendFileState.sending
                     self.connectionManager.sendFileToPeers(peersInfo: self.checkedpeers, urlChosen: urlChosen!)
-                    //self.getSendStatus(sendDict: self.sendFileSuccess)
                 }
                 
             }) { Text("Send")
@@ -65,6 +82,7 @@ struct PeersToSendFileView: View {
             
         }
         
+        
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
             print("onReceive is triggered.")
             self.checkedpeers = peersInfo.filter({
@@ -74,37 +92,91 @@ struct PeersToSendFileView: View {
         })
         .onChange(of: self.urlChosen, perform: { url in
             print("url got from chat view: \(url)")
+            if (url != nil) {
+                self.fileName = url!.lastPathComponent
+            }
         })
         .onReceive(self.connectionManager.$sendFileSuccessDict, perform: { dict in
             self.getSendStatus(sendDict: dict)
         })
+        .onChange(of: self.sendingState, perform: { state in
+            print("sending state changes")
+            if (state == SendFileState.notSending) {
+                self.sendFileStatus = ""
+            }
+        })
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(leading: buttonBack)
         
     }
+        
     
     private func getSendStatus(sendDict: [String:Bool]) {
         self.sendFileStatus = ""
+        print("sentDict count: \(sendDict.count)")
+        var sentCount = 0
+        var successCount = 0
         for (key, value) in sendDict {
             var success = value ? "success" : "failure"
             self.sendFileStatus += "\(key):  \(success)    "
-            print("total send files count: \(self.sendFileStatus.count)")
+            sentCount += 1
+            print("total send files count: \(sentCount)")
+            if success == "success" {
+                successCount += 1
+            }
         }
-        if (!self.sendFileStatus.isEmpty && self.sendFileStatus.count == self.checkedpeers.count) {
-            print("file sent")
-            self.isSent = true
+        if (!self.sendFileStatus.isEmpty && sentCount == self.checkedpeers.count) {
+            print("cleaning starts")
+            if (successCount >= 1) {
+                self.sendingState = SendFileState.sentWithSuccess
+            } else {
+                self.sendingState = SendFileState.sentWithNoSuccess
+            }
             // clear previous selection and url
-            self.checkedpeers = []
-            self.urlChosen = nil
-            // display alert of file sent
-            self.fileSentAlert()
+            self.clearSentInfo()
+            
         }
     }
+    
+    private func getSendText() -> String {
+        switch (self.sendingState) {
+        case SendFileState.notSending:
+            return "Preparing to send."
+        case SendFileState.sending:
+            return "Sending...."
+        case SendFileState.sentWithNoSuccess:
+            return "Failed to send the file.  Plesae try again."
+        case SendFileState.sentWithSuccess:
+            return "File was sent."
+        default:
+            return "Preparing to send."
+        }
+    }
+    
+    // to prevent user to send the same file again accidentally
+    private func clearSentInfo() {
+        // find the peers from checkedpeers and remove the check
+        for peer in self.checkedpeers {
+            if let checkedIndex = self.connectionManager.peersInfo.firstIndex(where: { $0.id == peer.id }) {
+                // this way, the peersInfo's onChange will be triggered
+                var checkedPeer = self.connectionManager.peersInfo[checkedIndex]
+                checkedPeer.sendFileTo = false
+                self.connectionManager.peersInfo[checkedIndex] = checkedPeer
+                print("reset \(peer.peerID.displayName)")
+            }
+        }
+        self.checkedpeers = []
+        self.urlChosen = nil
+        
+    }
+    
     
     private func notifyUserNilUrlAlert() {
         
         guard let window = UIApplication.shared.keyWindow else {
             return }
         
-        let urlNilAlert = UIAlertController(title: "No Document is chosen", message: "There is no document chosen to send.  Please try again.", preferredStyle: .alert)
+        let urlNilAlert = UIAlertController(title: "Choose a document", message: "Please choose a document to send.", preferredStyle: .alert)
         
         urlNilAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             print("confirmed")
@@ -131,8 +203,9 @@ struct PeersToSendFileView: View {
 
 struct PeersToSendFileView_Previews: PreviewProvider {
     @State static var url = URL(string: "https://a")
+    @State static var sendState = SendFileState.notSending
     
     static var previews: some View {
-        PeersToSendFileView(urlChosen: self.$url)
+        PeersToSendFileView(urlChosen: self.$url, sendingState: self.$sendState)
     }
 }
