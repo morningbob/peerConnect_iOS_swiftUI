@@ -12,21 +12,24 @@ struct PeersToSendFileView: View {
     @EnvironmentObject var connectionManager : ConnectionManager
     @State var checkedpeers : [PeerInfo] = []
     @Binding var urlChosen : URL?
-    @State var sendFileSuccess : [String : Bool] = [:]
     @State var sendFileStatus : String = ""
     @Environment(\.colorScheme) var colorScheme
     @State var fileName = ""
-    @Binding var sendingState : SendFileState
+    @State var sendingState = SendFileState.notSending
     @Environment(\.presentationMode) var presentation
     
     
     var buttonBack : some View {
         Button(action: {
+            print("will dismiss sending view here ****************************")
+            self.clearSentCommentsAndContent()
             self.presentation.wrappedValue.dismiss()
         }) {
             HStack {
-                Image("ic_back")
+                Image(systemName: "arrow.left.circle")
                     .aspectRatio(contentMode: .fit)
+                    .foregroundColor(colorScheme == .dark ? Color.white : Color.blue)
+                Text("Chat View")
                     .foregroundColor(colorScheme == .dark ? Color.white : Color.blue)
             }
         }
@@ -34,6 +37,7 @@ struct PeersToSendFileView: View {
     
     var body: some View {
         // List of connected peers in the chat
+        VStack {
         Spacer()
         Text("Please choose the peers to send the file to:")
             .padding()
@@ -51,6 +55,7 @@ struct PeersToSendFileView: View {
                     }
                 }
         }
+        //HStack {
         VStack {
             Spacer()
             Text((self.urlChosen?.lastPathComponent ?? self.fileName))
@@ -63,7 +68,11 @@ struct PeersToSendFileView: View {
                  
                 if (urlChosen == nil) {
                     // alert user
+                    print("send button: nil url")
                     self.notifyUserNilUrlAlert()
+                } else if (self.checkedpeers.isEmpty) {
+                    print("no peer is chosen")
+                    self.noPeerChosenAlert()
                 } else {
                     print("sending starts")
                     self.sendingState = SendFileState.sending
@@ -80,7 +89,7 @@ struct PeersToSendFileView: View {
             .background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
             Spacer()
             
-        }
+        }}.background(colorScheme == .dark ? Color(red: 0.09077464789, green: 0.4195016325, blue: 0) : Color(red: 0.7725, green: 0.9412, blue: 0.8157))
         
         
         .onReceive(self.connectionManager.$peersInfo, perform: { peersInfo in
@@ -101,9 +110,10 @@ struct PeersToSendFileView: View {
         })
         .onChange(of: self.sendingState, perform: { state in
             print("sending state changes")
-            if (state == SendFileState.notSending) {
-                self.sendFileStatus = ""
-            }
+            print("state: \(state)")
+            //if (state == SendFileState.notSending) {
+            //    self.sendFileStatus = ""
+            //}
         })
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: buttonBack)
@@ -134,7 +144,6 @@ struct PeersToSendFileView: View {
             }
             // clear previous selection and url
             self.clearSentInfo()
-            
         }
     }
     
@@ -170,6 +179,13 @@ struct PeersToSendFileView: View {
         
     }
     
+    private func clearSentCommentsAndContent() {
+        self.fileName = ""
+        self.sendingState = SendFileState.notSending
+        self.connectionManager.sendFileSuccessDict = [:]
+        self.checkedpeers = []
+    }
+    
     
     private func notifyUserNilUrlAlert() {
         
@@ -183,6 +199,20 @@ struct PeersToSendFileView: View {
         })
         
         window.rootViewController?.present(urlNilAlert, animated: true)
+    }
+    
+    private func noPeerChosenAlert() {
+        
+        guard let window = UIApplication.shared.keyWindow else {
+            return }
+        
+        let noPeerChosenAlert = UIAlertController(title: "Choose a peer", message: "Please choose a peer to send the file to.", preferredStyle: .alert)
+        
+        noPeerChosenAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            print("confirmed")
+        })
+        
+        window.rootViewController?.present(noPeerChosenAlert, animated: true)
     }
     
     private func fileSentAlert() {
@@ -206,6 +236,6 @@ struct PeersToSendFileView_Previews: PreviewProvider {
     @State static var sendState = SendFileState.notSending
     
     static var previews: some View {
-        PeersToSendFileView(urlChosen: self.$url, sendingState: self.$sendState)
+        PeersToSendFileView(urlChosen: self.$url)
     }
 }

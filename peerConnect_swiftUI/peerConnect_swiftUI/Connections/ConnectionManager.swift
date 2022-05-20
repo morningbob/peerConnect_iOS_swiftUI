@@ -298,17 +298,13 @@ class ConnectionManager : NSObject, ObservableObject {
     
     func sendFileToPeers(peersInfo: [PeerInfo], urlChosen: URL) {
         for peer in peersInfo {
-            //var success =
             print("start sending to \(peer.peerID.displayName) once")
             self.sendFile(peer: peer.peerID, url: urlChosen)
-            //self.sendFileSuccessDict[peer.peerID.displayName] = success
-            //print("success? \(success) peer: \(peer.peerID.displayName)")
         }
     }
      
     func sendFile(peer: MCPeerID, url: URL) {
-        
-        print("sendFile, starts")
+        print("SEND FILE TRIGGERED!!!!!!!")
         session.sendResource(at: url, withName: url.lastPathComponent, toPeer: peer) { error in
             if let error = error {
                 print(error.localizedDescription)
